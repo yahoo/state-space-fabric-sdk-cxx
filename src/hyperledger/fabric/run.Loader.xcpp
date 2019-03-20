@@ -1,0 +1,16 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::run {
+  //
+  // The argument loaders for the peer, the order and so forth.recovering the output
+  // The ARGUMENT indexes the sort of argument loading that will occur.
+  //
+  // Usage, by example; see
+  //
+  //   Peer<std::string>
+  //   Peer<Success>
+  //
+  template<typename ARGUMENT> class Loader;
+}
+#endiv

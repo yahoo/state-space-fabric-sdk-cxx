@@ -1,0 +1,58 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.error.Condition
+namespace hyperledger::fabric::error {
+  //
+  // The (detailed) error codes
+  //
+  // Supporting
+  //   Zero-Overhead Determinsitic ExceptionsL Throwing values
+  //   http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf
+  // And the design of https://en.cppreference.com/w/cpp/error/error_code
+  //
+  // Recall the invariances provided by Category::default_error_condition(...) being at least:
+  //
+  //    Condition::SUCCESS == std::error_code{Code::SUCCESS};
+  //    Condition::FAILURE == std::error_code{Code::BAD_PAYLOAD_RECORD};
+  //    ...and so forth...
+  //
+  enum class Code
+    { SUCCESS = (int) Condition::SUCCESS,
+      FAILURE = (int) Condition::FAILURE,
+      TLS_CLIENT,
+      TLS_SERVER,
+      CONTACT_ORDERER,
+      CONTACT_PEERS,
+      CONTACT_PEER [[deprecated("instead use error::Code::CONTACT_PEERS (plural)")]] = CONTACT_PEERS,
+      RUN_CONFIGTXGEN,
+      RUN_CONFIGTXLATOR,
+      RUN_CRYPTOGEN,
+      RUN_ORDERER,
+      RUN_PEER,
+      RUN_PEERS [[deprecated("instead use error::Code::RUN_PEER (singular)")]] = RUN_PEER,
+      TRANSMISSION,
+      PAYLOAD_TOO_SHORT,
+      PAYLOAD_TOO_LONG,
+      PAYLOAD_ENCODE,
+      PAYLOAD_DECODE };
+}
+#import std.is_error_code_enum
+namespace std {
+  template<> struct is_error_code_enum<hyperledger::fabric::error::Code>;
+}
+#endiv
+#divert <hpp>
+#import std.true_type
+template<> struct std::is_error_code_enum<hyperledger::fabric::error::Code> : public std::true_type { };
+#import std.error_code
+namespace hyperledger::fabric::error {
+  inline auto make_error_code(Code) -> std::error_code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.category
+auto hyperledger::fabric::error::make_error_code(Code code) -> std::error_code {
+  return std::error_code{(int)code, category()};
+}
+#endiv

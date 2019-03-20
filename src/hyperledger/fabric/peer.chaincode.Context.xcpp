@@ -1,0 +1,27 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer::chaincode {
+  //
+  // The context for the 'peer chaincode' subcommands
+  // Descendants only
+  //
+  class Context;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.Context
+#import hyperledger.fabric.orderer.Contact
+#import hyperledger.fabric.time.Duration
+#import hyperledger.fabric.tls.Endpoint
+#import std.optional
+class hyperledger::fabric::peer::chaincode::Context : public fabric::Context {
+  using ancestor = fabric::Context;
+protected:
+  ~Context() = default;
+public:
+  std::optional<orderer::Contact> orderer;
+  std::optional<time::Duration> connection_timeout;
+  // --transient?  what's that for?
+};
+#endiv

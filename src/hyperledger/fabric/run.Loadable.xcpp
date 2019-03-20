@@ -1,0 +1,20 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::run {
+  //
+  // Common ancestor of all Loader<CONTEXT> specializations
+  // Descendants only
+  //
+  struct Loadable;
+}
+#endiv
+#divert <hpp>
+#import want.run.Runner
+struct hyperledger::fabric::run::Loadable {
+  using Arguments = want::run::Runner::Arguments;
+protected:
+  ~Loadable() = default;
+  Loadable() = default;
+};
+#endiv

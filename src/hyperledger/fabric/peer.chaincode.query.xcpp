@@ -1,0 +1,60 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import hyperledger.fabric.peer.chaincode.call
+#import hyperledger.fabric.peer.chaincode.Query
+#import hyperledger.fabric.peer.chaincode.required.Result
+#import hyperledger.fabric.Success;
+#import std.string
+#import std.get
+namespace hyperledger::fabric::peer::chaincode {
+  //
+  // The constructor is a JSON-formatted string which will be
+  // interpreted by the stored procedure (chaincode) in the database.
+  //
+  // Example:
+  //
+  //   auto constructor = R"json( { "Args" : [ "history" , "chicken" ] } )json"; .... the spaces are for readability; they are not required.
+  //
+  //   auto answered = query(context, constructor);
+  //   auto answered = query<bool>(context, constructor);
+  //   auto answered = query<Success>(context, constructor);
+  //   auto answered = query<std::string>(context, constructor);
+  //   if (!ok(answered)) {
+  //     auto ec = error_code(answered);
+  //     ...report the badness...
+  //   } else {
+  //      auto const &result = value(const_cast<decltype(answered)>(answered));
+  //      auto &result = value(answered);
+  //      auto result = value(std::move(answered));
+  //      ...use the goodness...
+  //   }
+  //
+  namespace packaging::query::function {
+    using packaging::call::function::call;
+    using packaging::call::function::INVOKE;
+    auto query(Query &, std::string const &constructor) -> Outcome<std::string>;
+    template<required::Result RESULT> auto query(Query &, std::string const &constructor) -> Outcome<RESULT>;
+    template<> auto query<literal::Success>(Query &, std::string const &constructor) -> Success;
+    template<> auto query<bool>(Query &, std::string const &constructor) -> Outcome<bool>;
+    template<> auto query<std::string>(Query &, std::string const &constructor) -> Outcome<std::string>;
+  }
+  using packaging::query::function::query;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::peer::chaincode::packaging::query {
+  auto function::query(Query &c, std::string const &n) -> Outcome<std::string> {
+    return call<std::string>(INVOKE, c, n); // call the specialization of the same return type
+  }
+  template<> auto function::query<literal::Success>(Query &c, std::string const &n) -> Success {
+    return call<literal::Success>(INVOKE, c, n);
+  }
+  template<> auto function::query<bool>(Query &c, std::string const &n) -> Outcome<bool> {
+    return call<bool>(INVOKE, c, n);
+  }
+  template<> auto function::query<std::string>(Query &c, std::string const &n) -> Outcome<std::string> {
+    return call<std::string>(INVOKE, c, n);
+  }
+}
+#endiv

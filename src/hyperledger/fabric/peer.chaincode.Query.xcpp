@@ -1,0 +1,18 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer::chaincode {
+  //
+  // Context for query(...)
+  //
+  struct Query;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.peer.chaincode.Call
+class hyperledger::fabric::peer::chaincode::Query : public Call {
+  using ancestor = Call;
+public:
+  Query() = default;
+};
+#endiv

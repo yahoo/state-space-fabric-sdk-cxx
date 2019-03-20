@@ -1,0 +1,118 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
+  enum Function {
+    LIGHT,
+    HEAVY,
+    QUERY = LIGHT,
+    INVOKE = HEAVY,
+  };
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.Outcome
+#import hyperledger.fabric.peer.chaincode.Call
+#import hyperledger.fabric.peer.chaincode.required.Result
+#import hyperledger.fabric.Success
+#import std.string
+namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
+
+  //
+  // call(...) is an implementation detail of the chaincode operations.
+  // invoke(...) - execute the chaincode (stored procedure) on the other side.
+  // query(...) - the same, except it can actually side effect the ledger.
+  //
+  // The constructor is a JSON-formatted string which will be
+  // interpreted by the stored procedure (chaincode) in the database.
+  // It is passed through without interpretation.
+  //
+  // Example (using invoke, query is exactly the same):
+  //
+  //   auto constructor = R"json( { "Args" : [ "set" , "chicken", "funky" ] } )json"; .... the spaces are for readability; they are not required.
+  //
+  //   auto answered = invoke(context, constructor);
+  //   auto answered = invoke<bool>(context, constructor);
+  //   auto answered = invoke<Success>(context, constructor);
+  //   auto answered = invoke<std::string>(context, constructor);
+  //   if (!ok(answered)) {
+  //     auto ec = error_code(answered);
+  //     ...report the badness...
+  //   } else {
+  //      auto const &result = value(const_cast<decltype(answered)>(answered));
+  //      auto &result = value(answered);
+  //      auto result = value(std::move(answered));
+  //      ...use the goodness...
+  //   }
+  //
+  template<required::Result RESULT> inline auto call(Function, Call &, std::string const &constructor) -> Outcome<RESULT>;
+  template<> auto call<literal::Success>(Function, Call &, std::string const &constructor) -> Outcome<literal::Success>;
+  template<> inline auto call<bool>(Function, Call &, std::string const &constructor) -> Outcome<bool>;
+  template<> auto call<std::string>(Function, Call &, std::string const &constructor) -> Outcome<std::string>;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::peer::chaincode::packaging::call {
+  template<> auto function::call<bool>(Function f, Call &c, std::string const &n) -> Outcome<bool> {
+    return ok(call<literal::Success>(f, c, n));
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.error.Code
+#import std.error_code
+#import std.move
+#import hyperledger.fabric.run.Peer.ALL
+namespace hyperledger::fabric::peer::chaincode::packaging::call {
+  template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Success {
+    using Result = Success;
+    run::Peer<Success> prog{context};
+    auto ran = prog.run();
+    //
+    // Specimen (and yes, the ansi (vt100) escape codes to "be bold" are right there in the logfile output).
+    //
+    //   ESC[34m2019-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050
+    //   ESC[34m2019-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:"768" 
+    //
+    // The output less chatty with --raw?
+    //
+    if (ok(ran)) {
+      return Result{SUCCESS};
+    } else {
+      // [[FIXTHIS]] we return CONTACT_PEER even though the failure may have been local; e.g. botched argument processing.
+      return Result{std::error_code{error::Code::CONTACT_PEERS}};
+    }
+  }
+  template<> auto function::call<std::string>(Function function, Call &context, std::string const &constructor) -> Outcome<std::string> {
+    using Result = Outcome<std::string>;
+    auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
+    // Whatever the system-level reason, we're going to return Code::RUN_PEERS
+    auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
+    run::Peer<std::string> prog{context};
+    auto started = prog.start();
+    if (!ok(started)) {
+      return badrun(error_code(started));
+    }
+    std::string payload;
+    if (!(prog.stream() >> payload).eof()) {
+      // If the stream is still good but not at EOF then a short read.
+      // If the stream is bad or failed but not at EOF then there was a transmission error
+      return badness(!prog.stream() ? error::Code::TRANSMISSION : error::Code::PAYLOAD_TOO_SHORT);
+    }
+    auto waited = prog.wait();
+    //
+    // Specimen (eliding all the noise)
+    //
+    //    status:200 payload:"768" 
+    //
+#warning WRITETHIS find the status
+#warning WRITETHIS find the payload
+    if (!ok(waited)) {
+      // Arguably this should not happen. We got a valid payload, but the wait(2) to clean up the process failed.
+      // We have a valid paylod in hand. Why would we be best served by failling the call now?  Sure, do that.
+      return badrun(error_code(waited));
+    }
+    return Result{std::move(payload)};
+  }
+}
+#endiv

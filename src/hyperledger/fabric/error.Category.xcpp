@@ -1,0 +1,81 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::error {
+  //
+  // The error category descriptor of the PrivacyChain
+  //
+  // Usage:
+  //
+  //   auto const &c = category();
+  //   auto cond = c.default_error_condition(99);
+  //   auto mess = c.message(99);
+  //
+  class Category;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.error.category
+#import std.error_category
+#import std.error_condition
+#import std.string
+class hyperledger::fabric::error::Category : public std::error_category {
+  using ancestor = std::error_category;
+  Category() = default;
+  friend auto category() -> Category const &;
+public:
+  auto name() const noexcept -> char const * override;
+  auto default_error_condition(int code) const noexcept -> std::error_condition override;
+  auto message(int code) const -> std::string override;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.error.Code
+#import std.to_string
+namespace hyperledger::fabric::error {
+  auto Category::name() const noexcept -> char const * {
+    return "hyperledger::fabric";
+  }
+  auto Category::default_error_condition(int code) const noexcept -> std::error_condition {
+    return std::error_condition{0 != code, *this};
+  }
+  auto Category::message(int code) const -> std::string {
+    switch (Code{code}) {
+    case Code::SUCCESS:
+      return "success";
+    case Code::FAILURE:
+      return "failure"; // totally generic, no further details given
+    case Code::TLS_CLIENT:
+      return "failure of tls from the client"; // e.g. our client crt was refused by their server.
+    case Code::TLS_SERVER:
+      return "failure of tls from the server"; // e.g. the server's crt didn't verify into our ca
+    case Code::CONTACT_ORDERER:
+      return "could not contact any orderer";
+    case Code::CONTACT_PEERS:
+      return "could not contact any peer";
+    case Code::RUN_CONFIGTXGEN:
+      return "could not run .../configtxgen";
+    case Code::RUN_CONFIGTXLATOR:
+      return "could not run .../configtxlator";
+    case Code::RUN_CRYPTOGEN:
+      return "could not run .../cryptogen";
+    case Code::RUN_ORDERER:
+      return "could not run .../orderer";
+    case Code::RUN_PEER:
+      return "could not run .../peer";
+    case Code::TRANSMISSION:
+      return "transmission error"; // short read?  interrupted system call?
+    case Code::PAYLOAD_TOO_SHORT:
+      return "payload is too short"; // short read?  internal length check botch?
+    case Code::PAYLOAD_TOO_LONG:
+      return "payload is too long"; // surprising extra junk found
+    case Code::PAYLOAD_ENCODE:
+      return "payload could not be encoded";
+    case Code::PAYLOAD_DECODE:
+      return "payload could not be decoded";
+    default:
+      return "error code " + std::to_string(code);
+    }
+  }
+}
+#endiv

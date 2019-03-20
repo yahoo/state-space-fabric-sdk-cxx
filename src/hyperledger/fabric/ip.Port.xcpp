@@ -1,0 +1,91 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::ip {
+  //
+  // A Internet Protocol Port Number
+  // Default-constructing
+  // In the range 0..65535
+  //
+  // The port number is always in host order; never in network order.
+  //
+  // See also, for parsing arguments & config files:
+  //
+  //    tunitas::app::options::get_port(cfg, step);
+  // 
+  // Usage:
+  //
+  //   rly?  (hint: just like ip::in::port_t or std::uint16_t, only more so)
+  //
+  //   auto p = Port{80u}
+  //   cerr << format(p);
+  //   auto s = to_string(p);
+  //
+  class Port;
+}
+#endiv
+#divert <hpp>
+#import std.string
+namespace hyperledger::fabric::ip {
+  inline auto operator==(Port const &, Port const &) -> bool;
+  inline auto operator!=(Port const &, Port const &) -> bool;
+  inline auto swap(Port &, Port &) noexcept -> void;
+  inline auto to_string(Port const &) -> std::string;
+}
+#import std.swap
+namespace std {
+  using hyperledger::fabric::ip::swap;
+}
+#import std.uint16_t
+class hyperledger::fabric::ip::Port {
+  // like 'ip::port_t' but default-initializes to '0'
+public:
+  using Value = std::uint16_t;
+  inline Port();
+  inline explicit Port(Value);
+  Port(Port const &) = default;
+  inline auto operator=(Value) -> Port &;
+  inline auto operator=(Port const &) -> Port & = default;
+  inline operator Value() const;
+protected:
+  Value value;
+  friend auto hyperledger::fabric::ip::operator==(Port const &, Port const &) -> bool;
+  friend auto ip::swap(Port &, Port &) noexcept -> void;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ip.port.Formatter
+#import std.ostringstream
+namespace hyperledger::fabric {
+  auto ip::operator==(Port const &b, Port const &a) -> bool {
+    return a.value == b.value;
+  }
+  auto ip::operator!=(Port const &a, Port const &b) -> bool {
+    return !operator==(a, b);
+  }
+  auto ip::swap(Port &a, Port &b) noexcept -> void {
+    std::swap(a.value, b.value);
+  }
+  auto ip::to_string(Port const &pp) -> std::string {
+    std::ostringstream buf;
+    buf << format(pp);
+    return buf.str();
+  }
+}
+namespace hyperledger::fabric::ip {
+  Port::Port()
+    : value(Value{})
+  { }
+  Port::Port(Value value)
+    : value(value)
+  { }
+  auto Port::operator=(Value proposed) -> Port & {
+    Port tmp{proposed};
+    std::swap(tmp, *this);
+    return *this;
+  }
+  Port::operator Value() const {
+    return value;
+  }
+}
+#endiv

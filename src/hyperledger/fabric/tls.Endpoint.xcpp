@@ -1,0 +1,65 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::tls {
+  //
+  // A tls endpoint is like an ip::Endpoint but has an optional Certificate Authority (a file) bundle
+  // The printed format is not different than for an ip::Endpoint
+  //
+  // The Certificate Authority (CA) is used to validate the certificate that *they* offer to us.
+  //
+  // Usage:
+  //
+  //   auto e = Endpoint{"localhost", 80};
+  //   cerr << format(e);
+  //   auto s = to_string(e);
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::tls {
+  inline auto swap(Endpoint &, Endpoint &) noexcept -> void;
+}
+#import hyperledger.fabric.ip.Endpoint
+#import hyperledger.fabric.Boolean
+#import std.filesystem.path
+class hyperledger::fabric::tls::Endpoint : public ip::Endpoint {
+  using ancestor = ip::Endpoint;
+  friend auto swap(Endpoint &a, Endpoint &b) noexcept -> void;
+public:
+  using Filepath = std::filesystem::path;
+  Endpoint() = default;
+  inline explicit Endpoint(Host);
+  inline Endpoint(Host, Port);
+  inline Endpoint(Host, Filepath);
+  inline Endpoint(Host, Port, Filepath);
+  Boolean dotls;
+  std::optional<Filepath> ca;
+};
+#endiv
+#divert <ipp>
+#import std.move
+auto hyperledger::fabric::tls::swap(Endpoint &a, Endpoint &b) noexcept -> void {
+  using Ancestor = Endpoint::ancestor;
+  swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
+  swap(a.dotls, b.dotls);
+  swap(a.ca, b.ca);
+}
+hyperledger::fabric::tls::Endpoint::Endpoint(Host host)
+  : ancestor{std::move(host)}
+{ }
+hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Port port)
+  : ancestor{std::move(host),std::move(port)}
+{ }
+hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Filepath file)
+  : ancestor{std::move(host)}
+  , dotls{true}
+  , ca{std::move(file)}
+{ }
+hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Port port, Filepath file)
+  : ancestor{std::move(host),std::move(port)}
+  , dotls{true}
+  , ca{std::move(file)}
+{ }
+#endiv

@@ -1,0 +1,17 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+// Based on concepts and designs published elsewhere, 2016 & prior in S.C.O.L.D., Wendell Craig Baker, wbaker@scold-lang.org
+#divert <fpp>
+namespace want::run {
+  //
+  // Whereas module-shell-devel >= 0.3 is not available to us, yet; requiring Release 05 (Purple Tin Partridge)
+  // and Tunitas does not have a similar feature, yet; being published through Release 01 (Famous Oak)
+  // Here is a "lite" version of the same capability set, but particularized to Hyperledger Fabric.
+  //
+  //   want;:run::Runner
+  //   want;:run::Piped_From
+  //   want;:run::Piped_To    (unused)
+  //   want;:run::Program<PEER>, Program<ORDERER>
+  //
+}
+#endiv

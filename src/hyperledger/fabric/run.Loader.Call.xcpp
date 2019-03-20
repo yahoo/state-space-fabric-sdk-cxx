@@ -1,0 +1,27 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.run.Loader
+#import hyperledger.fabric.peer.chaincode.Call
+namespace hyperledger::fabric::run {
+  //
+  // Loader for the 'peer chaincode' subcommands.
+  //
+  template<> class Loader<peer::chaincode::Call>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.Loadable
+template<> struct hyperledger::fabric::run::Loader<hyperledger::fabric::peer::chaincode::Call> : public Loadable {
+  using Source = peer::chaincode::Call;
+protected:
+  ~Loader() = default;
+  Loader() = default;
+  auto load(Arguments &lhs, Source const &rhs) -> void;
+};
+#endiv
+#divert <cpp>
+auto hyperledger::fabric::run::Loader<hyperledger::fabric::peer::chaincode::Call>::load(Arguments &lhs, Source const &rhs) -> void {
+#warning WRITETHIS hyperledger::fabric::run::Loader<peer::chaincode::Call>::Loader(...)
+}
+#endiv

@@ -1,0 +1,34 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.Outcome
+#import hyperledger.fabric.Success
+#import std.byte
+#import std.string
+namespace hyperledger::fabric::peer::chaincode::required {
+  //
+  // Controls the concept required::Result<TYPE>
+  // There are only a few reasonable types here.
+  // But there might be more, and to give some flexibility, a traits is used.
+  //
+  template<typename RESULT> struct Is_Result;
+  template<> struct Is_Result<bool>;
+  template<> struct Is_Result<Success>;
+  template<> struct Is_Result<literal::Success>;
+  template<> struct Is_Result<std::string>;
+  template<template<typename> class CONTAINER> struct Is_Result<CONTAINER<std::byte>>;
+  // ... and more!
+}
+#endiv
+#divert <hpp>
+#import std.true_type
+#import std.false_type
+namespace hyperledger::fabric::peer::chaincode::required {
+  template<typename RESULT> struct Is_Result : public std::false_type { };
+  template<> struct Is_Result<bool> : public std::true_type { };
+  template<> struct Is_Result<Success> : public std::false_type { };
+  template<> struct Is_Result<literal::Success> : public std::true_type { };
+  template<> struct Is_Result<std::string> : public std::true_type { };
+  template<template<typename> class CONTAINER> struct Is_Result<CONTAINER<std::byte>> : public std::true_type { };
+}
+#endiv

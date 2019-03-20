@@ -1,0 +1,4 @@
+#!/bin/sh
+__topdir="${0%/*}/../.."
+export PATH="${__topdir?}/check/bin:${__topdir?}/bin:$PATH"
+unit --list

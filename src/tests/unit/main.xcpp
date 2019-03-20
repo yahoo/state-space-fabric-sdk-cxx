@@ -1,0 +1,27 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <cpp>
+#import tests.unit.chaincode.Fixture
+#import tests.unit.fabric.Fixture
+#import tests.unit.ip.Fixture
+#import tests.unit.orderer.Fixture
+#import tests.unit.peer.Fixture
+#import tests.unit.peers.Fixture
+#import tests.unit.pki.Fixture
+#import tests.unit.tls.Fixture
+#import tests.unit.want.Fixture
+#import rigging.bench.Main
+auto main(int argc, char *argv[]) -> int {
+  namespace tu = tests::unit;
+  rigging::bench::Main remain(tu::chaincode::Fixture::suite(),
+                              tu::fabric::Fixture::suite(),
+                              tu::ip::Fixture::suite(),
+                              tu::orderer::Fixture::suite(),
+                              tu::peer::Fixture::suite(),
+                              tu::peers::Fixture::suite(),
+                              tu::pki::Fixture::suite(),
+                              tu::tls::Fixture::suite(),
+			      tu::want::Fixture::suite());
+  return remain(argc, argv);
+}
+#endiv

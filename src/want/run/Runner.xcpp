@@ -1,0 +1,186 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+// Based on concepts and designs published elsewhere, 2016 & prior in S.C.O.L.D., Wendell Craig Baker, wbaker@scold-lang.org
+#divert <fpp>
+namespace want::run {
+  //
+  // The prototype of a program runner
+  // Descendants only
+  //
+  // Usage:
+  //
+  //   class my::Program : public Runner {
+  //   public:
+  //     Program(...); ....    must choose 'exec' or 'execp' and establish argv[0]
+  //   };
+  //
+  //   Program prog{...};
+  //   auto f = prog.start();
+  //   auto w = prog.wait();
+  //
+  //   Program prog{...};
+  //   auto w = prog.run();
+  //
+  class Runner;
+}
+#endiv
+#divert <hpp>
+#import std.string_view
+#import std.filesystem.path
+#import sys.call.Result
+#import sys.exits.Code
+#import sys.posix.wait // for the wait result type, whatever that thing is: decltype(wait(...))
+#import sys.posix.fork // for the fork result type, whatever that thing is: decltype(fork(...))
+#import id_t  // like a pid, but has other overloaded semantic values when negative or zero
+#import pid_t
+class want::run::Runner {
+public:
+  inline explicit Runner(std::filesystem::path);
+  enum Exec { EXEC, EXECP }; // scoped by the class
+  inline Runner(Exec, std::filesystem::path);
+  virtual ~Runner() = default;
+  inline auto name() const -> std::string;
+  using Pid = ::pid_t;
+  struct results {
+    using Start = sys::call::Result;
+    // and as such, the whole of the wait(...) result API is available to us as if by sys.posix.wait
+    using Wait = decltype(sys::posix::wait(::id_t{}, sys::posix::W::Options{}));
+    using Fork = decltype(sys::posix::fork());
+    using Run = Wait;
+  };
+  inline auto is_running() const -> bool;
+  virtual auto run() -> results::Run;
+  virtual auto start() -> results::Start;
+  virtual auto wait() -> results::Wait;
+  using Arguments = std::vector<std::string>; // descendants will need this
+protected:
+  Pid running; // nonzero signals that there are processes in flight
+  Exec exec;
+  std::filesystem::path arg0;
+  std::vector<std::string> args;
+  inline static constexpr auto DEBUGGING = true;
+  auto dying_utterance(std::string_view fragment) const noexcept -> void;
+  auto do_exec() const -> sys::call::Result;
+  auto fork_invariance_check(results::Fork const &forked) const -> void;
+private:
+  auto grow_child() const noexcept -> sys::exits::Code;
+};
+#endiv
+#divert <ipp>
+#import std.cerr
+#import std.move
+want::run::Runner::Runner(std::filesystem::path filepath)
+  : Runner{EXECP, std::move(filepath)}
+{ }
+want::run::Runner::Runner(Exec exec, std::filesystem::path path)
+  : running{0}
+  , exec{exec}
+  , arg0{std::move(path)}
+  , args{} {
+    args.push_back(arg0);
+}
+auto want::run::Runner::name() const -> std::string {
+  return arg0.filename();
+}
+auto want::run::Runner::is_running() const -> bool {
+  return 0 != running;
+}
+#endiv
+#divert <cpp>
+#import sys.posix.W.Options
+auto want::run::Runner::run() -> results::Run {
+  if (!is_running()) {
+    auto started = start();
+    if (!ok(started)) {
+      // convert the forked-shaped result int o a waited-shaped result.
+      return results::Run{ok(started), error_num(started), sys::posix::detail::wait::Status{}, Pid{}};
+    }
+  }
+  return wait();
+}
+#import sys.posix.fork
+#import exit
+#import std.runtime_error;
+auto want::run::Runner::start() -> results::Start {
+  if (is_running()) {
+    // This is a logic error really, because it means the programmer was operating the API sloppily
+    // Use: start() ... run() ... wait()
+    throw std::runtime_error{"already running"};
+  }
+  auto forked = sys::posix::fork();
+  if (is_parent(forked)) {
+    running = pid(forked);
+  } else if (is_child(forked)) {
+    exit(grow_child());
+  }
+  fork_invariance_check(forked);
+  return results::Start{ok(forked), error_num(forked), value(forked)};
+}
+auto want::run::Runner::wait() -> results::Wait {
+  // DO NOT use W::EXITED here with waitpid(...), you will get EINVAL
+  auto waited = sys::posix::wait(this->running, sys::posix::W::NONE);
+  if (ok(waited)) {
+    this->running = 0;
+  }
+  return waited;
+}
+#import sys.exits.constants
+#import sys.exits.constants
+#import std.exception
+auto want::run::Runner::grow_child() const noexcept -> sys::exits::Code {
+  // We're in the child now, NOTHING ESCAPES
+  try {
+    auto execed = do_exec();
+    dying_utterance(error_code(execed).message());
+  } catch (std::exception const &e) {
+    dying_utterance(e.what());
+  } catch (...) {
+    dying_utterance("unknown");
+  }
+  return sys::exits::OSERR;
+}
+#import sys.posix.exec
+#import sys.posix.execp
+auto want::run::Runner::do_exec() const -> sys::call::Result {
+  // Returning from exec is an error on its face;
+  // e.g. arg0 is not valid, No such file or directory.
+  // e.g. SELinux prevents such
+  // e.g. Sunspots.
+  if (EXEC == exec) {
+    return sys::posix::exec(arg0, args);
+  } else {
+#if 0
+    std::cerr << "arg0=" << arg0 << ' ' << args.size();
+    std::cerr << " front=" << args.front() << '\n';
+    // return sys::posix::execp("/bin/true", args);
+    // return sys::posix::execp("/bin/true", "true");
+    auto r = ::execlp("/bin/true", "true-enough", 0);
+    std::cerr << " FAILING r=" << r << " errno=" << errno << "\n";
+    return sys::call::Result{false, errno, r}; // returning indicates a failure
+#endif
+    return sys::posix::execp(/*blik blik blik - FIXTHIS*/c::str((std::string)arg0), args);
+  }
+}
+#import nonstd.exception.Unexpected
+auto want::run::Runner::fork_invariance_check(results::Fork const &forked) const -> void {
+  if constexpr (DEBUGGING) {
+    auto expected = true;
+    expected &= !ok(forked) || (ok(forked) && is_parent(forked));
+    expected &= is_error(forked) || is_parent(forked);
+    if (!expected) {
+      throw nonstd::exception::Unexpected{"fork"};
+    }
+  }
+}
+#import write
+auto want::run::Runner::dying_utterance(std::string_view frag) const noexcept -> void {
+  auto const pack = std::string_view{"hyperledger::fabric(want)"}; // [[FIXTHIS]] using ac = autotools::autoconf::Config<CONFIG>; ac::package_name()
+  auto const pref = std::string_view{"run::::Runner: "};
+  auto const crnl = std::string_view{"\n"};
+  auto errfd{2};
+  ::write(errfd, pack.data(), pack.size());
+  ::write(errfd, pref.data(), pref.size());
+  ::write(errfd, frag.data(), frag.size());
+  ::write(errfd, crnl.data(), crnl.size());
+}
+#endiv

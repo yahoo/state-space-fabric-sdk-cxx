@@ -1,0 +1,58 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::ip {
+  //
+  // An endpoint is a Host and (optionally) a Port.
+  // Whereas default port values are application-level choices,
+  // if there is a well-known default port, then it must be supplied above.
+  //
+  // Usage:
+  //
+  //   auto e = Endpoint{"localhost", 80};
+  //   cerr << format(e);
+  //   auto s = to_string(e);
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+#import std.string
+namespace hyperledger::fabric::ip {
+  inline auto swap(Endpoint &, Endpoint &) noexcept -> void;
+  inline auto to_string(Endpoint const &) -> std::string;
+}
+#import hyperledger.fabric.ip.Host
+#import hyperledger.fabric.ip.Port
+#import std.optional
+struct hyperledger::fabric::ip::Endpoint {
+  using Host = ip::Host; // helpul for descendants in other namespaces
+  using Port = ip::Port;
+  Endpoint() = default;
+  inline explicit Endpoint(Host);
+  inline Endpoint(Host, Port);
+  Host host;
+  std::optional<Port> port;
+};
+#import hyperledger.fabric.ip.endpoint.Formatter
+#endiv
+#divert <ipp>
+auto hyperledger::fabric::ip::swap(Endpoint &a, Endpoint &b) noexcept -> void {
+  swap(a.host, b.host);
+  swap(a.port, b.port);
+}
+#import std.ostringstream
+auto hyperledger::fabric::ip::to_string(Endpoint const &ee) -> std::string {
+  std::ostringstream buf;
+  buf << format(ee);
+  return buf.str();
+}
+#import std.move
+hyperledger::fabric::ip::Endpoint::Endpoint(Host host)
+  : host{std::move(host)}
+{ }
+hyperledger::fabric::ip::Endpoint::Endpoint(Host host, Port port)
+  : host{std::move(host)}
+  , port{std::move(port)}
+{ }
+#endiv

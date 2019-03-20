@@ -1,0 +1,30 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer::chaincode {
+  //
+  // The context for the subcommands
+  //   peer chaincode query
+  //   peer chaincode invoke
+  // Descendants only
+  //
+  class Call;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.peer.chaincode.Context
+#import hyperledger.fabric.peers.Contact
+#import std.string
+class hyperledger::fabric::peer::chaincode::Call : public chaincode::Context {
+  using ancestor = chaincode::Context;
+protected:
+  ~Call() = default;
+public:
+  Call();
+  peers::Contact peers;
+  std::optional<std::string> profile; // a.k.a. --connectionProfile ... something about how to find peers from a local (yaml) file.
+  std::string channelID; //              a.k.a. -C, --channelId
+  std::string name; //                   a.k.a. -n, --name
+  // -c, -ctor is the "constructor"; it is a stringy thingy passed to query(...) and invoke(...)
+};
+#endiv

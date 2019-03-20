@@ -1,0 +1,101 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::ip { class Fixture; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+class tests::unit::ip::Fixture : public cppunit::test::Fixture {
+public:
+  auto test_Port() -> void;
+  auto test_Host() -> void;
+  auto test_Endpoint() -> void;
+  auto test_Endpoints() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import std.string_literals
+using namespace std::string_literals;
+#import hyperledger.fabric.ip.Port
+auto tests::unit::ip::Fixture::test_Port() -> void {
+  using namespace ::hyperledger::fabric::ip;
+  Port p0;
+  CPPUNIT_ASSERT(0u == (unsigned) p0);
+  Port p1{1};
+  CPPUNIT_ASSERT(1u == (unsigned) p1);
+  p1 = 2u;
+  CPPUNIT_ASSERT(2u == (unsigned) p1);
+}
+#import hyperledger.fabric.ip.Host
+#import hyperledger.fabric.ip.Visitor
+auto tests::unit::ip::Fixture::test_Host() -> void {
+  using namespace ::hyperledger::fabric::ip;
+  Host subject;
+  subject = host::Name{"localhost"};
+  auto visitor = Visitor{[](host::Uninterpreted const &) -> void { CPPUNIT_ASSERT(false); },
+                         [](host::Name const &) -> void { CPPUNIT_ASSERT(true); },
+                         [](host::Address4 const &) -> void { CPPUNIT_ASSERT(false); },
+                         [](host::Address6 const &) -> void { CPPUNIT_ASSERT(false); }};
+  std::visit(visitor, subject);
+  auto const expected = "localhost"s;
+  {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = buf.str();
+  } {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = to_string(subject);
+  }
+}
+#import hyperledger.fabric.ip.Endpoint
+auto tests::unit::ip::Fixture::test_Endpoint() -> void {
+  using namespace ::hyperledger::fabric::ip;
+  Endpoint subject{host::Name{"localhost"}, Port{80}};
+  auto const expected = "localhost:80"s;
+  {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = buf.str();
+  } {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = to_string(subject);
+  }
+}
+#import hyperledger.fabric.ip.Endpoints
+auto tests::unit::ip::Fixture::test_Endpoints() -> void {
+  using namespace ::hyperledger::fabric::ip;
+  using namespace ::hyperledger::fabric::ip;
+  Endpoints subject{{host::Name{"localhost"}, Port{80}},
+                    {host::Name{"localhost"}, Port{8080}},
+                    {host::Name{"localhost"}, Port{8088}}};
+  auto const expected = "localhost:80,localhost:8080,localhost:8088"s;
+  {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = buf.str();
+  } {
+    std::ostringstream buf;
+    buf << format(subject);
+    auto const actual = to_string(subject);
+  }
+}
+#import tests.unit.ip.host.Fixture
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::ip::Fixture::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("ip");
+  series << call("Port", &Fixture::test_Port)
+         << call("Host", &Fixture::test_Host)
+         << call("Endpoint", &Fixture::test_Endpoint)
+         << call("Endpoints", &Fixture::test_Endpoints)
+         << add(host::Fixture::suite());
+    ;
+  return series.release();
+}
+#endiv

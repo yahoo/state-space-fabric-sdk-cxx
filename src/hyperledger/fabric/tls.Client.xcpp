@@ -1,0 +1,23 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::tls {
+  //
+  // A tls client specifies the {key, crt, ca}
+  // - key opens crt
+  // - crt tells who we are
+  // - ca validates the crt (the server side must have this also to anchor the trust)
+  //
+  class Client;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.pki.Triple
+#import hyperledger.fabric.Boolean
+#import std.optional
+#import std.filesystem.path
+class hyperledger::fabric::tls::Client {
+  Boolean auth;
+  std::optional<pki::Triple<std::filesystem::path>> tls; // we send crt+ca to them
+};
+#endiv

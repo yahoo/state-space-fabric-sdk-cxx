@@ -1,0 +1,39 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::ip::endpoint {
+  //
+  // Format an ip::Endpoint
+  // A separate type so that ADL will find it.
+  //
+  struct Formatter;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ip.Endpoint
+namespace hyperledger::fabric::ip {
+  inline auto format(Endpoint const &) -> endpoint::Formatter;
+}
+#import std.basic_ostream
+#import hyperledger.fabric.required.Character
+#import hyperledger.fabric.required.Character_Traits
+namespace hyperledger::fabric::ip::endpoint {
+  template<required::Character CHAR, required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+}
+#import hyperledger.fabric.detail.Formatter
+struct hyperledger::fabric::ip::endpoint::Formatter : public detail::Formatter<Endpoint> {
+  using detail::Formatter<Endpoint>::Formatter;
+};
+#endiv
+#divert <ipp>
+auto hyperledger::fabric::ip::format(Endpoint const &ee) -> endpoint::Formatter {
+  return endpoint::Formatter{ee};
+}
+namespace hyperledger::fabric::ip {
+  template<required::Character CHAR, required::Character_Traits TRAITS> auto endpoint::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+    o << format(f.value.host);
+    if (f.value.port) { o << ':' << format(*f.value.port); }
+    return o;
+  }
+}
+#endiv

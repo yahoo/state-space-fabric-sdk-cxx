@@ -1,0 +1,32 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::chaincode { class Fixture; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+class tests::unit::chaincode::Fixture : public cppunit::test::Fixture {
+public:
+  auto test_Context() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.peer.chaincode.Context
+auto tests::unit::chaincode::Fixture::test_Context() -> void {
+  struct Subject : public ::hyperledger::fabric::peer::chaincode::Context {
+  }  subject;
+  CPPUNIT_ASSERT(!subject.tls);
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::chaincode::Fixture::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("chaincode");
+  series << call("Context", &Fixture::test_Context)
+    ;
+  return series.release();
+}
+#endiv

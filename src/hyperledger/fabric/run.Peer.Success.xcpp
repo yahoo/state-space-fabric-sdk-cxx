@@ -1,0 +1,41 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.Success
+#import hyperledger.fabric.run.Peer
+namespace hyperledger::fabric::run {
+  //
+  // The Hyperledger Fabric peer(1) program
+  // Returning merely a Success indication.
+  //
+  // Usage:
+  //
+  //   auto context = ...somehow...   <--------------------- and that's the hard part now isn't it?
+  //   Peer<Success> prog{context};
+  //   auto w = prog.run();
+  //   auto b = ok(w);
+  //
+  template<> class Peer<Success>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.Context
+#import hyperledger.fabric.run.Loader.Context
+#import want.run.Runner
+template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public want::run::Runner, private Loader<fabric::Context> {
+  struct ancestors {
+    using Runner = want::run::Runner;
+    using Loader = run::Loader<fabric::Context>;
+  };
+public:
+  using Context = fabric::Context;
+  explicit Peer(Context const &);
+};
+#endiv
+#divert <cpp>
+hyperledger::fabric::run::Peer<hyperledger::fabric::Success>::Peer(Context const &context)
+  : ancestors::Runner{EXECP, "peer"} {
+  ancestors::Loader::load(ancestors::Runner::args, context);
+#warning WRITETHIS ... push some arguments from the context
+}
+#endiv

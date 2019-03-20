@@ -1,0 +1,15 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import want.Boolean
+namespace hyperledger::fabric {
+  //
+  // A default-constructing Boolean
+  //
+  // Usage:
+  //
+  //   rly?  (hint: just like bool, only more so)
+  //
+  using Boolean = ::want::Boolean;
+}
+#endiv

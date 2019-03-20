@@ -1,0 +1,48 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::ip::host {
+  //
+  // Format an ip::Host
+  // A separate type so that ADL will find it.
+  //
+  struct Formatter;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ip.Host
+namespace hyperledger::fabric::ip {
+  inline auto format(Host const &) -> host::Formatter;
+}
+#import std.basic_ostream
+#import hyperledger.fabric.required.Character
+#import hyperledger.fabric.required.Character_Traits
+namespace hyperledger::fabric::ip::host {
+  template<required::Character CHAR, required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+}
+#import hyperledger.fabric.detail.Formatter
+struct hyperledger::fabric::ip::host::Formatter : public detail::Formatter<Host> {
+  using detail::Formatter<Host>::Formatter;
+};
+#endiv
+#divert <ipp>
+auto hyperledger::fabric::ip::format(Host const &hh) -> host::Formatter {
+  return host::Formatter{hh};
+}
+#import hyperledger.fabric.ip.Visitor
+#import std.visit
+#import std.basic_string_view
+namespace hyperledger::fabric::ip {
+  template<required::Character CHAR, required::Character_Traits TRAITS> auto host::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+     using Result = std::basic_ostream<CHAR, TRAITS> &;
+     using View = std::basic_string_view<CHAR, TRAITS>;
+     // [[FIXTHIS]] will this trickery work to widen the narrow characters of the names out to the wideness of CHAR?  Is there more to it? [surely]  o.widen(c)
+     // [[FIXTHIS]] need codecvt or such?  Recipe?
+     auto visitor = Visitor{[&o](host::Uninterpreted const &name) -> Result { return o << View{name.data(), name.size()}; },
+                            [&o](host::Name const &name) -> Result { return o << View{name.data(), name.size()}; },
+                            [&o](host::Address4 const &name) -> Result { return o << View{name.data(), name.size()}; }, //  [[FIXTHIS]] when Address4 is not hacked as a string
+                            [&o](host::Address6 const &name) -> Result { return o << View{name.data(), name.size()}; }}; // [[FIXTHIS]] when Address6 is not hacked as a string
+     return std::visit(visitor, f.value);
+  }
+}
+#endiv

@@ -1,0 +1,41 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.run.Peer
+#import std.string
+namespace hyperledger::fabric::run {
+  //
+  // The Hyperledger Fabric peer(1) program
+  // Returning a string payload.
+  //
+  // Usage:
+  //
+  //   auto context = Query{...};
+  //   auto context = Invoke{...};
+  //   Program<std::string> prog{context};
+  //   auto w = prog.run();
+  //   auto b = ok(w);
+  //
+  template<> class Peer<std::string>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.Loader.Call
+#import hyperledger.fabric.peer.chaincode.Call
+#import want.run.Piped_From
+template<> class hyperledger::fabric::run::Peer<std::string> : public want::run::Piped_From, private Loader<peer::chaincode::Call> {
+  struct ancestors {
+    using Runner = want::run::Piped_From;
+    using Loader = run::Loader<peer::chaincode::Call>;
+  };
+public:
+  using Context = peer::chaincode::Call;
+  inline explicit Peer(Context const &);
+};
+#endiv
+#divert <ipp>
+hyperledger::fabric::run::Peer<std::string>::Peer(Context const &context)
+  : ancestors::Runner{EXECP, "peer"} {
+  ancestors::Loader::load(ancestors::Runner::args, context);
+}
+#endiv

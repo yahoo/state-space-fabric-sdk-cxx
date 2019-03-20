@@ -1,0 +1,206 @@
+#!/bin/sh
+
+cd ${0%/*} || exit 255
+# the minimum needed to get autotools to allow configure to check the rest
+declare -a REQUIRED_RPMS=(autoconf automake libtool)
+
+declare NAME="${0##*/}"
+
+function showing() {
+    echo -n "run: $1"
+    shift
+    while ((0 != $#)); do
+	echo -n " '$1'"
+	shift
+    done
+    echo
+}
+function show() {
+    showing "$@"
+    "$@"
+}
+function run() {
+    show "$@"
+    local e=$?
+    echo "$1: exit $e"
+    return $e
+}
+
+function do_buildconf() {
+    if ! rpm -q ${REQUIRED_RPMS[@]}; then
+	echo "${NAME}: error, failing missing ${REQUIRED_RPMS[@]}"
+	echo "${NAME}: repair (you must) sudo dnf install -y ${REQUIRED_RPMS[@]}"
+	exit 1
+    fi 1>&2
+    # WATCHOUT - you must do it in multiple steps because --system-acdir is a singleton option
+    # WATCHOUT - the order is important here, "outside in"
+    rm -rf m4
+    if ! { run aclocal --install -I m4 --system-acdir=${temerarious_flagship_prefix?}/m4 -I ${hypogeal_twilight_datadir_ac?} &&
+	   run aclocal --install -I m4 --system-acdir=${hypogeal_twilight_datadir_ac?} && 
+           run aclocal --install -I m4 ; } ; then
+	echo "${NAME}: error, failing at aclocal"
+        exit 1
+    fi 1>&2
+    if ! { show autoreconf --force --verbose --install ; } ; then
+	echo "${NAME}: error, failing at autoreconf"
+        exit 1
+    fi 1>&2
+    # no need --- run automake --add-missing
+}
+
+function do_failure() {
+    local -i e=$?
+    echo "${NAME}: failure, could not configure the build"
+    exit $e
+}
+
+function do_usage() {
+    local -i e=1
+    cat <<EOF
+usage: ./buildconf
+
+or with values from the environment:
+
+    prefix=DIRECTORY
+    with_hypogeal_twilight=DIRECTORY
+    with_temerarious_flagship=DIRECTORY
+
+examples:
+
+    prefix=/opt/tunitas ./buildconf
+
+    prefix=/opt/tunitas \\
+    with_hypogeal_twilight=/opt/scold \\
+    with_temerarious_flagship=/opt/tunitas \\
+    ./buildconf
+
+EOF
+    exit ${e:-3}
+}
+
+if ((0 != $#)) && { [[ x--usage == x$1 ]] || [[ x--help == x$1 ]] || [[ x-h == x$1 ]] ; } ; then
+    do_usage 0
+fi
+if [[ -n ${prefix} ]] ; then
+    if [[ -n ${with_hypogeal_twilight} ]] ; then
+        : keep
+    else
+        if __candidate=submodules/hypogeal-twilight; [ -d ${__candidate?} ] ; then
+            with_hypogeal_twilight=${__candidate?}
+        elif __candidate=${PWD%/*}/hypogeal-twilight; [ -d ${__candidate?} ] ; then
+            with_hypogeal_twilight=${__candidate?}
+        elif __candidate=${PWD%/*/*}/scold/hypogeal-twilight; [ -d ${__candidate?} ] ; then
+            with_hypogeal_twilight=${__candidate?}
+        elif __candidate=${PWD%/*/*}/master/hypogeal-twilight; [ -d ${__candidate?} ] ; then
+            with_hypogeal_twilight=${__candidate?}
+        else
+            with_hypogeal_twilight=${prefix?}
+        fi
+    fi
+    echo "${NAME}: notice, default value of with_hypogeal_twilight is ${with_hypogeal_twilight?} (is that what was intended?)"
+    if [[ ! -d ${with_hypogeal_twilight} ]] ; then
+        echo "${NAME}: error, the directory does not exist, for with_hypogeal_twilight=${with_hypogeal_twilight?}"
+        exit 1
+    fi 1>&2
+    if [[ -n ${with_temerarious_flagship} ]] ; then
+        : keep
+    else
+        if __candidate=submodules/temerarious-flagship; [ -d ${__candidate?} ] ; then
+            with_temerarious_flagship=${__candidate?}
+        elif __candidate=${PWD%/*}/temerarious-flagship; [ -d ${__candidate?} ] ; then
+            with_temerarious_flagship=${__candidate?}
+        else
+            with_temerarious_flagship=${prefix?}
+        fi 
+    fi
+    echo "${NAME}: notice, default value of with_temerarious_flagship is ${with_temerarious_flagship?} (is that what was intended?)"
+    if [[ ! -d ${with_temerarious_flagship} ]] ; then
+        echo "${NAME}: error, the directory does not exist, for with_temerarious_flagship=${with_temerarious_flagship?}"
+        exit 1
+    fi 1>&2
+fi
+config_site=${PWD:-$(pwd)}/etc/config.site
+if ! [[ -f $config_site ]] ; then
+    echo "${NAME}: notice, missing ${config_site}"
+    echo "${NAME}: notice, will guess the location of hypogeal-twilight and temerarious-flagship from default values"
+    echo "${NAME}: notice, proceeding"
+else
+    #
+    # This is the "standard" location of the autotools config.site file, based upon prefix
+    #
+    echo "${NAME}: notice, using ${config_site}"
+    source ${config_site?} || exit 3
+fi
+if [[ -z ${prefix} || -z ${with_hypogeal_twilight} || -z ${with_temerarious_flagship} ]] ; then
+    echo "${NAME}: notice, observing prefix=${prefix:-(unset)}"
+    echo "${NAME}: notice, observing with_hypogeal_twilight=${with_hypogeal_twilight:-(unset)}"
+    echo "${NAME}: notice, observing with_temerarious_flagship=${with_temerarious_flagship:-(unset)}"
+    echo "${NAME}: notice, use ${0##(/} --usage"
+    echo "${NAME}: error, one of prefix, with_hypogeal_twilight or with_temerarious_flagship is empty"
+    exit 1
+fi 1>&2
+
+# prefer devel over prod
+if [[ -d ${with_hypogeal_twilight?}/ac ]] ; then
+    # new school (ac->libexec, m4->ac)
+    hypogeal_twilight_prefix=${with_hypogeal_twilight?}
+    hypogeal_twilight_libexecdir=${with_hypogeal_twilight?}/libexec
+    hypogeal_twilight_datadir=${with_hypogeal_twilight?}
+    hypogeal_twilight_datadir_ac=${with_hypogeal_twilight?}/ac
+elif [[ -d ${with_hypogeal_twilight?}/m4 ]] ; then
+    # old school (ac was "libexec" and m4 was "ac")
+    hypogeal_twilight_prefix=${with_hypogeal_twilight?}
+    hypogeal_twilight_libexecdir=${with_hypogeal_twilight?}/ac
+    hypogeal_twilight_datadir=${with_hypogeal_twilight?}
+    hypogeal_twilight_datadir_ac=${with_hypogeal_twilight?}/m4
+else
+    # assume installed, in production
+    hypogeal_twilight_prefix=${with_hypogeal_twilight?}
+    hypogeal_twilight_libexecdir=${hypogeal_twilight_prefix?}/libexec/hypogeal-twilight
+    hypogeal_twilight_datadir=${hypogeal_twilight_prefix?}/share/hypogeal-twilight
+    if [[ -d ${hypogeal_twilight_datadir?}/ac ]] ; then
+        hypogeal_twilight_datadir_ac=${hypogeal_twilight_datadir?}/ac
+    else
+        hypogeal_twilight_datadir_ac=${hypogeal_twilight_datadir?}/m4
+    fi
+fi
+export PATH="${hypogeal_twilight_libexecdir?}:$PATH"
+
+if [[ -d ${with_temerarious_flagship?}/ac ]] ; then
+    # in devel, paths are crushed up by one
+    temerarious_flagship_prefix=${with_temerarious_flagship?}
+    temerarious_flagship_datadir=${with_temerarious_flagship?}
+    temerarious_flagship_datadir_ac=${with_temerarious_flagship?}/ac
+else
+    # assume installed, in production
+    temerarious_flagship_prefix=${with_temerarious_flagship?}
+    temerarious_flagship_datadir=${with_temerarious_flagship?}/share/temerarious-flagship
+    temerarious_flagship_datadir_ac=${with_temerarious_flagship?}/ac
+fi
+
+trap do_failure ERR
+if false; then
+    # unclear this still works
+    do_buildconf
+else
+    # enfreshen the (local) autoconf m4 macros
+    if ! type -p autotools-local-preconfigure establish-config-settings insert-config-settings-in-configure; then
+        echo "${NAME}: notice, observing PATH=${PATH}"
+        echo "${NAME}: error, cannot find the preconfigure executables"
+        exit 1
+    fi 1>&2
+    #
+    # WATCHOUT - you need a variant of autotools-local-preconfigure that can support multiple -I in a searchpath
+    #            with the first one being used to nominate the local storage area, and the rest being readonly resources
+    # WATCHOUT - -I and --include= are treated differently by aclocal
+    #
+    run autotools-local-preconfigure \
+        -I ./m4 \
+        --include=${temerarious_flagship_datadir_ac?} \
+        --include=${hypogeal_twilight_datadir_ac?} \
+        ${end} || exit $?
+fi
+
+echo "${NAME}: notice, good."
+echo "${NAME}: notice, (now you must) ./configure && make"
+exit 0

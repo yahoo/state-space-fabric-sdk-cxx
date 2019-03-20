@@ -1,0 +1,29 @@
+$ /opt/hyperledger/fabric/bin/peer chaincode --help
+Operate a chaincode: install|instantiate|invoke|package|query|signpackage|upgrade|list.
+
+Usage:
+  peer chaincode [command]
+
+Available Commands:
+  install     Package the specified chaincode into a deployment spec and save it on the peer's path.
+  instantiate Deploy the specified chaincode to the network.
+  invoke      Invoke the specified chaincode.
+  list        Get the instantiated chaincodes on a channel or installed chaincodes on a peer.
+  package     Package the specified chaincode into a deployment spec.
+  query       Query using the specified chaincode.
+  signpackage Sign the specified chaincode package
+  upgrade     Upgrade chaincode.
+
+Flags:
+      --cafile string                       Path to file containing PEM-encoded trusted certificate(s) for the ordering endpoint
+      --certfile string                     Path to file containing PEM-encoded X509 public key to use for mutual TLS communication with the orderer endpoint
+      --clientauth                          Use mutual TLS when communicating with the orderer endpoint
+      --connTimeout duration                Timeout for client to connect (default 3s)
+  -h, --help                                help for chaincode
+      --keyfile string                      Path to file containing PEM-encoded private key to use for mutual TLS communication with the orderer endpoint
+  -o, --orderer string                      Ordering service endpoint
+      --ordererTLSHostnameOverride string   The hostname override to use when validating the TLS connection to the orderer.
+      --tls                                 Use TLS when communicating with the orderer endpoint
+      --transient string                    Transient map of arguments in JSON encoding
+
+Use "peer chaincode [command] --help" for more information about a command.

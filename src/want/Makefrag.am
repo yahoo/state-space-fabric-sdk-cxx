@@ -1,0 +1,20 @@
+# Not so obviously, this is a GNU -*- Makefile -*- which is included by automake, not by GNU make
+# Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+lib_libwant_la = lib/libwant.la
+lib_libwant_la_LIBADD = $(nothing)
+lib_libwant_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libwant_la_SOURCES))
+lib_libwant_la_SOURCES = \
+  obj/src/want/namespace.cpp \
+  obj/src/want/Boolean.cpp \
+  \
+  obj/src/want/run/namespace.cpp \
+  obj/src/want/run/Piped_From.cpp \
+  obj/src/want/run/Piped_To.cpp \
+  obj/src/want/run/Runner.cpp \
+  $(end)
+$(scold_cxxdir)/want/dependencies.mk:
+	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libwant_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/want/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/want/dependencies.mk

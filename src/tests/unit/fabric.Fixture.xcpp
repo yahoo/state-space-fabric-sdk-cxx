@@ -1,0 +1,70 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::fabric { class Fixture; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+class tests::unit::fabric::Fixture : public cppunit::test::Fixture {
+public:
+  auto test_Boolean() -> void;
+  auto test_Context() -> void;
+  auto test_Contact() -> void;
+  auto test_Outcome() -> void;
+  auto test_Success() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger::fabric.Boolean
+auto tests::unit::fabric::Fixture::test_Boolean() -> void {
+  using namespace ::hyperledger::fabric;
+  auto b = Boolean{true};
+  CPPUNIT_ASSERT(b);
+  b = false;
+  CPPUNIT_ASSERT(!b);
+}
+#import hyperledger::fabric.Context
+auto tests::unit::fabric::Fixture::test_Context() -> void {
+  using namespace ::hyperledger::fabric;
+  struct Subject : public Context {
+  } subject;
+  CPPUNIT_ASSERT(!subject.tls);
+}
+#import hyperledger::fabric.Contact
+auto tests::unit::fabric::Fixture::test_Contact() -> void {
+  using namespace ::hyperledger::fabric;
+  struct Subject : public Contact {
+  } subject;
+  CPPUNIT_ASSERT(!subject.auth);
+  CPPUNIT_ASSERT(!subject.client);
+}
+#import hyperledger::fabric.Outcome
+auto tests::unit::fabric::Fixture::test_Outcome() -> void {
+  using namespace ::hyperledger::fabric;
+  Outcome<int> subject{3};
+  CPPUNIT_ASSERT(ok(subject));
+  CPPUNIT_ASSERT(3 == value(subject));
+}
+#import hyperledger::fabric.Success
+auto tests::unit::fabric::Fixture::test_Success() -> void {
+  using namespace ::hyperledger::fabric;
+  Success subject{SUCCESS};
+  CPPUNIT_ASSERT(ok(subject));
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::fabric::Fixture::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("fabric");
+  series << call("Boolean", &Fixture::test_Boolean)
+         << call("Context", &Fixture::test_Context)
+         << call("Contact", &Fixture::test_Contact)
+         << call("Outcome", &Fixture::test_Outcome)
+         << call("Success", &Fixture::test_Success)
+    ;
+  return series.release();
+}
+#endiv

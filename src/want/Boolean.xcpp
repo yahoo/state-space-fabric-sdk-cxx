@@ -1,0 +1,88 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#if 0 // Need module-nonstd-devel >= 0.3.0
+#import nonstd.initialized.Type
+namespace want {
+  //
+  // A default-constructing Boolean
+  //
+  // Usage:
+  //
+  //   rly?  (hint: just like bool, only more so)
+  //
+  using Boolean = ::nonstd::initialized::Type<bool>;
+}
+#elif 0 // [[hopefully]] tuntias-devel > 1.7.0
+namespace want {
+  using Boolean = ::tunitas::initialized:Type<bool>;
+}
+#else
+#define __hyperledger_fabric_Boolean_inlined_explicitly_in_lieu_of_nonstd_initialized_Type_bool__
+namespace want {
+  class Boolean;
+}
+#endif
+#endiv
+#divert <hpp>
+#ifdef __hyperledger_fabric_Boolean_inlined_explicitly_in_lieu_of_nonstd_initialized_Type_bool__
+#import std.swap
+namespace want {
+  inline auto swap(Boolean &, Boolean &) noexcept -> void;
+}
+namespace std {
+  using want::swap;
+}
+namespace want {
+  inline auto operator==(Boolean const &, Boolean const &) -> bool;
+  inline auto operator!=(Boolean const &, Boolean const &) -> bool;
+}
+class want::Boolean {
+  // like 'bool' but default-initializes to 'false'
+public:
+  inline Boolean();
+  inline explicit Boolean(bool value);
+  Boolean(Boolean const &) = default;
+  inline auto operator=(bool value) -> Boolean &;
+  inline auto operator=(Boolean const &) -> Boolean & = default;
+  inline operator bool() const;
+  inline auto operator!() const -> bool;
+protected:
+  bool value;
+  friend auto want::operator==(Boolean const &, Boolean const &) -> bool;
+  friend auto want::swap(Boolean &, Boolean &) noexcept -> void;
+};
+#endif
+#endiv
+#divert <ipp>
+#ifdef __hyperledger_fabric_Boolean_inlined_explicitly_in_lieu_of_nonstd_initialized_Type_bool__
+auto want::swap(Boolean &a, Boolean &b) noexcept -> void {
+  std::swap(a.value, b.value);
+}
+auto want::operator==(Boolean const &b, Boolean const &a) -> bool {
+  return a.value == b.value;
+}
+auto want::operator!=(Boolean const &a, Boolean const &b) -> bool {
+  return !operator==(a, b);
+}
+want::Boolean::Boolean()
+  : value(false) {
+  ;
+}
+want::Boolean::Boolean(bool arg_value)
+  : value(arg_value) {
+  ;
+}
+auto want::Boolean::operator=(bool arg_value) -> Boolean & {
+  Boolean arg(arg_value);
+  std::swap(arg, *this);
+  return *this;
+}
+want::Boolean::operator bool() const {
+  return value;
+}
+auto want::Boolean::operator!() const -> bool {
+  return !value;
+}
+#endif
+#endiv

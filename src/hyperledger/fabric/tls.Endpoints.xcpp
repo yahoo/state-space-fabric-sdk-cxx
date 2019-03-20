@@ -1,0 +1,27 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.tls.Endpoint
+#import hyperledger.fabric.detail.Endpoints
+namespace hyperledger::fabric::tls {
+  //
+  // A series of TLS endpoints.
+  // Some calls allow for a series of endpoints to be used.
+  //
+  // Usage:
+  //
+  //   auto es = Endpoints{{"localhost"},{"localhost",8080},{"localhost":8088, "/etc/hyperledger/fabric/tls/ca.crt"}};
+  //   cerr << format(es);
+  //   auto s = std::to_string(es);
+  //
+  using Endpoints = detail::Endpoints<Endpoint>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::tls {
+  // So that ADL will find them
+  using detail::operator<<;
+  using detail::format;
+  using detail::to_string;
+};
+#endiv
