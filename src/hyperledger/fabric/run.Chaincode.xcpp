@@ -1,0 +1,21 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::run {
+  //
+  // Run the peer chaincode subcommand, recovering the output
+  // The RESULT indexes the sort of subprocess that must be used to recover the value.
+  //
+  // Usage:
+  //
+  //   peer::chaincode::Query context{...somehow...};
+  //   Chaincode<Success> prog{context};
+  //
+  //   auto prog.start();
+  //   prog.start();
+  //   prog.stream() >> payload;
+  //   prog.wait();
+  //
+  template<typename RESULT> class Chaincode;
+}
+#endiv

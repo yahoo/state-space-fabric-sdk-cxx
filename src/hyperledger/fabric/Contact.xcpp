@@ -4,11 +4,15 @@
 namespace hyperledger::fabric {
   //
   // How to contact something: an orderer, a peer set/
-  // Descendants only
+  // Descendants only.
+  //
+  // Common code among
+  //  orderer::Contact
+  //  peers::Contact
   //
   // Examples:
   // contact the order (rare? an orderer, one among many)
-  // contact a peer (expected: one among many)
+  // contact a peer series (expected: one among many)
   //
   struct Contact;
 }

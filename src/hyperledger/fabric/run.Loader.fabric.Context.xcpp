@@ -5,23 +5,23 @@
 #import hyperledger.fabric.Context
 namespace hyperledger::fabric::run {
   //
-  // The (argument) loader for the generic 'peer' subcommands
+  // The (argument) loader for the generic hyperledger fabric commands
   //
   template<> class Loader<fabric::Context>;
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.run.Loadable
-template<> struct hyperledger::fabric::run::Loader<hyperledger::fabric::Context> : public Loadable {
+#import hyperledger.fabric.run.loader.Basis
+template<> struct hyperledger::fabric::run::Loader<hyperledger::fabric::Context> : public loader::Basis {
   using Source = fabric::Context;
 protected:
   ~Loader() = default;
   Loader() = default;
-  auto load(Arguments &lhs, Source const &rhs) -> void;
+  inline auto load(Arguments &lhs, Source const &rhs) -> void;
 };
 #endiv
-#divert <cpp>
+#divert <ipp>
 auto hyperledger::fabric::run::Loader<hyperledger::fabric::Context>::load(Arguments &lhs, Source const &rhs) -> void {
-#warning WRITETHIS hyperledger::fabric::run::Loader<fabric::Context>::Loader(...)
+  // There are none?  Rly?
 }
 #endiv

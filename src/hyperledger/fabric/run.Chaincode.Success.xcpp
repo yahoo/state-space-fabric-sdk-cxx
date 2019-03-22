@@ -1,0 +1,36 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.Success
+#forward hyperledger.fabric.run.Chaincode
+namespace hyperledger::fabric::run {
+  //
+  // The Hyperledger Fabric peer(1) program, chaincode subcommand.
+  // Returning merely a Success indication.
+  // e.g.
+  //   peer channel create
+  //   peer channel join
+  //   peer channel ...etc....
+  //
+  // These sorts of operations *require* contact with an orderer.
+  // They do not use the peer set yet; will not have a peer::Contact
+  //
+  // Usage:
+  //
+  //   auto context = ...somehow...   <--------------------- and that's the hard part now isn't it?
+  //   Chaincode<Success> prog{context};
+  //   auto w = prog.run();
+  //   auto b = ok(w);
+  //
+  template<> class Chaincode<Success>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.chaincode.Basis
+#import want.run.Runner
+template<> class hyperledger::fabric::run::Chaincode<hyperledger::fabric::Success> : public chaincode::Basis<want::run::Runner> {
+  using ancestor = chaincode::Basis<want::run::Runner>;
+public:
+  inline explicit Chaincode(Context const &context) : ancestor{context} { }
+};
+#endiv

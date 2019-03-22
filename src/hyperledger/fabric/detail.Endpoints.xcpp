@@ -27,10 +27,12 @@ namespace hyperledger::fabric::detail {
   template<typename ENDPOINT> inline auto to_string(Endpoints<ENDPOINT> const &) -> std::string;
 }
 #import std.list
+#import std.initializer_list
 template<typename ENDPOINT> class hyperledger::fabric::detail::Endpoints : protected std::list<ENDPOINT> {
   using ancestor = std::list<ENDPOINT>;
 public:
   using Value = ENDPOINT; //     New School
+  using Initializer = std::initializer_list<Value>;
   using ancestor::value_type; // old_school
   Endpoints() = default;
   using ancestor::list; // the rest of the constructors

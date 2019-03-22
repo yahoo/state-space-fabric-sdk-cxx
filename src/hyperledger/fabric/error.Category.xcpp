@@ -45,6 +45,16 @@ namespace hyperledger::fabric::error {
       return "success";
     case Code::FAILURE:
       return "failure"; // totally generic, no further details given
+    case Code::CONFIGURATION_TLS_SERVER:
+      return "the configuration of tls for server-to-client authorization is inconsistent or incomplete";
+    case Code::CONFIGURATION_TLS_CLIENT:
+      return "the configuratoin of tls for client-to-server authorization is inconsistent or incomplete";
+    case Code::CONFIGURATION_ORDERER_CONTACT:
+      return "the orderer contact configuration is inconsistent or incomplete";
+    case Code::CONFIGURATION_PEERS_CONTACT:
+      return "the peers contact configuration is inconsistent or incomplete";
+    case Code::CONFIGURATION_CHAINCODE:
+      return "the chaincode subcommand is inconsistent or incomplete";
     case Code::TLS_CLIENT:
       return "failure of tls from the client"; // e.g. our client crt was refused by their server.
     case Code::TLS_SERVER:

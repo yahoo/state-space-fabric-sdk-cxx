@@ -11,8 +11,13 @@ namespace hyperledger::fabric::ip::host {
 #endiv
 #divert <hpp>
 #import hyperledger.fabric.ip.Host
+#import std.string
 namespace hyperledger::fabric::ip {
-  inline auto format(Host const &) -> host::Formatter;
+  namespace host {
+    inline auto format(Host const &) -> Formatter; // ADL will find it here because ADL on template args, not on the template
+    inline auto to_string(Formatter const &) -> std::string;
+  }
+  using host::format; // but you may expect it here.
 }
 #import std.basic_ostream
 #import hyperledger.fabric.required.Character
@@ -26,8 +31,14 @@ struct hyperledger::fabric::ip::host::Formatter : public detail::Formatter<Host>
 };
 #endiv
 #divert <ipp>
-auto hyperledger::fabric::ip::format(Host const &hh) -> host::Formatter {
+auto hyperledger::fabric::ip::host::format(Host const &hh) -> Formatter {
   return host::Formatter{hh};
+}
+#import std.ostringstream
+auto hyperledger::fabric::ip::host::to_string(Formatter const &ff) -> std::string {
+  std::ostringstream buf;
+  buf << ff;
+  return buf.str();
 }
 #import hyperledger.fabric.ip.Visitor
 #import std.visit

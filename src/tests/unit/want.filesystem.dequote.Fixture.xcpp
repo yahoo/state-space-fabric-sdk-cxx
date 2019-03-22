@@ -1,0 +1,99 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::want::filesystem::dequote { class Fixture; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+class tests::unit::want::filesystem::dequote::Fixture : public cppunit::test::Fixture {
+public:
+  auto test_empty() -> void;
+  auto test_slash() -> void;
+  auto test_length_0() -> void;
+  auto test_length_1() -> void;
+  auto test_length_2() -> void;
+  auto test_length_3() -> void;
+  auto test_spaces() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import std.string_literals
+using namespace std::string_literals;
+#import std.filesystem.path
+#import want.filesystem.dequote
+auto tests::unit::want::filesystem::dequote::Fixture::test_empty() -> void {
+  using namespace ::want::filesystem;
+  auto adorned = std::filesystem::path{""};
+  auto un = ::want::filesystem::dequote(adorned);
+  auto const actual = un;
+  auto const expected = ""s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_slash() -> void {
+  using ::want::filesystem::dequote;
+  auto adorned = std::filesystem::path{"/"};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = "/"s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_length_0() -> void {
+  using namespace ::want::filesystem; // WATCHOUT -- yet enclosing namespace dequote occludes ::want::filesystem::dequote
+  using ::want::filesystem::dequote;
+  auto adorned = ::want::filesystem::path{""};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = ""s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_length_1() -> void {
+  using ::want::filesystem::dequote;
+  auto adorned = std::filesystem::path{"a"};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = "a"s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_length_2() -> void {
+  using ::want::filesystem::dequote;
+  auto adorned = std::filesystem::path{"bb"};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = "bb"s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_length_3() -> void {
+  using ::want::filesystem::dequote;
+  auto adorned = std::filesystem::path{"ccc"};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = "ccc"s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::want::filesystem::dequote::Fixture::test_spaces() -> void {
+  using ::want::filesystem::dequote;
+  auto adorned = std::filesystem::path{"/build me a castle in the sky"};
+  auto un = dequote(adorned);
+  auto const actual = un;
+  auto const expected = "/build me a castle in the sky"s;
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::want::filesystem::dequote::Fixture::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("dequote");
+  series << call("empty", &Fixture::test_empty)
+         << call("slash", &Fixture::test_slash)
+         << call("length-0", &Fixture::test_length_0)
+         << call("length-1", &Fixture::test_length_1)
+         << call("length-2", &Fixture::test_length_2)
+         << call("length-3", &Fixture::test_length_3)
+         << call("spaces", &Fixture::test_spaces)
+    ;
+  return series.release();
+}
+#endiv

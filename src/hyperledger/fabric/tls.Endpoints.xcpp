@@ -1,27 +1,55 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
 // Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 #divert <fpp>
-#import hyperledger.fabric.tls.Endpoint
-#import hyperledger.fabric.detail.Endpoints
 namespace hyperledger::fabric::tls {
   //
-  // A series of TLS endpoints.
-  // Some calls allow for a series of endpoints to be used.
+  // A series of TLS endpoints, with the dotls signal factored out
+  // Some calls, e.g. the peer(s) call, allow for a series of endpoints to be used.
+  //
+  // If dotls is true, it is an exception-signalled error for the optional Series' Endpoint::ca to be empty
   //
   // Usage:
   //
-  //   auto es = Endpoints{{"localhost"},{"localhost",8080},{"localhost":8088, "/etc/hyperledger/fabric/tls/ca.crt"}};
+  //   auto es = Endpoints{true, {{"localhost"},{"localhost",8080},{"localhost":8088, "/etc/hyperledger/fabric/tls/ca.crt"}}};
   //   cerr << format(es);
   //   auto s = std::to_string(es);
   //
-  using Endpoints = detail::Endpoints<Endpoint>;
+  class Endpoints;
 }
 #endiv
 #divert <hpp>
 namespace hyperledger::fabric::tls {
-  // So that ADL will find them
-  using detail::operator<<;
-  using detail::format;
-  using detail::to_string;
+  inline auto swap(Endpoints &, Endpoints &) noexcept -> void;
+}
+#import hyperledger.fabric.tls.endpoints.Series
+#import hyperledger.fabric.Boolean
+class hyperledger::fabric::tls::Endpoints : public tls::endpoints::Series {
+  using ancestor = tls::endpoints::Series;
+  friend auto swap(Endpoints &a, Endpoints &b) noexcept -> void;
+public:
+  using Series = ancestor;
+  Endpoints() = default;
+  inline Endpoints(Series::Initializer);
+  inline explicit Endpoints(Series);
+  inline Endpoints(bool, Series);
+  Boolean dotls;
 };
+#endiv
+#divert <ipp>
+auto hyperledger::fabric::tls::swap(Endpoints &a, Endpoints &b) noexcept -> void {
+  using Ancestor = Endpoints::ancestor;
+  swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
+  swap(a.dotls, b.dotls);
+}
+#import std.move
+hyperledger::fabric::tls::Endpoints::Endpoints(Series series)
+  : ancestor{std::move(series)}
+{ }
+hyperledger::fabric::tls::Endpoints::Endpoints(Series::Initializer init)
+  : ancestor{std::move(init)}
+{ }
+hyperledger::fabric::tls::Endpoints::Endpoints(bool dotls, Series series)
+  : ancestor{std::move(series)}
+  , dotls{dotls}
+{ }
 #endiv

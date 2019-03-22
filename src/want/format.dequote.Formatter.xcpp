@@ -1,0 +1,45 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace want::format::dequote {
+  //
+  // A formatter to dequote a std::filesystem::path
+  // All the magic happens in operator<<
+  // If you are looking for a string-returning version, then use filesystem::dequote(filesystem:: path) -> 
+  //
+  // Lifetimes:
+  //   The lifetime of the value argument to the constructor must be longer than that of the Formatter.
+  //
+  // Usage: see format::dq(...)
+  //
+  class Formatter;
+}
+#endiv
+#divert <hpp>
+#import nonstd.required.Character
+#import nonstd.required.Character_Traits
+#import std.basic_ostream
+namespace want::format::dequote {
+  template<nonstd::required::Character CHAR, nonstd::required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+}
+#import std.filesystem.path
+struct want::format::dequote::Formatter {
+  using Value = std::filesystem::path;
+  inline Formatter(Value const &value) : value{value} { }
+  Value const &value;
+};
+#endiv
+#divert <ipp>
+#import std.copy
+#import std.ostream_iterator
+template<nonstd::required::Character CHAR, nonstd::required::Character_Traits TRAITS> auto want::format::dequote::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+  auto const &stringy = (std::string) f.value;
+  auto const qq = '"';
+  if (2 < stringy.size() && qq == stringy.front() && qq == stringy.back()) {
+    std::copy(stringy.begin()+1, stringy.end()-1, std::ostream_iterator<char, CHAR, TRAITS>{o});
+  } else {
+    o << stringy;
+  }
+  return o;
+}
+#endiv

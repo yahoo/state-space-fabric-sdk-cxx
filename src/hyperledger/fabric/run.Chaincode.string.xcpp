@@ -1,0 +1,49 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#forward hyperledger.fabric.run.Chaincode
+#import std.string
+namespace hyperledger::fabric::run {
+  //
+  // The Hyperledger Fabric peer(1) program, chaincode subcommand.
+  // Returning a string payload.
+  // There are two such subcommands 'invoke' and 'query'
+  //
+  // Usage:
+  //
+  //   auto context = Query{...};
+  //   auto context = Invoke{...};
+  //   Program<std::string> prog{context};
+  //   peer::Context const &context = ...somehow...;
+  //   Program<std::string> prog{context};
+  //   auto s = prog.start();
+  //   if (ok(s)) {
+  //      if (prog.stream() >> payload) {
+  //        if (stream.eof()) {
+  //           ...good...   (payload contains the whole slurp)
+  //        } else {
+  //           ...ungood... (the stream has failed or there is still more out there in the pipe...)
+  //      }
+  //   } else {
+  //     auto ec = error_code(s);   ...can't start...
+  //   }
+  //   auto w = run.wait();
+  //   if (ok(w)) {
+  //      ...ok...
+  //   } else {
+  //      auto ec = error_code(w);
+  //      ...there was some problem...
+  //   }
+  //
+  template<> class Chaincode<std::string>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.chaincode.Basis
+#import want.run.Piped_From
+template<> class hyperledger::fabric::run::Chaincode<std::string> : public chaincode::Basis<want::run::Piped_From> {
+  using ancestor = chaincode::Basis<want::run::Piped_From>;
+public:
+  inline explicit Chaincode(Context const &context) : ancestor{context} { }
+};
+#endiv

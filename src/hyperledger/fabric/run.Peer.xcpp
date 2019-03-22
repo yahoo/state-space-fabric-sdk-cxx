@@ -4,7 +4,7 @@
 namespace hyperledger::fabric::run {
   //
   // Run the peer, recovering the output
-  // The RESULT indexes the sort of subprocess that must be used to revoer the value.
+  // The RESULT indexes the sort of subprocess that must be used to recover the value.
   //
   // Usage:
   //

@@ -1,0 +1,66 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::run::peer {
+  //
+  // The Hyperledger Fabric peer(1) program ... other commands than 'chaincode'
+  // Descendants only.  Everything is set up here to avoid cut & paste in the descendant.
+  //
+  // That Curiously-Recurring Template Pattern!
+  // RUNNER is run::Runner or run::Pipe_From
+  //
+  // Usage:
+  //
+  //   see run.Peer<TYPE>
+  //
+  template<typename RUNNER> class Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.Loader.fabric.Context
+#import hyperledger.fabric.run.Loader.peer.Context
+#import hyperledger.fabric.run.Loader.Orderer
+#import hyperledger.fabric.run.Loader.Client
+#import hyperledger.fabric.peer.Context
+#import std.filesystem.path
+template<typename RUNNER> class hyperledger::fabric::run::peer::Basis
+  : public RUNNER,
+    private Loader<fabric::Context>,
+    private Loader<fabric::peer::Context>,
+    private Loader<orderer::Contact>,
+    private Loader<tls::Client> {
+  struct ancestors {
+    using Runner = RUNNER;
+    struct loaders {
+      using Fabric = run::Loader<fabric::Context>;
+      using Peer = run::Loader<fabric::peer::Context>;
+      using Orderer = run::Loader<orderer::Contact>;
+      using Client = run::Loader<tls::Client>;
+    };
+  };
+public:
+  using Context = fabric::peer::Context;
+protected:
+  ~Basis() = default;
+  inline explicit Basis(Context const &);
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Code
+#import std.error_code
+template<typename _> hyperledger::fabric::run::peer::Basis<_>::Basis(Context const &context)
+  : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
+  auto &arguments = ancestors::Runner::args;
+  using ld = typename ancestors::loaders;
+  ld::Fabric::load(arguments,context);
+  ld::Peer::load(arguments, context);
+  if (context.orderer) {
+    ld::Orderer::load(arguments, context.orderer->endpoint);
+    if (context.orderer->client) {
+      ld::Client::load(arguments, *context.orderer->client);
+    }
+  } else {
+    throw std::error_code{error::Code::CONFIGURATION_ORDERER_CONTACT};
+  }
+}
+#endiv

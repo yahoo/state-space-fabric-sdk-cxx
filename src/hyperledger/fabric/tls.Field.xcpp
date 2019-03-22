@@ -1,0 +1,16 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::tls {
+  //
+  // Packaged for import elsewhere
+  // The Field is used as an ADL hook to access variants of format(..., Field)
+  //
+  enum class Field {
+    ENDPOINT, // insert "hostname:port" ... same as format(Endpoint)
+    HOST,     // insert hostname
+    PORT,     // insert port
+    CA,       // insert the CA filename in the dequoted form
+  };
+}
+#endiv

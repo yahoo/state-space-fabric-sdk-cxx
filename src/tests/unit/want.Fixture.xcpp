@@ -8,22 +8,39 @@ namespace tests::unit::want { class Fixture; }
 #import cppunit.test.Fixture
 class tests::unit::want::Fixture : public cppunit::test::Fixture {
 public:
-  auto test_something() -> void;
+  auto test_Boolean() -> void;
   static auto suite() -> cppunit::Test *;
 };
 #endiv
 #divert <cpp>
-#import want
-auto tests::unit::want::Fixture::test_something() -> void {
-  CPPUNIT_ASSERT(true);
+#import std.string_literals
+using namespace std::string_literals;
+#import want.Boolean
+auto tests::unit::want::Fixture::test_Boolean() -> void {
+  using ::want::Boolean;
+  Boolean b0;
+  CPPUNIT_ASSERT(false == b0);
+  Boolean b1{true};
+  CPPUNIT_ASSERT(true == b1);
+  Boolean b2;
+  b2 = b1;
+  CPPUNIT_ASSERT(true == b2);
+  b2 = b0;
+  CPPUNIT_ASSERT(false == b2);
 }
+#import tests.unit.want.filesystem.Fixture
+#import tests.unit.want.format.Fixture
+#import tests.unit.want.run.Fixture
 #import unit.rigging.suite.Stream
 #import unit.rigging.suite.call
 #import unit.rigging.suite.add
 auto tests::unit::want::Fixture::suite() -> cppunit::Test * {
   using namespace ::unit::rigging::suite;
   Stream series("want");
-  series << call("something", &Fixture::test_something)
+  series << call("Boolean", &Fixture::test_Boolean)
+         << add(filesystem::Fixture::suite())
+         << add(format::Fixture::suite())
+         << add(run::Fixture::suite())
     ;
   return series.release();
 }

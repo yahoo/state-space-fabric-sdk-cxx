@@ -62,11 +62,11 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
 #import hyperledger.fabric.error.Code
 #import std.error_code
 #import std.move
-#import hyperledger.fabric.run.Peer.ALL
+#import hyperledger.fabric.run.Chaincode.ALL
 namespace hyperledger::fabric::peer::chaincode::packaging::call {
   template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Success {
     using Result = Success;
-    run::Peer<Success> prog{context};
+    run::Chaincode<Success> prog{context};
     auto ran = prog.run();
     //
     // Specimen (and yes, the ansi (vt100) escape codes to "be bold" are right there in the logfile output).
@@ -88,7 +88,7 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
     auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
     // Whatever the system-level reason, we're going to return Code::RUN_PEERS
     auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
-    run::Peer<std::string> prog{context};
+    run::Chaincode<std::string> prog{context};
     auto started = prog.start();
     if (!ok(started)) {
       return badrun(error_code(started));

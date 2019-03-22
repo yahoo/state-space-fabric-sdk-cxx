@@ -17,7 +17,7 @@ public:
 auto tests::unit::chaincode::Fixture::test_Context() -> void {
   struct Subject : public ::hyperledger::fabric::peer::chaincode::Context {
   }  subject;
-  CPPUNIT_ASSERT(!subject.tls);
+  CPPUNIT_ASSERT(!subject.orderer);
 }
 #import unit.rigging.suite.Stream
 #import unit.rigging.suite.call

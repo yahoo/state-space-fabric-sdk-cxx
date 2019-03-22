@@ -17,14 +17,11 @@ namespace hyperledger::fabric {
 }
 #endiv
 #divert <hpp>
-#import std.optional
-#import hyperledger.fabric.pki.Triple
-#import std.filesystem.path
 class hyperledger::fabric::Context {
 protected:
   ~Context() = default;
 public:
   Context() = default;
-  std::optional<pki::Triple<std::filesystem::path>> tls;
+  // No fields?   Rly?
 };
 #endiv

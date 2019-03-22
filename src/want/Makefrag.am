@@ -6,6 +6,9 @@ lib_libwant_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libwant_la_SOURCES))
 lib_libwant_la_SOURCES = \
   obj/src/want/namespace.cpp \
   obj/src/want/Boolean.cpp \
+  obj/src/want/format.dq.cpp \
+  obj/src/want/format.dequote.Formatter.cpp \
+  obj/src/want/filesystem.dequote.cpp \
   \
   obj/src/want/run/namespace.cpp \
   obj/src/want/run/Piped_From.cpp \

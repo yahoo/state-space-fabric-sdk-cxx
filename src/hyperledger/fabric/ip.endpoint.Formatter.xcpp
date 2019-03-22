@@ -11,8 +11,12 @@ namespace hyperledger::fabric::ip::endpoint {
 #endiv
 #divert <hpp>
 #import hyperledger.fabric.ip.Endpoint
+#import std.string
 namespace hyperledger::fabric::ip {
   inline auto format(Endpoint const &) -> endpoint::Formatter;
+  namespace endpoint {
+    inline auto to_string(Formatter const &) -> std::string;
+  }
 }
 #import std.basic_ostream
 #import hyperledger.fabric.required.Character
@@ -28,6 +32,12 @@ struct hyperledger::fabric::ip::endpoint::Formatter : public detail::Formatter<E
 #divert <ipp>
 auto hyperledger::fabric::ip::format(Endpoint const &ee) -> endpoint::Formatter {
   return endpoint::Formatter{ee};
+}
+#import std.ostringstream
+auto hyperledger::fabric::ip::endpoint::to_string(Formatter const &ff) -> std::string {
+  std::ostringstream buf;
+  buf << ff;
+  return buf.str();
 }
 namespace hyperledger::fabric::ip {
   template<required::Character CHAR, required::Character_Traits TRAITS> auto endpoint::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {

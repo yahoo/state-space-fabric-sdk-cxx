@@ -47,8 +47,8 @@ public:
   virtual auto stream() -> std::ostream &;
   virtual auto write(std::string const &outbound) -> results::Write;
   virtual auto run(std::string const &outbound) -> results::Run;
-  virtual auto run() -> results::Run override;
-  // override auto wait() -> results::Wait override;
+  auto run() -> results::Run override;
+  auto wait() -> results::Wait override;
 protected:
   using Stream = nonstd::stream::Posix;
   using Streambuf = nonstd::stream::Posixbuf;
@@ -164,8 +164,16 @@ auto want::run::Piped_To::run() -> results::Run {
   }
   streamobj.flush();
   streamobj.rdbuf(nullptr);
-  streambuf.reset(); // n.b. the file descriptor will be closed upon destruction.
+  streambuf.reset(); // n.b. the file descriptor will be closed upon destruction (the other side will see EOF)
   return ancestor::run();
+}
+auto want::run::Piped_To::wait() -> results::Wait {
+  if (is_running()) {
+    streamobj.flush();
+    streamobj.rdbuf(nullptr);
+    streambuf.reset(); // n.b. the file descriptor will be closed upon destruction (the other side will see EOF)
+  }
+  return ancestor::wait();
 }
 #import std.exception
 #import sys.exits.constants

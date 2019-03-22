@@ -1,0 +1,38 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import std.filesystem.path
+namespace want::filesystem {
+  using namespace std::filesystem; // cascade the namespaces
+  //
+  // (Safetly, respectfully, gently) dequote the printed representation of std::filesystem::path
+  // Seems like that's a fillip to Windows. No. We do POSIX here.
+  //
+  // Quotes at the begining and end are stripped, if they both exist.
+  // Quotes and any other character at all in the middle remain; good luck to you.
+  // You get thin characters out the other side because that's what POSIX does.
+  //
+  // If you are emitting this with operator<< then use format::dq(path) which slightly cheaper.
+  //
+  // Usage
+  //
+  //   auto adorned = std::filesystem::path{"/build/Hyperledger Fabric/Program Files"};
+  //   auto un = dequote(adorned);
+  //
+  inline auto dequote(path const &) -> std::string;
+}
+#endiv
+#divert <ipp>
+#import std.move
+auto want::filesystem::dequote(path const &filepath) -> std::string {
+  auto stringy = (std::string) filepath;
+  if (2 < stringy.size()) {
+    auto const qq = '"';
+    if (qq == stringy.front() && qq == stringy.back()) {
+      stringy.erase(stringy.end()-1); // cheap
+      stringy.erase(stringy.begin()); // expensive
+    }
+  }
+  return std::move(stringy);
+}
+#endiv

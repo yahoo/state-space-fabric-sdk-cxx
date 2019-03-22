@@ -34,11 +34,11 @@ namespace hyperledger::fabric {
   // If !ok(in)) then throw the std::error_code
   // else return the unwrapped value.
   //
-  template<typename TYPE> inline auto exceptional(Outcome<TYPE>) -> TYPE;
+  template<typename TYPE> inline auto unwrap(Outcome<TYPE>) -> TYPE;
 }
 #endiv
 #divert <ipp>
-template<typename TYPE> auto hyperledger::fabric::exceptional(Outcome<TYPE> in) -> TYPE {
+template<typename TYPE> auto hyperledger::fabric::unwrap(Outcome<TYPE> in) -> TYPE {
   if (!ok(in)) {
     throw error_code(in);
   } else {

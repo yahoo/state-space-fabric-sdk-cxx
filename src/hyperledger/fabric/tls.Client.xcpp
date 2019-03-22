@@ -16,7 +16,7 @@ namespace hyperledger::fabric::tls {
 #import hyperledger.fabric.Boolean
 #import std.optional
 #import std.filesystem.path
-class hyperledger::fabric::tls::Client {
+struct hyperledger::fabric::tls::Client {
   Boolean auth;
   std::optional<pki::Triple<std::filesystem::path>> tls; // we send crt+ca to them
 };

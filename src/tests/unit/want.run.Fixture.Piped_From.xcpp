@@ -1,0 +1,22 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import tests.unit.want.run.Fixture
+#endiv
+#divert <hpp>
+#import want.run.Piped_From
+class tests::unit::want::run::Fixture::Piped_From : public ::want::run::Piped_From {
+  using ancestor = ::want::run::Piped_From;
+public:
+  Piped_From();
+};
+#endiv
+#divert <cpp>
+tests::unit::want::run::Fixture::Piped_From::Piped_From()
+  : ancestor{EXECP, "echo"} {
+  args.push_back("Hey");
+  args.push_back("there");
+  args.push_back("mello");
+  args.push_back("yello!");
+}
+#endiv

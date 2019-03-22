@@ -2,11 +2,18 @@
 // Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 #divert <fpp>
 #import hyperledger.fabric.Success
-#import hyperledger.fabric.run.Peer
+#forward hyperledger.fabric.run.Peer
 namespace hyperledger::fabric::run {
   //
   // The Hyperledger Fabric peer(1) program
   // Returning merely a Success indication.
+  // e.g.
+  //   peer channel create
+  //   peer channel join
+  //   peer channel ...etc....
+  //
+  // These sorts of operations *require* contact with an orderer.
+  // They do not use the peer set yet; will not have a peer::Contact
   //
   // Usage:
   //
@@ -19,23 +26,11 @@ namespace hyperledger::fabric::run {
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.Context
-#import hyperledger.fabric.run.Loader.Context
+#import hyperledger.fabric.run.peer.Basis
 #import want.run.Runner
-template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public want::run::Runner, private Loader<fabric::Context> {
-  struct ancestors {
-    using Runner = want::run::Runner;
-    using Loader = run::Loader<fabric::Context>;
-  };
+template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public peer::Basis<want::run::Runner> {
+  using ancestor = peer::Basis<want::run::Runner>;
 public:
-  using Context = fabric::Context;
-  explicit Peer(Context const &);
+  inline explicit Peer(Context const &context) : ancestor{context} { }
 };
-#endiv
-#divert <cpp>
-hyperledger::fabric::run::Peer<hyperledger::fabric::Success>::Peer(Context const &context)
-  : ancestors::Runner{EXECP, "peer"} {
-  ancestors::Loader::load(ancestors::Runner::args, context);
-#warning WRITETHIS ... push some arguments from the context
-}
 #endiv

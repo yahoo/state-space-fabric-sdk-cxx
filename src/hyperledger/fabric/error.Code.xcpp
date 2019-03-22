@@ -20,6 +20,18 @@ namespace hyperledger::fabric::error {
   enum class Code
     { SUCCESS = (int) Condition::SUCCESS,
       FAILURE = (int) Condition::FAILURE,
+      //
+      // Configuration failures, things are declaratively wrong
+      //
+      CONFIGURATION_TLS_SERVER,
+      CONFIGURATION_TLS_CLIENT,
+      CONFIGURATION_ORDERER_CONTACT,
+      CONFIGURATION_PEERS_CONTACT,
+      CONFIGURATION_PEER_CONTACT [[deprecated("instead use error::Code::CONFIGURATION_PEERS_CONTACT (plural)")]] = CONFIGURATION_PEERS_CONTACT,
+      CONFIGURATION_CHAINCODE,
+      //
+      // Operational failures, something bad happened in a transaction, during a call
+      //
       TLS_CLIENT,
       TLS_SERVER,
       CONTACT_ORDERER,
@@ -32,6 +44,9 @@ namespace hyperledger::fabric::error {
       RUN_PEER,
       RUN_PEERS [[deprecated("instead use error::Code::RUN_PEER (singular)")]] = RUN_PEER,
       TRANSMISSION,
+      //
+      // Having received the data, something is wrong with it.
+      //
       PAYLOAD_TOO_SHORT,
       PAYLOAD_TOO_LONG,
       PAYLOAD_ENCODE,

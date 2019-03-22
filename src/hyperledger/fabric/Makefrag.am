@@ -55,6 +55,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/orderer.Contact.cpp \
   obj/src/hyperledger/fabric/peers.Contact.cpp \
   \
+  obj/src/hyperledger/fabric/peer.Context.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.Call.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.call.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.required.Is_Result.cpp \
@@ -67,26 +68,53 @@ lib_libhyperledger_fabric_la_SOURCES = \
   \
   obj/src/hyperledger/fabric/pki.required.Triplet.cpp \
   obj/src/hyperledger/fabric/pki.Triple.cpp \
+  obj/src/hyperledger/fabric/pki.Triple.Compare.cpp \
+  obj/src/hyperledger/fabric/pki.Triple.Compare.vector.byte.cpp \
   \
   obj/src/hyperledger/fabric/required.Character.cpp \
   obj/src/hyperledger/fabric/required.Character_Traits.cpp \
   \
-  obj/src/hyperledger/fabric/run.Loadable.cpp \
+  obj/src/hyperledger/fabric/run.Arguments.cpp \
+  obj/src/hyperledger/fabric/run.arguments.Stream.cpp \
+  obj/src/hyperledger/fabric/run.push_back.cpp \
   obj/src/hyperledger/fabric/run.Loader.cpp \
-  obj/src/hyperledger/fabric/run.Loader.Context.cpp \
+  obj/src/hyperledger/fabric/run.loader.Compare.cpp \
+  obj/src/hyperledger/fabric/run.loader.Compare.optional.cpp \
+  obj/src/hyperledger/fabric/run.loader.Compare.ALL.cpp \
+  obj/src/hyperledger/fabric/run.loader.are_the_same.cpp \
+  obj/src/hyperledger/fabric/run.loader.Basis.cpp \
+  obj/src/hyperledger/fabric/run.Loader.fabric.Context.cpp \
+  obj/src/hyperledger/fabric/run.Loader.peer.Context.cpp \
+  obj/src/hyperledger/fabric/run.Loader.chaincode.Context.cpp \
+  obj/src/hyperledger/fabric/run.Loader.Orderer.cpp \
+  obj/src/hyperledger/fabric/run.Loader.Peers.cpp \
+  obj/src/hyperledger/fabric/run.Loader.Client.cpp \
   obj/src/hyperledger/fabric/run.Loader.Call.cpp \
+  obj/src/hyperledger/fabric/run.Chaincode.cpp \
+  obj/src/hyperledger/fabric/run.Chaincode.Success.cpp \
+  obj/src/hyperledger/fabric/run.Chaincode.string.cpp \
+  obj/src/hyperledger/fabric/run.Chaincode.ALL.cpp \
+  obj/src/hyperledger/fabric/run.chaincode.Basis.cpp \
   obj/src/hyperledger/fabric/run.Peer.cpp \
   obj/src/hyperledger/fabric/run.Peer.Success.cpp \
   obj/src/hyperledger/fabric/run.Peer.string.cpp \
   obj/src/hyperledger/fabric/run.Peer.ALL.cpp \
+  obj/src/hyperledger/fabric/run.peer.Basis.cpp \
   \
   obj/src/hyperledger/fabric/time.Clock.cpp \
   obj/src/hyperledger/fabric/time.Duration.cpp \
   obj/src/hyperledger/fabric/time.Point.cpp \
   \
   obj/src/hyperledger/fabric/tls.Client.cpp \
+  obj/src/hyperledger/fabric/tls.Client.Compare.cpp \
   obj/src/hyperledger/fabric/tls.Endpoint.cpp \
+  obj/src/hyperledger/fabric/tls.endpoint.Basis.cpp \
+  obj/src/hyperledger/fabric/tls.endpoint.Formatter.cpp \
+  obj/src/hyperledger/fabric/tls.Field.cpp \
   obj/src/hyperledger/fabric/tls.Endpoints.cpp \
+  obj/src/hyperledger/fabric/tls.endpoints.Endpoint.cpp \
+  obj/src/hyperledger/fabric/tls.endpoints.Series.cpp \
+  obj/src/hyperledger/fabric/tls.endpoints.series.Formatter.cpp \
   $(end)
 $(info DEBUG $(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libhyperledger_fabric_la_SOURCES)))
 $(scold_cxxdir)/hyperledger/fabric/dependencies.mk:

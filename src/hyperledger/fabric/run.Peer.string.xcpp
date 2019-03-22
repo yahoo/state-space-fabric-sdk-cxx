@@ -1,41 +1,46 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
 // Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 #divert <fpp>
-#import hyperledger.fabric.run.Peer
+#forward hyperledger.fabric.run.Peer
 #import std.string
 namespace hyperledger::fabric::run {
   //
-  // The Hyperledger Fabric peer(1) program
+  // The Hyperledger Fabric peer(1) program ... other commands than 'chaincode'
   // Returning a string payload.
   //
   // Usage:
   //
-  //   auto context = Query{...};
-  //   auto context = Invoke{...};
+  //   peer::Context const &context = ...somehow...;
   //   Program<std::string> prog{context};
-  //   auto w = prog.run();
-  //   auto b = ok(w);
+  //   auto s = prog.start();
+  //   if (ok(s)) {
+  //      if (prog.stream() >> payload) {
+  //        if (stream.eof()) {
+  //           ...good...   (payload contains the whole slurp)
+  //        } else {
+  //           ...ungood... (the stream has failed or there is still more out there in the pipe...)
+  //      }
+  //   } else {
+  //     auto ec = error_code(s);   ...can't start...
+  //   }
+  //   auto w = run.wait();
+  //   if (ok(w)) {
+  //      ...ok...
+  //   } else {
+  //      auto ec = error_code(w);
+  //      ...there was some problem...
+  //   }
+  //
   //
   template<> class Peer<std::string>;
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.run.Loader.Call
-#import hyperledger.fabric.peer.chaincode.Call
+#import hyperledger.fabric.run.peer.Basis
 #import want.run.Piped_From
-template<> class hyperledger::fabric::run::Peer<std::string> : public want::run::Piped_From, private Loader<peer::chaincode::Call> {
-  struct ancestors {
-    using Runner = want::run::Piped_From;
-    using Loader = run::Loader<peer::chaincode::Call>;
-  };
+template<> class hyperledger::fabric::run::Peer<std::string> : public peer::Basis<want::run::Piped_From> {
+  using ancestor = peer::Basis<want::run::Piped_From>;
 public:
-  using Context = peer::chaincode::Call;
-  inline explicit Peer(Context const &);
+  inline explicit Peer(Context const &context) : ancestor{context} { }
 };
-#endiv
-#divert <ipp>
-hyperledger::fabric::run::Peer<std::string>::Peer(Context const &context)
-  : ancestors::Runner{EXECP, "peer"} {
-  ancestors::Loader::load(ancestors::Runner::args, context);
-}
 #endiv

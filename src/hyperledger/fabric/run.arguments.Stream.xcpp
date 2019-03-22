@@ -1,0 +1,79 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import std.size_t
+namespace hyperledger::fabric::run::arguments {
+  //
+  // The count-safe stream
+  //
+  //   Arguments &lhs = ...somehow...;
+  //   Stream<2>{lhs} << "--file" << filename;
+  //   Stream<1>{lhs} << "--tls";
+  //
+  struct [[nodiscard]] Null { };
+  template<std::size_t N> class Stream;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.Arguments
+#import hyperledger.fabric.time.Duration
+#import std.filesystem.path
+#import std.string
+namespace hyperledger::fabric::run::arguments {
+  template<typename TYPE> inline auto operator<<(Null, TYPE const &) -> void = delete;
+  template<typename TYPE> inline auto operator<<(Stream<0>, TYPE const &) -> Null;
+  template<std::size_t N, typename TYPE> inline auto operator<<(Stream<N>, TYPE const &) -> Stream<N-1>;
+  template<typename TYPE> inline auto push_back(Arguments &, TYPE const &) -> void; // a candidate for specialization
+  template<typename INTEGER, typename RATIO> inline auto push_back(Arguments &, std::chrono::duration<INTEGER,RATIO> const &) -> void;
+  template<> inline auto push_back(Arguments &, time::Duration const &) -> void;
+  template<> inline auto push_back(Arguments &, std::filesystem::path const &) -> void;
+  template<> inline auto push_back(Arguments &, std::string const &) -> void;
+  inline auto push_back(Arguments &, char const *) -> void;
+  template<std::size_t N> inline auto push_back(Arguments &, char const (&)[N]) -> void;
+}
+#import std.to_string
+namespace hyperledger::fabric::run::arguments::packaging::to_string::function {
+  using std::to_string; // and ADL must locate the others
+}
+namespace hyperledger::fabric::run {
+  template<std::size_t N> class arguments::Stream {
+    struct Enabled_If { };
+  public:
+    inline explicit Stream(Arguments &);
+    inline explicit Stream(Stream<N+1>);
+    template<typename TYPE> inline auto receive(TYPE const &) -> void; // Avoid push_back(...) having to be a friend; whereas friend-function-template-of-class-template is fraught.
+  protected:
+    template<std::size_t> friend class Stream;
+    Arguments &receiver;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::run {
+  template<typename TYPE> auto arguments::operator<<(Stream<0>, TYPE const &) -> Null {
+    return Null{};
+  }
+  template<std::size_t N, typename TYPE> auto arguments::operator<<(Stream<N> s, TYPE const &t) -> Stream<N-1> {
+    s.receive(t);
+    return Stream<N-1>{s};
+  }
+  template<typename TYPE> auto arguments::push_back(Arguments &lhs, TYPE const &rhs) -> void {
+    // ADL will find to_string(...) in its natural habitat
+    // If there are problems with that then specialize push_back(...)
+    using namespace packaging::to_string::function;
+    push_back(lhs, to_string(rhs));
+  }
+  template<typename INTEGER, typename RATIO> auto arguments::push_back(Arguments &lhs, std::chrono::duration<INTEGER,RATIO> const &rhs) -> void { lhs.push_back(std::to_string(rhs.count())); }
+  template<> auto arguments::push_back(Arguments &lhs, std::filesystem::path const &rhs) -> void { lhs.push_back((std::string) rhs); }
+  template<> auto arguments::push_back(Arguments &lhs, std::string const &rhs) -> void { lhs.push_back(rhs); }
+  auto arguments::push_back(Arguments &lhs, char const *rhs) -> void { lhs.push_back(rhs); }
+  template<std::size_t N> auto arguments::push_back(Arguments &lhs, char const (&rhs)[N]) -> void { lhs.push_back(rhs); }
+}
+namespace hyperledger::fabric::run::arguments {
+  template<std::size_t _> Stream<_>::Stream(Arguments &receiver) : receiver{receiver} { }
+  template<std::size_t N> Stream<N>::Stream(Stream<N+1> source) : receiver{source.receiver} { }
+  template<std::size_t _> template<typename TYPE> auto Stream<_>::receive(TYPE const &value) -> void {
+    push_back(receiver, value);
+  }
+}
+#endiv

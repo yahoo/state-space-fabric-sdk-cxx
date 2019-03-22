@@ -1,0 +1,39 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer {
+  //
+  // The generalized Hyperledger Fabric Peer context
+  // Descendants only.
+  //
+  // Commonalities among very possible hyperledger fabric peer subcommand.
+  // e.g. tls client auth [[FIXME]] this still actually in order::Contact and peers::Contact
+  //      connection timeout
+  //
+  // Usage:
+  //
+  //   rly?
+  //
+  class Context;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.Context
+#import hyperledger.fabric.orderer.Contact
+#import hyperledger.fabric.time.Duration
+#import std.optional
+class hyperledger::fabric::peer::Context : public fabric::Context {
+protected:
+  ~Context() = default;
+public:
+  Context() = default;
+  std::optional<time::Duration> connection_timeout;
+  // --transient?  what's that for?
+  //
+  // n.b. the peers field is not here, but rather in grand-child descendants (e.g. chaincode::Call)
+  //      because not eery peer subcommand or every 'peer chaincode' subcommand uses a peer set.
+  // n.b. the orderers field is optional (for now) because some descendants don't need it but *can* support it if it is given.
+  //      Of course, either the orderer or the peers must be specified for any non-local operation.
+  std::optional<orderer::Contact> orderer;
+};
+#endiv

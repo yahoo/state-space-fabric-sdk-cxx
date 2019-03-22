@@ -1,0 +1,9 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.run.loader.Compare
+#import hyperledger.fabric.run.loader.Compare.optional
+#import hyperledger.fabric.pki.Triple.Compare
+#import hyperledger.fabric.pki.Triple.Compare.vector.byte
+#import hyperledger.fabric.tls.Client.Compare
+#endiv

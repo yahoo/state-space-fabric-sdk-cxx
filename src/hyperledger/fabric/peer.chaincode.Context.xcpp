@@ -10,18 +10,12 @@ namespace hyperledger::fabric::peer::chaincode {
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.Context
-#import hyperledger.fabric.orderer.Contact
-#import hyperledger.fabric.time.Duration
-#import hyperledger.fabric.tls.Endpoint
-#import std.optional
-class hyperledger::fabric::peer::chaincode::Context : public fabric::Context {
+#import hyperledger.fabric.peer.Context
+class hyperledger::fabric::peer::chaincode::Context : public peer::Context {
   using ancestor = fabric::Context;
 protected:
   ~Context() = default;
 public:
-  std::optional<orderer::Contact> orderer;
-  std::optional<time::Duration> connection_timeout;
-  // --transient?  what's that for?
+  // No fields specific to chaincode and common to all chaincode subcommands?
 };
 #endiv

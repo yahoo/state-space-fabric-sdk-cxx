@@ -1,0 +1,87 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#import hyperledger.fabric.Success
+#import hyperledger.fabric.run.Chaincode
+namespace hyperledger::fabric::run::chaincode {
+  //
+  // The Hyperledger Fabric peer(1) program, chaincode subcommand.
+  // Descendants only.  Everything is set up here to avoid cut & paste in the descendant.
+  //
+  // That Curiously-Recurring Template Pattern!
+  // RUNNER is run::Runner or run::Pipe_From
+  //
+  // Usage:
+  //
+  //   see run.Chaincode<TYPE>
+  //
+  template<typename RUNNER> class Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.run.Loader.fabric.Context
+#import hyperledger.fabric.run.Loader.peer.Context
+#import hyperledger.fabric.run.Loader.chaincode.Context
+#import hyperledger.fabric.run.Loader.Call
+#import hyperledger.fabric.run.Loader.Orderer
+#import hyperledger.fabric.run.Loader.Peers
+#import hyperledger.fabric.run.Loader.Client
+#import hyperledger.fabric.peer.chaincode.Call
+#import want.run.Piped_From
+template<typename RUNNER> class hyperledger::fabric::run::chaincode::Basis
+  : public RUNNER,
+    private Loader<fabric::Context>,
+    private Loader<peer::Context>,
+    private Loader<peer::chaincode::Context>,
+    private Loader<peers::Contact>,
+    private Loader<orderer::Contact>,
+    private Loader<tls::Client>,
+    private Loader<peer::chaincode::Call> {
+  struct ancestors {
+    using Runner = RUNNER;
+    struct loaders {
+      using Fabric = run::Loader<peer::chaincode::Context>;
+      using Peer = run::Loader<peer::Context>;
+      using Chaincode = run::Loader<peer::chaincode::Context>;
+      using Call = run::Loader<peer::chaincode::Call>;
+      using Client = run::Loader<tls::Client>;
+      using Peers = run::Loader<peers::Contact>;
+      using Orderer = run::Loader<orderer::Contact>;
+    };
+  };
+public:
+  using Context = peer::chaincode::Call;
+protected:
+  ~Basis() = default;
+  inline explicit Basis(Context const &);
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Code
+#import hyperledger.fabric.run.loader.are_the_same
+#import std.error_code
+template<typename _> hyperledger::fabric::run::chaincode::Basis<_>::Basis(Context const &context)
+  : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
+  auto &arguments = ancestors::Runner::args;
+  using ld = typename ancestors::loaders;
+  ld::Fabric::load(arguments, context);
+  ld::Peer::load(arguments, context);
+  ld::Chaincode::load(arguments, context);
+  ld::Call::load(arguments, context);
+  ld::Peers::load(arguments, context.peers.endpoints);
+  if (context.peers.client) {
+    ld::Client::load(arguments, *context.peers.client);
+  }
+  // Confounding is wnen both the orderer and the peers are supplied
+  // This can, at best result in consistency; and at worst in a configuration exception
+  if (context.orderer) {
+    ld::Orderer::load(arguments, context.orderer->endpoint);
+    // And thus, arguably, the client field should be factored out of orderer::Contact and peers::Contact
+    // ... but then the Contact classes would be "incomplete" in the sense of underspecifying the recipe for contacting the service.
+    // ... but it is also ill-posed to specify the order *and* the peers in the same call.
+    if (!loader::are_the_same(context.orderer->client, context.peers.client)) {
+      throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
+    }
+  }
+}
+#endiv

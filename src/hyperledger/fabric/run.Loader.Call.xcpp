@@ -5,23 +5,28 @@
 #import hyperledger.fabric.peer.chaincode.Call
 namespace hyperledger::fabric::run {
   //
-  // Loader for the 'peer chaincode' subcommands.
+  // The (arguments) Loader for the "call" subcommands of 'peer chaincode'
+  // e.g. 'peer chaincode query' and 'peer chaincode invoke'
   //
   template<> class Loader<peer::chaincode::Call>;
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.run.Loadable
-template<> struct hyperledger::fabric::run::Loader<hyperledger::fabric::peer::chaincode::Call> : public Loadable {
+#import hyperledger.fabric.run.loader.Basis
+template<> struct hyperledger::fabric::run::Loader<hyperledger::fabric::peer::chaincode::Call> : public loader::Basis {
   using Source = peer::chaincode::Call;
 protected:
   ~Loader() = default;
   Loader() = default;
-  auto load(Arguments &lhs, Source const &rhs) -> void;
+  inline auto load(Arguments &lhs, Source const &rhs) -> void;
 };
 #endiv
-#divert <cpp>
+#divert <ipp>
 auto hyperledger::fabric::run::Loader<hyperledger::fabric::peer::chaincode::Call>::load(Arguments &lhs, Source const &rhs) -> void {
-#warning WRITETHIS hyperledger::fabric::run::Loader<peer::chaincode::Call>::Loader(...)
+  push_back<2>(lhs) << "--channelID" << rhs.channelID;
+  push_back<2>(lhs) << "--name" << rhs.name;
+  if (rhs.profile) {
+    push_back<2>(lhs) << "--connectionProfile" << *rhs.profile;
+  }
 }
 #endiv

@@ -24,6 +24,14 @@ check_bin_unit_SOURCES = \
   obj/src/tests/unit/pki.Fixture.cpp \
   obj/src/tests/unit/tls.Fixture.cpp \
   obj/src/tests/unit/want.Fixture.cpp \
+  obj/src/tests/unit/want.filesystem.Fixture.cpp \
+  obj/src/tests/unit/want.filesystem.dequote.Fixture.cpp \
+  obj/src/tests/unit/want.format.Fixture.cpp \
+  obj/src/tests/unit/want.format.dq.Fixture.cpp \
+  obj/src/tests/unit/want.run.Fixture.cpp \
+  obj/src/tests/unit/want.run.Fixture.Runner.cpp \
+  obj/src/tests/unit/want.run.Fixture.Piped_From.cpp \
+  obj/src/tests/unit/want.run.Fixture.Piped_To.cpp \
   $(end)
 $(scold_cxxdir)/tests/unit/dependencies.mk:
 	$(TF_V_DIS) $(call TF_DISAGGREGATE, $(check_bin_unit_SOURCES))

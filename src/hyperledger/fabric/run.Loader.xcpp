@@ -13,4 +13,5 @@ namespace hyperledger::fabric::run {
   //
   template<typename ARGUMENT> class Loader;
 }
+#import hyperledger.fabric.run.loader.Compare.ALL // all specializations may need any of these
 #endiv
