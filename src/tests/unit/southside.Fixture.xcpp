@@ -1,0 +1,82 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::southside { class Fixture; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+class tests::unit::southside::Fixture : public cppunit::test::Fixture {
+public:
+  auto test_ok() -> void;
+  auto test_hack_the_spew_case_01() -> void;
+  auto test_hack_the_spew_case_02() -> void;
+  auto test_hack_the_spew_case_03() -> void;
+  static auto suite() -> cppunit::Test *;
+private:
+  auto contains_only(std::string const &candidate, char match) -> bool;
+};
+#endiv
+#divert <cpp>
+#import std.string_literals
+using namespace std::string_literals;
+#import std.all_of
+auto tests::unit::southside::Fixture::contains_only(std::string const &candidate, char match) -> bool {
+  return std::all_of(candidate.begin(), candidate.end(), [match](char each) { return each == match; });
+}
+#import hyperledger.fabric.southside.Code
+auto tests::unit::southside::Fixture::test_ok() -> void {
+  using ::hyperledger::fabric::southside::Code;
+  CPPUNIT_ASSERT(!ok(Code::FAIL));
+  CPPUNIT_ASSERT(ok(Code::OK));
+}
+#import hyperledger.fabric.southside.hack_the_spew
+auto tests::unit::southside::Fixture::test_hack_the_spew_case_01() -> void {
+  using namespace ::hyperledger::fabric::southside;
+  auto const specimen = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
+                         R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:"Universal Declaration of the Rights of Man")spew"s);
+  auto [c, p] = hack_the_spew(specimen);
+  CPPUNIT_ASSERT(ok(c));
+  auto const expected = "Universal Declaration of the Rights of Man"s;
+  auto const actual = std::move(p);
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+auto tests::unit::southside::Fixture::test_hack_the_spew_case_02() -> void {
+  using namespace ::hyperledger::fabric::southside;
+  auto const specimen = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
+                         R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:000 payload:"Universal Declaration of the Rights of Man")spew"s);
+  auto [c, p] = hack_the_spew(specimen);
+  CPPUNIT_ASSERT(!ok(c));
+}
+auto tests::unit::southside::Fixture::test_hack_the_spew_case_03() -> void {
+  using namespace ::hyperledger::fabric::southside;
+  auto specimen = []() {
+                    auto basis = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
+                                  R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:000 payload:)spew"s);
+                    basis +='"';
+                    for (auto i{0}, e{10000}; e != i; ++i) { basis += 'A'; }
+                    basis +='"';
+                    return std::move(basis);
+                  }();
+  auto [c, p] = hack_the_spew(specimen);
+  CPPUNIT_ASSERT(ok(c));
+  CPPUNIT_ASSERT(contains_only(p, 'A'));
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::southside::Fixture::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("southside");
+  series << call("ok", &Fixture::test_ok)
+    ;
+  {
+    Stream hac("hack_the_spew");
+    hac << call("01", &Fixture::test_hack_the_spew_case_01)
+        << call("02", &Fixture::test_hack_the_spew_case_02)
+        << call("03", &Fixture::test_hack_the_spew_case_03)
+      ;
+  }
+  return series.release();
+}
+#endiv

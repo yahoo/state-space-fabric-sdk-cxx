@@ -29,15 +29,15 @@ auto tests::unit::ip::Fixture::test_Port() -> void {
   CPPUNIT_ASSERT(2u == (unsigned) p1);
 }
 #import hyperledger.fabric.ip.Host
-#import hyperledger.fabric.ip.Visitor
+#import hyperledger.fabric.ip.host.Visitor
 auto tests::unit::ip::Fixture::test_Host() -> void {
   using namespace ::hyperledger::fabric::ip;
   Host subject;
   subject = host::Name{"localhost"};
-  auto visitor = Visitor{[](host::Uninterpreted const &) -> void { CPPUNIT_ASSERT(false); },
-                         [](host::Name const &) -> void { CPPUNIT_ASSERT(true); },
-                         [](host::Address4 const &) -> void { CPPUNIT_ASSERT(false); },
-                         [](host::Address6 const &) -> void { CPPUNIT_ASSERT(false); }};
+  auto visitor = host::Visitor{[](host::Uninterpreted const &) -> void { CPPUNIT_ASSERT(false); },
+                               [](host::Name const &) -> void { CPPUNIT_ASSERT(true); },
+                               [](host::Address4 const &) -> void { CPPUNIT_ASSERT(false); },
+                               [](host::Address6 const &) -> void { CPPUNIT_ASSERT(false); }};
   std::visit(visitor, subject);
   auto const expected = "localhost"s;
   {

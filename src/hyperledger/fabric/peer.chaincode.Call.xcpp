@@ -6,8 +6,7 @@ namespace hyperledger::fabric::peer::chaincode {
   // The context for the subcommands
   //   peer chaincode query
   //   peer chaincode invoke
-  // Descendants only
-  //
+   //
   class Call;
 }
 #endiv
@@ -17,10 +16,7 @@ namespace hyperledger::fabric::peer::chaincode {
 #import std.string
 class hyperledger::fabric::peer::chaincode::Call : public chaincode::Context {
   using ancestor = chaincode::Context;
-protected:
-  ~Call() = default;
 public:
-  Call();
   peers::Contact peers;
   std::optional<std::string> profile; // a.k.a. --connectionProfile ... something about how to find peers from a local (yaml) file.
   std::string channelID; //              a.k.a. -C, --channelId

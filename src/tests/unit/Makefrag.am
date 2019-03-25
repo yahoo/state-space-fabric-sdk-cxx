@@ -2,6 +2,7 @@
 # Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 check_bin_unit = check/bin/unit
 check_bin_unit_LDADD = \
+  $(lib_libhyperledger_fabric_la) \
   $(lib_libwant_la) \
   -ltunitas \
   -lrigging-bench-module \
@@ -22,6 +23,7 @@ check_bin_unit_SOURCES = \
   obj/src/tests/unit/peer.Fixture.cpp \
   obj/src/tests/unit/peers.Fixture.cpp \
   obj/src/tests/unit/pki.Fixture.cpp \
+  obj/src/tests/unit/southside.Fixture.cpp \
   obj/src/tests/unit/tls.Fixture.cpp \
   obj/src/tests/unit/want.Fixture.cpp \
   obj/src/tests/unit/want.filesystem.Fixture.cpp \

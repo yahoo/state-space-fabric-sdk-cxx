@@ -43,6 +43,8 @@ public:
 protected:
   ~Basis() = default;
   inline explicit Basis(Context const &);
+  struct tests { struct Access; };
+  friend struct tests::Access;
 };
 #endiv
 #divert <ipp>

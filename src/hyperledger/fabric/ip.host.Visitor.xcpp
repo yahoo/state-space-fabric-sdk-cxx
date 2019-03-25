@@ -3,19 +3,19 @@
 #divert <fpp>
 #if 0
 POUND import tunitas.Visitor
-namespace hyperledger::fabric::ip {
+namespace hyperledger::fabric::ip::host {
   using tunitas::Visitor; // [[FIXTHIS]] tunitas-basics >= 1.8 maybe?
 }
 #elif 0
 POUND import nonstd.Visitor
-namespace hyperledger::fabric::ip {
+namespace hyperledger::fabric::ip::host {
   using nonstd::Visitor; // not available until the module-nonstd-devel >= 0.2 era
 }
 #else
 #import std.variant
-namespace hyperledger::fabric::ip {
+namespace hyperledger::fabric::ip::host {
   //
-  // The generic "visitor"
+  // The generic "visitor" constructor
   // As exhibited in https://en.cppreference.com/w/cpp/utility/variant/visit
   //
   // The envisioned usage is, of course, with ip::Host.

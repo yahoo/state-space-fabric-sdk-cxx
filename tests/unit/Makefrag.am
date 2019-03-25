@@ -8,6 +8,7 @@ tests_unit_TESTS = \
   tests/unit/peer.test \
   tests/unit/peers.test \
   tests/unit/pki.test \
+  tests/unit/southside.test \
   tests/unit/tls.test \
   tests/unit/want.test \
   \

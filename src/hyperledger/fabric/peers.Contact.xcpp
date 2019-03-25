@@ -3,11 +3,10 @@
 #divert <fpp>
 namespace hyperledger::fabric::peers {
   //
-  // How to contact the peers (a peer)
+  // How to contact the peers (one or more peers)
   //
   // Used in aggregation in a final Context by descent from the nearby chaincode::Call
-  // e.g. peer::chaincode::Invoke
-  //      peer::chaincode::Query
+  // e.g. peer::chaincode::Call
   //
   struct Contact;
 }

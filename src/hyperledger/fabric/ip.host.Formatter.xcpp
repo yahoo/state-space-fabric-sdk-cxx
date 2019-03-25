@@ -40,7 +40,7 @@ auto hyperledger::fabric::ip::host::to_string(Formatter const &ff) -> std::strin
   buf << ff;
   return buf.str();
 }
-#import hyperledger.fabric.ip.Visitor
+#import hyperledger.fabric.ip.host.Visitor
 #import std.visit
 #import std.basic_string_view
 namespace hyperledger::fabric::ip {
@@ -49,10 +49,10 @@ namespace hyperledger::fabric::ip {
      using View = std::basic_string_view<CHAR, TRAITS>;
      // [[FIXTHIS]] will this trickery work to widen the narrow characters of the names out to the wideness of CHAR?  Is there more to it? [surely]  o.widen(c)
      // [[FIXTHIS]] need codecvt or such?  Recipe?
-     auto visitor = Visitor{[&o](host::Uninterpreted const &name) -> Result { return o << View{name.data(), name.size()}; },
-                            [&o](host::Name const &name) -> Result { return o << View{name.data(), name.size()}; },
-                            [&o](host::Address4 const &name) -> Result { return o << View{name.data(), name.size()}; }, //  [[FIXTHIS]] when Address4 is not hacked as a string
-                            [&o](host::Address6 const &name) -> Result { return o << View{name.data(), name.size()}; }}; // [[FIXTHIS]] when Address6 is not hacked as a string
+     auto visitor = host::Visitor{[&o](host::Uninterpreted const &name) -> Result { return o << View{name.data(), name.size()}; },
+                                  [&o](host::Name const &name) -> Result { return o << View{name.data(), name.size()}; },
+                                  [&o](host::Address4 const &name) -> Result { return o << View{name.data(), name.size()}; }, //  [[FIXTHIS]] when Address4 is not hacked as a string
+                                  [&o](host::Address6 const &name) -> Result { return o << View{name.data(), name.size()}; }}; // [[FIXTHIS]] when Address6 is not hacked as a string
      return std::visit(visitor, f.value);
   }
 }

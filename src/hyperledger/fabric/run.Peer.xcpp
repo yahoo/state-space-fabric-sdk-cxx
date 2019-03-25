@@ -8,7 +8,7 @@ namespace hyperledger::fabric::run {
   //
   // Usage:
   //
-  //   peer::chaincode::Query context{...somehow...};
+  //   peer::chaincode::Call context{...somehow...};
   //   Peer<Success> prog{context};
   //
   //   auto prog.start();

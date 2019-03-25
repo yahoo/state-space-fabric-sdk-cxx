@@ -2,9 +2,9 @@
 // Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 #divert <hpp>
 #import hyperledger.fabric.peer.chaincode.call
-#import hyperledger.fabric.peer.chaincode.Query
+#import hyperledger.fabric.peer.chaincode.Call
 #import hyperledger.fabric.peer.chaincode.required.Result
-#import hyperledger.fabric.Success;
+#import hyperledger.fabric.Success
 #import std.string
 #import std.get
 namespace hyperledger::fabric::peer::chaincode {
@@ -32,29 +32,29 @@ namespace hyperledger::fabric::peer::chaincode {
   //
   namespace packaging::query::function {
     using packaging::call::function::call;
-    using packaging::call::function::INVOKE;
-    auto query(Query &, std::string const &constructor) -> Outcome<std::string>;
-    template<required::Result RESULT> auto query(Query &, std::string const &constructor) -> Outcome<RESULT>;
-    template<> auto query<literal::Success>(Query &, std::string const &constructor) -> Success;
-    template<> auto query<bool>(Query &, std::string const &constructor) -> Outcome<bool>;
-    template<> auto query<std::string>(Query &, std::string const &constructor) -> Outcome<std::string>;
+    using packaging::call::function::QUERY;
+    auto query(Call &, std::string const &constructor) -> Outcome<std::string>;
+    template<required::Result RESULT> auto query(Call &, std::string const &constructor) -> Outcome<RESULT>;
+    template<> auto query<literal::Success>(Call &, std::string const &constructor) -> Success;
+    template<> auto query<bool>(Call &, std::string const &constructor) -> Outcome<bool>;
+    template<> auto query<std::string>(Call &, std::string const &constructor) -> Outcome<std::string>;
   }
   using packaging::query::function::query;
 }
 #endiv
 #divert <ipp>
 namespace hyperledger::fabric::peer::chaincode::packaging::query {
-  auto function::query(Query &c, std::string const &n) -> Outcome<std::string> {
-    return call<std::string>(INVOKE, c, n); // call the specialization of the same return type
+  auto function::query(Call &c, std::string const &n) -> Outcome<std::string> {
+    return call<std::string>(QUERY, c, n); // call the specialization of the same return type
   }
-  template<> auto function::query<literal::Success>(Query &c, std::string const &n) -> Success {
-    return call<literal::Success>(INVOKE, c, n);
+  template<> auto function::query<literal::Success>(Call &c, std::string const &n) -> Success {
+    return call<literal::Success>(QUERY, c, n);
   }
-  template<> auto function::query<bool>(Query &c, std::string const &n) -> Outcome<bool> {
-    return call<bool>(INVOKE, c, n);
+  template<> auto function::query<bool>(Call &c, std::string const &n) -> Outcome<bool> {
+    return call<bool>(QUERY, c, n);
   }
-  template<> auto function::query<std::string>(Query &c, std::string const &n) -> Outcome<std::string> {
-    return call<std::string>(INVOKE, c, n);
+  template<> auto function::query<std::string>(Call &c, std::string const &n) -> Outcome<std::string> {
+    return call<std::string>(QUERY, c, n);
   }
 }
 #endiv

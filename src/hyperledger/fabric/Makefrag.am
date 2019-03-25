@@ -42,7 +42,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/ip.port.Formatter.cpp \
   obj/src/hyperledger/fabric/ip.Host.cpp \
   obj/src/hyperledger/fabric/ip.host.Formatter.cpp \
-  obj/src/hyperledger/fabric/ip.Visitor.cpp \
+  obj/src/hyperledger/fabric/ip.host.Visitor.cpp \
   obj/src/hyperledger/fabric/ip.Endpoint.cpp \
   obj/src/hyperledger/fabric/ip.endpoint.Formatter.cpp \
   obj/src/hyperledger/fabric/ip.Endpoints.cpp \
@@ -61,9 +61,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/peer.chaincode.required.Is_Result.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.required.Result.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.Context.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Query.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.query.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Invoke.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.invoke.cpp \
   \
   obj/src/hyperledger/fabric/pki.required.Triplet.cpp \
@@ -100,6 +98,9 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/run.Peer.string.cpp \
   obj/src/hyperledger/fabric/run.Peer.ALL.cpp \
   obj/src/hyperledger/fabric/run.peer.Basis.cpp \
+  \
+  obj/src/hyperledger/fabric/southside.Code.cpp \
+  obj/src/hyperledger/fabric/southside.hack_the_spew.cpp \
   \
   obj/src/hyperledger/fabric/time.Clock.cpp \
   obj/src/hyperledger/fabric/time.Duration.cpp \

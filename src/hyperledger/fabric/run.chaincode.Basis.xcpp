@@ -54,33 +54,37 @@ public:
 protected:
   ~Basis() = default;
   inline explicit Basis(Context const &);
+  struct tests { struct Access; };
+  friend struct tests::Access;
 };
 #endiv
 #divert <ipp>
 #import hyperledger.fabric.error.Code
 #import hyperledger.fabric.run.loader.are_the_same
 #import std.error_code
-template<typename _> hyperledger::fabric::run::chaincode::Basis<_>::Basis(Context const &context)
-  : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
-  auto &arguments = ancestors::Runner::args;
-  using ld = typename ancestors::loaders;
-  ld::Fabric::load(arguments, context);
-  ld::Peer::load(arguments, context);
-  ld::Chaincode::load(arguments, context);
-  ld::Call::load(arguments, context);
-  ld::Peers::load(arguments, context.peers.endpoints);
-  if (context.peers.client) {
-    ld::Client::load(arguments, *context.peers.client);
-  }
-  // Confounding is wnen both the orderer and the peers are supplied
-  // This can, at best result in consistency; and at worst in a configuration exception
-  if (context.orderer) {
-    ld::Orderer::load(arguments, context.orderer->endpoint);
-    // And thus, arguably, the client field should be factored out of orderer::Contact and peers::Contact
-    // ... but then the Contact classes would be "incomplete" in the sense of underspecifying the recipe for contacting the service.
-    // ... but it is also ill-posed to specify the order *and* the peers in the same call.
-    if (!loader::are_the_same(context.orderer->client, context.peers.client)) {
-      throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
+namespace hyperledger::fabric::run::chaincode {
+  template<typename _> Basis<_>::Basis(Context const &context)
+    : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
+    auto &arguments = ancestors::Runner::args;
+    using ld = typename ancestors::loaders;
+    ld::Fabric::load(arguments, context);
+    ld::Peer::load(arguments, context);
+    ld::Chaincode::load(arguments, context);
+    ld::Call::load(arguments, context);
+    ld::Peers::load(arguments, context.peers.endpoints);
+    if (context.peers.client) {
+      ld::Client::load(arguments, *context.peers.client);
+    }
+    // Confounding is wnen both the orderer and the peers are supplied
+    // This can, at best result in consistency; and at worst in a configuration exception
+    if (context.orderer) {
+      ld::Orderer::load(arguments, context.orderer->endpoint);
+      // And thus, arguably, the client field should be factored out of orderer::Contact and peers::Contact
+      // ... but then the Contact classes would be "incomplete" in the sense of underspecifying the recipe for contacting the service.
+      // ... but it is also ill-posed to specify the order *and* the peers in the same call.
+      if (!loader::are_the_same(context.orderer->client, context.peers.client)) {
+        throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
+      }
     }
   }
 }

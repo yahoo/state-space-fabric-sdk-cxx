@@ -8,6 +8,7 @@
 #import tests.unit.peer.Fixture
 #import tests.unit.peers.Fixture
 #import tests.unit.pki.Fixture
+#import tests.unit.southside.Fixture
 #import tests.unit.tls.Fixture
 #import tests.unit.want.Fixture
 #import rigging.bench.Main
@@ -20,6 +21,7 @@ auto main(int argc, char *argv[]) -> int {
                               tu::peer::Fixture::suite(),
                               tu::peers::Fixture::suite(),
                               tu::pki::Fixture::suite(),
+                              tu::southside::Fixture::suite(),
                               tu::tls::Fixture::suite(),
 			      tu::want::Fixture::suite());
   return remain(argc, argv);

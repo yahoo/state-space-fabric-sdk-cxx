@@ -1,0 +1,94 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import std.string
+#import std.tuple
+#import hyperledger.fabric.southside.Code
+namespace hyperledger::fabric::southside {
+  //
+  // Whereas the Hyperledger Fabric spews its payload
+  //
+  // Specimen (and yes, the ansi (vt100) escape codes to "be bold" are right there in the logfile output).
+  //
+  //   ESC[34m2019-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050
+  //   ESC[34m2019-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:"768" 
+  //
+  // Is the output less chatty with --raw?
+  //
+  // Folklore:
+  //
+  //    "Spew", Neal Stephenson, Wired, 1994-10-01, https://www.wired.com/1994/10/spew/
+  //   tl;dr → https://en.wikipedia.org/wiki/Hackers_(anthology)#%22Spew%22
+  //
+  //   "Stranger in a Strange Land," Robert A. Hinlein, 1961.
+  //   tl;dr → https://en.wikipedia.org/wiki/Grok
+  //
+  // The input is a std::string because we are grokking (to mix scifi writer neologisms) through a printed representation
+  // that we just read over a pipe.  This is not binary bytes, nor does it really have sound anchor points for parsing.
+  // Good luck to us.  
+  //
+  // Usage:
+  //
+  //   auto inbound_spewage = ...somehow...
+  //   auto [code, payload] = hack_the_spew(inbound_spewage);
+  //   if (ok(code)) {
+  //     ...use payload...
+  //   } else {
+  //     ...there was some error, and the payload is empty...
+  //   }
+  // 
+  namespace packaging::hack_the_spew::function {
+    using Result = std::tuple<Code, std::string>;
+    auto hack_the_spew(std::string const &) -> Result;
+  }
+  using packaging::hack_the_spew::function::hack_the_spew;
+}
+#endiv
+#divert <cpp>
+#import std.string_literals
+#import std.isdigit
+#import std.move
+#import std.stoi
+#import hyperledger.fabric.southside.Code
+auto hyperledger::fabric::southside::packaging::hack_the_spew::function::hack_the_spew(std::string const &specimen) -> Result try {
+  using namespace std::string_literals;
+  auto const RESULT = "result:"s;
+  auto const END = specimen.size();
+  auto const NPOS = std::string::npos;
+  auto result = specimen.find(RESULT);
+  auto code = Code::FAIL; // start at fail move prove success
+  if (NPOS != result) {
+    auto const STATUS = "status:"s;
+    auto status = specimen.find(STATUS, result+RESULT.size());
+    if (NPOS != status) {
+      std::string number;
+      for (auto i{status+STATUS.size()}, e{END}; e != i && std::isdigit(specimen.at(i)); ++i) {
+        number += specimen[i];
+      }
+      if (!number.empty()) {
+        code = Code{std::stoi(number)};
+        auto const PAYLOAD = "payload:"s;
+        auto payload = specimen.find(PAYLOAD, result+RESULT.size()+number.size());
+        if (NPOS != payload) {
+          std::string body;
+          auto quote1 = payload+PAYLOAD.size();
+          auto const QQ = '"';
+          auto i{1lu+quote1};
+          if (i < END && QQ == specimen.at(quote1)) {
+            for (auto const e{END} ; e != i && QQ != specimen.at(i); ++i) {
+              body += specimen.at(i);
+            }
+            if (i < END && QQ == specimen.at(i)) {
+              return Result{code, std::move(body)};
+            }
+          }
+        }
+      }
+    }
+  }
+  return Result{code, std::string{}};
+} catch (std::exception const &) {
+  // Whereas at least std::stoi(...) signals failure by throwing
+  return Result{Code::FAIL, std::string{}};
+}
+#endiv

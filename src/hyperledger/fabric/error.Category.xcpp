@@ -73,8 +73,10 @@ namespace hyperledger::fabric::error {
       return "could not run .../orderer";
     case Code::RUN_PEER:
       return "could not run .../peer";
-    case Code::TRANSMISSION:
-      return "transmission error"; // short read?  interrupted system call?
+    case Code::TRANSMISSION_INCOMPLETE:
+      return "transmission incomplete"; // short read?  interrupted system call?
+    case Code::TRANSMISSION_GARBLED:
+      return "transmission garbled"; // cannot find southbound meta-protocol; e.g. status=%d, payload="..."
     case Code::PAYLOAD_TOO_SHORT:
       return "payload is too short"; // short read?  internal length check botch?
     case Code::PAYLOAD_TOO_LONG:

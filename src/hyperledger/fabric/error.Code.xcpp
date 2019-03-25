@@ -43,7 +43,10 @@ namespace hyperledger::fabric::error {
       RUN_ORDERER,
       RUN_PEER,
       RUN_PEERS [[deprecated("instead use error::Code::RUN_PEER (singular)")]] = RUN_PEER,
-      TRANSMISSION,
+      //
+      // Problems with the transmission
+      TRANSMISSION_INCOMPLETE,
+      TRANSMISSION_GARBLED,
       //
       // Having received the data, something is wrong with it.
       //

@@ -63,19 +63,13 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
 #import std.error_code
 #import std.move
 #import hyperledger.fabric.run.Chaincode.ALL
+#import hyperledger.fabric.southside.hack_the_spew
+#import hyperledger.fabric.southside.Code
 namespace hyperledger::fabric::peer::chaincode::packaging::call {
   template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Success {
     using Result = Success;
     run::Chaincode<Success> prog{context};
     auto ran = prog.run();
-    //
-    // Specimen (and yes, the ansi (vt100) escape codes to "be bold" are right there in the logfile output).
-    //
-    //   ESC[34m2019-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050
-    //   ESC[34m2019-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:"768" 
-    //
-    // The output less chatty with --raw?
-    //
     if (ok(ran)) {
       return Result{SUCCESS};
     } else {
@@ -93,24 +87,28 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
     if (!ok(started)) {
       return badrun(error_code(started));
     }
-    std::string payload;
-    if (!(prog.stream() >> payload).eof()) {
+    std::string spew;
+    if (!(prog.stream() >> spew).eof()) {
       // If the stream is still good but not at EOF then a short read.
       // If the stream is bad or failed but not at EOF then there was a transmission error
-      return badness(!prog.stream() ? error::Code::TRANSMISSION : error::Code::PAYLOAD_TOO_SHORT);
+      return badness(!prog.stream() ? error::Code::TRANSMISSION_INCOMPLETE : error::Code::PAYLOAD_TOO_SHORT);
     }
     auto waited = prog.wait();
+    if (!ok(waited)) {
+      // Arguably this should not happen. We got a valid dpew of lines from teh service, but the wait(2) to clean up the process failed.
+      // We have a valid spew in hand. Why would we be best served by failling the call now?  Sure, do that.
+      return badrun(error_code(waited));
+    }
+    //
+    // Hack the spew.
     //
     // Specimen (eliding all the noise)
     //
     //    status:200 payload:"768" 
     //
-#warning WRITETHIS find the status
-#warning WRITETHIS find the payload
-    if (!ok(waited)) {
-      // Arguably this should not happen. We got a valid payload, but the wait(2) to clean up the process failed.
-      // We have a valid paylod in hand. Why would we be best served by failling the call now?  Sure, do that.
-      return badrun(error_code(waited));
+    auto [code, payload] = southside::hack_the_spew(spew);
+    if (southside::Code{200} != code) {
+      return badness(error::Code::TRANSMISSION_GARBLED);
     }
     return Result{std::move(payload)};
   }

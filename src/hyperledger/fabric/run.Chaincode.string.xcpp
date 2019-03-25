@@ -11,8 +11,7 @@ namespace hyperledger::fabric::run {
   //
   // Usage:
   //
-  //   auto context = Query{...};
-  //   auto context = Invoke{...};
+  //   auto context = Call{...};
   //   Program<std::string> prog{context};
   //   peer::Context const &context = ...somehow...;
   //   Program<std::string> prog{context};
