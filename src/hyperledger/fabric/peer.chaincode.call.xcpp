@@ -15,9 +15,11 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
 #import hyperledger.fabric.peer.chaincode.Call
 #import hyperledger.fabric.peer.chaincode.required.Result
 #import hyperledger.fabric.Success
+#import hyperledger.fabric.required.container.Push_Back
+#import std.byte
 #import std.string
+#import std.vector
 namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
-
   //
   // call(...) is an implementation detail of the chaincode operations.
   // invoke(...) - execute the chaincode (stored procedure) on the other side.
@@ -45,10 +47,15 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
   //      ...use the goodness...
   //   }
   //
-  template<required::Result RESULT> inline auto call(Function, Call &, std::string const &constructor) -> Outcome<RESULT>;
-  template<> auto call<literal::Success>(Function, Call &, std::string const &constructor) -> Outcome<literal::Success>;
+  template<required::Result RESULT> inline auto call(Function, Call &, std::string const &constructor) -> Outcome<RESULT> = delete;
+  // Only these specializations (only these make sense)
+  template<> inline auto call<literal::Success>(Function, Call &, std::string const &constructor) -> Outcome<literal::Success>;
   template<> inline auto call<bool>(Function, Call &, std::string const &constructor) -> Outcome<bool>;
-  template<> auto call<std::string>(Function, Call &, std::string const &constructor) -> Outcome<std::string>;
+  template<> inline auto call<std::string>(Function, Call &, std::string const &constructor) -> Outcome<std::string>;
+  template<> inline auto call<std::vector<std::byte>>(Function, Call &, std::string const &constructor) -> Outcome<std::vector<std::byte>>;
+  namespace detail {
+    template<fabric::required::container::Push_Back CONTAINER> auto heavy_lifting(Function, Call &, std::string const &constructor) -> Outcome<CONTAINER>;
+  }
 }
 #endiv
 #divert <ipp>
@@ -56,17 +63,19 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
   template<> auto function::call<bool>(Function f, Call &c, std::string const &n) -> Outcome<bool> {
     return ok(call<literal::Success>(f, c, n));
   }
+  template<> auto function::call<std::string>(Function f, Call &c, std::string const &n) -> Outcome<std::string> {
+    return detail::heavy_lifting<std::string>(f, c, n);
+  }
+  template<> auto function::call<std::vector<std::byte>>(Function f, Call &c, std::string const &n) -> Outcome<std::vector<std::byte>> {
+    return detail::heavy_lifting<std::vector<std::byte>>(f, c, n);
+  }
 }
-#endiv
-#divert <cpp>
 #import hyperledger.fabric.error.Code
 #import std.error_code
 #import std.move
 #import hyperledger.fabric.run.Chaincode.ALL
-#import hyperledger.fabric.southside.hack_the_spew
-#import hyperledger.fabric.southside.Code
 namespace hyperledger::fabric::peer::chaincode::packaging::call {
-  template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Success {
+  template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Outcome<literal::Success> {
     using Result = Success;
     run::Chaincode<Success> prog{context};
     auto ran = prog.run();
@@ -77,8 +86,14 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
       return Result{std::error_code{error::Code::CONTACT_PEERS}};
     }
   }
-  template<> auto function::call<std::string>(Function function, Call &context, std::string const &constructor) -> Outcome<std::string> {
-    using Result = Outcome<std::string>;
+}
+#endiv
+#divert <tpp>
+#import hyperledger.fabric.southside.hack_the_spew
+#import hyperledger.fabric.southside.Code
+namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
+  template<fabric::required::container::Push_Back CONTAINER> auto detail::heavy_lifting(Function function, Call &context, std::string const &constructor) -> Outcome<CONTAINER> {
+    using Result = Outcome<CONTAINER>;
     auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
     // Whatever the system-level reason, we're going to return Code::RUN_PEERS
     auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
@@ -106,7 +121,7 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
     //
     //    status:200 payload:"768" 
     //
-    auto [code, payload] = southside::hack_the_spew(spew);
+    auto [code, payload] = southside::hack_the_spew<CONTAINER>(spew);
     if (southside::Code{200} != code) {
       return badness(error::Code::TRANSMISSION_GARBLED);
     }

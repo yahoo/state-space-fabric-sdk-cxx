@@ -1,0 +1,23 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#if 0
+[[FIXTHIS]] This should be available as nonstd::required::container::Push_Back, but not until at least module-nonstd-devel >= 0.3.0
+IMPORT nonstd.required.container.Push_Back
+namespace hyperledger::fabric::required::container {
+  //
+  // Is this a container, that is appendable?
+  // Does it have a push_back(Value) member?
+  //
+  template<typename CONTAINER> concept bool Push_Back = nonstd::required::container::Push_Back<CONTAINER>;
+}
+#else
+#import nonstd.required.Container
+namespace hyperledger::fabric::required::container {
+  template<typename CONTAINER> concept bool Push_Back = nonstd::required::Container<CONTAINER> && requires(CONTAINER container) {
+    typename CONTAINER::value_type;
+    { container.push_back(typename CONTAINER::value_type{}) }
+  };
+}
+#endif
+#endiv

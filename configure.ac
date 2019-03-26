@@ -41,6 +41,7 @@ TF_WITH_SUBSYSTEM([temerarious-flagship], [], [The Tunitas Build System])
 TF_WITH_SUBSYSTEM([tunitas-basics], [], [The Tunitas Basics])
 
 # And mention these in $(DEVELOPMENT_AREAS) in Makefile.am
+dnl NO DEPENDENCY ON JSON ---> TF_WITH_MODULE([json]) <--- NO DEPENDENCY ON JSON
 TF_WITH_MODULE([nonstd])
 TF_WITH_MODULE([posix])
 TF_WITH_MODULE([std])
@@ -64,5 +65,7 @@ AM_PROG_CC_C_O
 TF_PROG_DC
 TF_CHECK_CPPUNIT
 TF_WITH_USR_LOCAL
+
+TF_CHECK_STD_FILESYSTEM dnl get @libstd_filesystem@ for Makefile.am
 
 TF_FINALIZE

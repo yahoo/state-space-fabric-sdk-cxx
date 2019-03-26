@@ -5,8 +5,10 @@
 #import hyperledger.fabric.peer.chaincode.Call
 #import hyperledger.fabric.peer.chaincode.required.Result
 #import hyperledger.fabric.Success
-#import std.string
+#import std.byte
 #import std.get
+#import std.string
+#import std.vector
 namespace hyperledger::fabric::peer::chaincode {
   //
   // The constructor is a JSON-formatted string which will be
@@ -34,10 +36,12 @@ namespace hyperledger::fabric::peer::chaincode {
     using packaging::call::function::call;
     using packaging::call::function::QUERY;
     auto query(Call &, std::string const &constructor) -> Outcome<std::string>;
-    template<required::Result RESULT> auto query(Call &, std::string const &constructor) -> Outcome<RESULT>;
-    template<> auto query<literal::Success>(Call &, std::string const &constructor) -> Success;
-    template<> auto query<bool>(Call &, std::string const &constructor) -> Outcome<bool>;
-    template<> auto query<std::string>(Call &, std::string const &constructor) -> Outcome<std::string>;
+    template<required::Result RESULT> auto query(Call &, std::string const &constructor) -> Outcome<RESULT> = delete;
+    // Only these specializations
+    template<> inline auto query<literal::Success>(Call &, std::string const &constructor) -> Success;
+    template<> inline auto query<bool>(Call &, std::string const &constructor) -> Outcome<bool>;
+    template<> inline auto query<std::string>(Call &, std::string const &constructor) -> Outcome<std::string>;
+    template<> inline auto query<std::vector<std::byte>>(Call &, std::string const &constructor) -> Outcome<std::vector<std::byte>>;
   }
   using packaging::query::function::query;
 }
@@ -55,6 +59,9 @@ namespace hyperledger::fabric::peer::chaincode::packaging::query {
   }
   template<> auto function::query<std::string>(Call &c, std::string const &n) -> Outcome<std::string> {
     return call<std::string>(QUERY, c, n);
+  }
+  template<> auto function::query<std::vector<std::byte>>(Call &c, std::string const &n) -> Outcome<std::vector<std::byte>> {
+    return call<std::vector<std::byte>>(QUERY, c, n);
   }
 }
 #endiv

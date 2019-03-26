@@ -4,6 +4,8 @@
 #import std.string
 #import std.tuple
 #import hyperledger.fabric.southside.Code
+#import hyperledger.fabric.required.container.Push_Back
+#import nonstd.required.Octet
 namespace hyperledger::fabric::southside {
   //
   // Whereas the Hyperledger Fabric spews its payload
@@ -38,57 +40,64 @@ namespace hyperledger::fabric::southside {
   //   }
   // 
   namespace packaging::hack_the_spew::function {
-    using Result = std::tuple<Code, std::string>;
-    auto hack_the_spew(std::string const &) -> Result;
+    template<required::container::Push_Back CONTAINER> using Result = std::tuple<Code, CONTAINER>;
+    template<required::container::Push_Back CONTAINER> auto hack_the_spew(std::string const &) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type>;
   }
   using packaging::hack_the_spew::function::hack_the_spew;
 }
 #endiv
-#divert <cpp>
+#divert <tpp>
 #import std.string_literals
 #import std.isdigit
 #import std.move
 #import std.stoi
 #import hyperledger.fabric.southside.Code
-auto hyperledger::fabric::southside::packaging::hack_the_spew::function::hack_the_spew(std::string const &specimen) -> Result try {
-  using namespace std::string_literals;
-  auto const RESULT = "result:"s;
-  auto const END = specimen.size();
-  auto const NPOS = std::string::npos;
-  auto result = specimen.find(RESULT);
-  auto code = Code::FAIL; // start at fail move prove success
-  if (NPOS != result) {
-    auto const STATUS = "status:"s;
-    auto status = specimen.find(STATUS, result+RESULT.size());
-    if (NPOS != status) {
-      std::string number;
-      for (auto i{status+STATUS.size()}, e{END}; e != i && std::isdigit(specimen.at(i)); ++i) {
-        number += specimen[i];
-      }
-      if (!number.empty()) {
-        code = Code{std::stoi(number)};
-        auto const PAYLOAD = "payload:"s;
-        auto payload = specimen.find(PAYLOAD, result+RESULT.size()+number.size());
-        if (NPOS != payload) {
-          std::string body;
-          auto quote1 = payload+PAYLOAD.size();
-          auto const QQ = '"';
-          auto i{1lu+quote1};
-          if (i < END && QQ == specimen.at(quote1)) {
-            for (auto const e{END} ; e != i && QQ != specimen.at(i); ++i) {
-              body += specimen.at(i);
-            }
-            if (i < END && QQ == specimen.at(i)) {
-              return Result{code, std::move(body)};
+namespace hyperledger::fabric::southside::packaging::hack_the_spew {
+  template<required::container::Push_Back CONTAINER> auto function::hack_the_spew(std::string const &specimen) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type> try {
+    using namespace std::string_literals;
+    using Octet = typename CONTAINER::value_type; // e.g. char or std::byte
+    auto const RESULT = "result:"s;
+    auto const END = specimen.size();
+    auto const NPOS = std::string::npos;
+    auto result = specimen.find(RESULT);
+    auto code = Code::FAIL; // start at fail move prove success
+    if (NPOS != result) {
+      auto const STATUS = "status:"s;
+      auto status = specimen.find(STATUS, result+RESULT.size());
+      if (NPOS != status) {
+        std::string number;
+        for (auto i{status+STATUS.size()}, e{END}; e != i && std::isdigit(specimen.at(i)); ++i) {
+          number += specimen[i];
+        }
+        if (!number.empty()) {
+          code = Code{std::stoi(number)}; // reminder: this thing throws to signal problems
+          auto const PAYLOAD = "payload:"s;
+          auto payload = specimen.find(PAYLOAD, result+RESULT.size()+number.size());
+          if (NPOS != payload) {
+            CONTAINER body;
+            auto quote1 = payload+PAYLOAD.size();
+            auto const QQ = '"';
+            auto i{1lu+quote1};
+            if (i < END && QQ == specimen.at(quote1)) {
+              for (auto const e{END} ; e != i && QQ != specimen.at(i); ++i) {
+#pragma GCC diagnostic push  // Octet{...} will warn; Octet(...) will not warn.  Either way, Make It Messy & Hard To Read
+#pragma GCC diagnostic ignored "-Wnarrowing"
+                auto const octet = Octet{specimen.at(i)};
+#pragma GCC diagnostic pop
+                body.push_back(octet);
+              }
+              if (i < END && QQ == specimen.at(i)) {
+                return Result<CONTAINER>{code, std::move(body)};
+              }
             }
           }
         }
       }
     }
+    return Result<CONTAINER>{code, CONTAINER{}};
+  } catch (std::exception const &) {
+    // Whereas at least std::stoi(...) signals failure by throwing
+    return Result<CONTAINER>{Code::FAIL, CONTAINER{}};
   }
-  return Result{code, std::string{}};
-} catch (std::exception const &) {
-  // Whereas at least std::stoi(...) signals failure by throwing
-  return Result{Code::FAIL, std::string{}};
 }
 #endiv

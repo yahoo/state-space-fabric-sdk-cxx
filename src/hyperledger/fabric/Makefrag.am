@@ -26,7 +26,15 @@ lib_libhyperledger_fabric_la_CRA = $(lib_libhyperledger_fabric_la_CURRENT):$(lib
 
 lib_libhyperledger_fabric_la = lib/libhyperledger-fabric.la
 lib_libhyperledger_fabric_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET) -version-info $(lib_libhyperledger_fabric_la_CRA)
-# NOT YET lib_libhyperledger_fabric_la_LIBADD = lib/libhyperledger-fabric-goblob.so
+# NOT YET lib_libhyperledger_fabric_la_LIBADD = lib/libhyperledger-fabric-goblob.so)
+# find the subsystem declarations in configure.ac driving the -l and -l*-module mentions
+lib_libhyperledger_fabric_la_LIBADD = \
+  $(lib_libwant_la) \
+  -ltunitas \
+  -lnonstd-module \
+  -lstring-module \
+  -lsys-posix-module \
+  $(end)
 lib_libhyperledger_fabric_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_la_SOURCES))
 lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/namespace.cpp \
@@ -71,6 +79,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   \
   obj/src/hyperledger/fabric/required.Character.cpp \
   obj/src/hyperledger/fabric/required.Character_Traits.cpp \
+  obj/src/hyperledger/fabric/required.container.Push_Back.cpp \
   \
   obj/src/hyperledger/fabric/run.Arguments.cpp \
   obj/src/hyperledger/fabric/run.arguments.Stream.cpp \

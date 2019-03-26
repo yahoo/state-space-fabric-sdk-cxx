@@ -4,6 +4,10 @@
 #import hyperledger.fabric.peer.chaincode.call
 #import hyperledger.fabric.peer.chaincode.Call
 #import hyperledger.fabric.peer.chaincode.required.Result
+#import std.byte
+#import std.get
+#import std.string
+#import std.vector
 namespace hyperledger::fabric::peer::chaincode {
   //
   // invoke(...) the chaincode (stored procedure) on the other side
@@ -35,10 +39,12 @@ namespace hyperledger::fabric::peer::chaincode {
     using packaging::call::function::call;
     using packaging::call::function::INVOKE;
     inline auto invoke(Call &, std::string const &constructor) -> Outcome<std::string>;
-    template<required::Result RESULT> inline auto invoke(Call &, std::string const &constructor) -> Outcome<RESULT>;
+    template<required::Result RESULT> auto invoke(Call &, std::string const &constructor) -> Outcome<RESULT> = delete;
+    // Only these specializations
     template<> inline auto invoke<literal::Success>(Call &, std::string const &constructor) -> Outcome<literal::Success>;
     template<> inline auto invoke<bool>(Call &, std::string const &constructor) -> Outcome<bool>;
     template<> inline auto invoke<std::string>(Call &, std::string const &constructor) -> Outcome<std::string>;
+    template<> inline auto invoke<std::vector<std::byte>>(Call &, std::string const &constructor) -> Outcome<std::vector<std::byte>>;
   }
   using packaging::invoke::function::invoke;
 }
@@ -56,6 +62,9 @@ namespace hyperledger::fabric::peer::chaincode::packaging::invoke {
   }
   template<> auto function::invoke<std::string>(Call &c, std::string const &n) -> Outcome<std::string> {
     return call<std::string>(INVOKE, c, n);
+  }
+  template<> auto function::invoke<std::vector<std::byte>>(Call &c, std::string const &n) -> Outcome<std::vector<std::byte>> {
+    return call<std::vector<std::byte>>(INVOKE, c, n);
   }
 }
 #endiv

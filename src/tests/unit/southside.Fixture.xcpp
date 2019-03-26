@@ -31,21 +31,32 @@ auto tests::unit::southside::Fixture::test_ok() -> void {
   CPPUNIT_ASSERT(ok(Code::OK));
 }
 #import hyperledger.fabric.southside.hack_the_spew
+#import std.transform
+#import std.back_inserter
+#import std.equal
+#import std.move
+#import std.vector
+#import std.byte
 auto tests::unit::southside::Fixture::test_hack_the_spew_case_01() -> void {
   using namespace ::hyperledger::fabric::southside;
   auto const specimen = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
                          R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:"Universal Declaration of the Rights of Man")spew"s);
-  auto [c, p] = hack_the_spew(specimen);
+  auto [c, p] = hack_the_spew<std::vector<std::byte>>(specimen);
   CPPUNIT_ASSERT(ok(c));
-  auto const expected = "Universal Declaration of the Rights of Man"s;
+  auto const expected = []() -> std::vector<std::byte> {
+    auto const specimen = "Universal Declaration of the Rights of Man"s;
+    std::vector<std::byte> ret;
+    std::transform(specimen.begin(), specimen.end(), std::back_inserter(ret), [](char c) { return std::byte(c); });
+    return std::move(ret);
+  }();
   auto const actual = std::move(p);
-  CPPUNIT_ASSERT_EQUAL(expected, actual);
+  CPPUNIT_ASSERT(std::equal(expected.begin(), expected.end(), actual.begin(), actual.end()));
 }
 auto tests::unit::southside::Fixture::test_hack_the_spew_case_02() -> void {
   using namespace ::hyperledger::fabric::southside;
   auto const specimen = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
                          R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:000 payload:"Universal Declaration of the Rights of Man")spew"s);
-  auto [c, p] = hack_the_spew(specimen);
+  auto [c, p] = hack_the_spew<std::vector<std::byte>>(specimen);
   CPPUNIT_ASSERT(!ok(c));
 }
 auto tests::unit::southside::Fixture::test_hack_the_spew_case_03() -> void {
@@ -58,7 +69,7 @@ auto tests::unit::southside::Fixture::test_hack_the_spew_case_03() -> void {
                     basis +='"';
                     return std::move(basis);
                   }();
-  auto [c, p] = hack_the_spew(specimen);
+  auto [c, p] = hack_the_spew<std::string>(specimen);
   CPPUNIT_ASSERT(ok(c));
   CPPUNIT_ASSERT(contains_only(p, 'A'));
 }
