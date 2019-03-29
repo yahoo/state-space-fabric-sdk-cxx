@@ -1,0 +1,30 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import hyperledger.fabric.tls.from_string
+#import hyperledger.fabric.tls.endpoints.Endpoint
+namespace hyperledger::fabric::tls {
+  //
+  // Extract an endpoint from the syntax
+  // The documentariat is with detail::get_hostport(...)
+  //
+  template<> inline auto from_string<endpoints::Endpoint>(std::string const &) -> Outcome<endpoints::Endpoint>;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.detail.get_hostport
+namespace hyperledger::fabric {
+  template<> auto tls::from_string<tls::endpoints::Endpoint>(std::string const &syntax) -> Outcome<endpoints::Endpoint> {
+    using Result = Outcome<endpoints::Endpoint>;
+    auto got = detail::get_hostport(syntax);
+    if (!ok(got)) {
+      return Result{error_code(got)};
+    } else {
+      auto &tup = value(got);
+      auto &host = std::get<0>(tup);
+      auto &port = std::get<1>(tup);
+      return Result{endpoints::Endpoint{std::move(host), std::move(port)}};
+    }
+  }
+}
+#endiv

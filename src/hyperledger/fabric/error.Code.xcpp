@@ -21,6 +21,14 @@ namespace hyperledger::fabric::error {
     { SUCCESS = (int) Condition::SUCCESS,
       FAILURE = (int) Condition::FAILURE,
       //
+      // Syntax errors in well known syntaxes
+      //
+      SYNTAX_HOST,      // domain name or numeric address
+      SYNTAX_PORT,      // 1.. 65535 decimal numbers
+      SYNTAX_ENDPOINT,  // host | host : port
+      SYNTAX_ENDPOINTS, // commalist of endpoint
+      BOUNDS_PORT,      // out of bounds 1.. 65535; e.g. zero or greater than 65535
+      //
       // Configuration failures, things are declaratively wrong
       //
       CONFIGURATION_TLS_SERVER,

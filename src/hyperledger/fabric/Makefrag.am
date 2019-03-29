@@ -45,7 +45,9 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/Success.cpp \
   obj/src/hyperledger/fabric/detail.Formatter.cpp \
   obj/src/hyperledger/fabric/detail.Endpoints.cpp \
- \
+  obj/src/hyperledger/fabric/detail.get_port.cpp \
+  obj/src/hyperledger/fabric/detail.get_hostport.cpp \
+  \
   obj/src/hyperledger/fabric/ip.Port.cpp \
   obj/src/hyperledger/fabric/ip.port.Formatter.cpp \
   obj/src/hyperledger/fabric/ip.Host.cpp \
@@ -81,6 +83,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/required.Character.cpp \
   obj/src/hyperledger/fabric/required.Character_Traits.cpp \
   obj/src/hyperledger/fabric/required.container.Push_Back.cpp \
+  obj/src/hyperledger/fabric/required.Endpointy.cpp \
   \
   obj/src/hyperledger/fabric/run.Arguments.cpp \
   obj/src/hyperledger/fabric/run.arguments.Stream.cpp \
@@ -126,6 +129,12 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/tls.endpoints.Endpoint.cpp \
   obj/src/hyperledger/fabric/tls.endpoints.Series.cpp \
   obj/src/hyperledger/fabric/tls.endpoints.series.Formatter.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.Endpoint.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.Endpoints.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.endpoints.Endpoint.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.Series.cpp \
+  obj/src/hyperledger/fabric/tls.from_string.ALL.cpp \
   $(end)
 $(scold_cxxdir)/hyperledger/fabric/dependencies.mk:
 	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libhyperledger_fabric_la_SOURCES))

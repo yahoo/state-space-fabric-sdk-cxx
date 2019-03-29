@@ -20,6 +20,7 @@ namespace hyperledger::fabric::tls {
 #divert <hpp>
 namespace hyperledger::fabric::tls {
   inline auto swap(Endpoints &, Endpoints &) noexcept -> void;
+  // see format(...), operator<<, to_string(...) against tls::endpoints::Series
 }
 #import hyperledger.fabric.tls.endpoints.Series
 #import hyperledger.fabric.Boolean

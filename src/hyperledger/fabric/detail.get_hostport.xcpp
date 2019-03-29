@@ -1,0 +1,84 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import hyperledger.fabric.Outcome
+#import hyperledger.fabric.ip.Host
+#import hyperledger.fabric.ip.Port
+#import std.tuple
+#import std.string
+namespace hyperledger::fabric::detail {
+  //
+  // Extract an endpoint from the syntax
+  //
+  // endpoint ::= DOMAIN | DOMAIN:PORT | ADDRESS | ADDRESS::PORT
+  //
+  // IPv4 Address                        192.0.2.1
+  // IPV4 Address with port number       192.0.2.1:7051
+  // IPv6 address                        2001:0db8:1
+  // IPv6 address with port number       [2001:0db8:2]:7051
+  //
+  // The DOMAIN need not be a FQDN, just anything that DNS can work with.
+  // The ADDRESS can be either IPv4 or IPv6.
+  // The trick is in identifying whether a port number is present or not.
+  //
+  // IPv4 - a port number is present if there is a colon
+  // IPv6 - a port number is present when the address has the squarebracket form
+  //
+  // Minimal integrity checking is done beyond separating the host and port (number).
+  // The port number is bounds-checked against the maximum port of 65535.
+  // The DNS lookupo will clarify the rest of that.
+  //
+  // This function is an implementation detail.
+  // See from_string<Endpoint>(...) or from_string<endpoitns::Endpoint>(...)
+  // Disassemble the success side with std::get<0>(...) and std::get<1>(...)
+  //
+  // Usage:
+  //
+  //   
+  namespace packaging::get_hostport::function {
+    using Host_Port = std::tuple<ip::Host, ip::Port>;
+    using Result = Outcome<Host_Port>;
+    inline auto get_hostport(std::string const &) -> Result;
+  }
+  using packaging::get_hostport::function::get_hostport;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.detail.get_port
+#import hyperledger.fabric.error.Code
+#import std.error_code
+auto hyperledger::fabric::detail::packaging::get_hostport::function::get_hostport(std::string const &syntax) -> Result {
+  auto const fail = []() { return Result{std::error_code{error::Code::SYNTAX_ENDPOINT}}; };
+  if (syntax.empty()) { return fail(); }
+  if ('[' == syntax.front()) {
+    auto const ket = syntax.find(']');
+    if (std::string::npos == ket) { return fail(); }
+    // With "[address]:port" the port is not optional
+    if (':' != syntax.at(1+ket)) { return fail(); }
+    auto ported = detail::get_port(syntax.substr(2+ket));
+    if (!ok(ported)) {
+      return Result{error_code(ported)};
+    } else {
+      return Result{Host_Port{ip::Host{syntax.substr(1, ket)}, value(ported)}};
+    }
+  } else {
+    // the ":port" syntax is optional here
+    auto const colon = syntax.rfind(':');
+    if (std::string::npos == colon) {
+      //
+      // WATCHOUT - weak checking here ... but we're avoiding going out to DNS.
+      // allows bogus domain names       e.g. "localhost:80:80"
+      // allows bogus addresses          e.g.  127.0.0.1000     or    2001::db8::::1
+      // 
+      return Result{Host_Port{syntax, ip::Port{}}};
+    } else {
+      auto ported = detail::get_port(syntax.substr(1+colon));
+      if (!ok(ported)) {
+        return Result{error_code(ported)};
+      } else {
+        return Result{Host_Port{ip::Host{syntax.substr(0, colon)}, value(ported)}};
+      }
+    }
+  }
+}
+#endiv

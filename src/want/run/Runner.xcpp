@@ -99,7 +99,7 @@ auto want::run::Runner::run() -> results::Run {
 }
 #import sys.posix.fork
 #import exit
-#import std.runtime_error;
+#import std.runtime_error
 auto want::run::Runner::start() -> results::Start {
   if (is_running()) {
     // This is a logic error really, because it means the programmer was operating the API sloppily

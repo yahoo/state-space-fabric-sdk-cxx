@@ -17,7 +17,7 @@ namespace hyperledger::fabric::tls::endpoints::series {
 }
 #endiv
 #divert <hpp>
-#import hyperledger.fabric.tls.endpoints::Series
+#import hyperledger.fabric.tls.endpoints.Series
 #import hyperledger.fabric.tls.Field
 namespace hyperledger::fabric::tls {
   namespace endpoints {

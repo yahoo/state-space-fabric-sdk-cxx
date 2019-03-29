@@ -16,7 +16,7 @@ public:
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.ip::Host
+#import hyperledger.fabric.ip.Host
 auto tests::unit::ip::host::Fixture::test_Uninterpreted() -> void {
   using namespace ::hyperledger::fabric::ip::host;
   Uninterpreted subject{"localhost"};

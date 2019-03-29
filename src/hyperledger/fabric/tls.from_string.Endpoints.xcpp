@@ -1,0 +1,33 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <hpp>
+#import hyperledger.fabric.tls.from_string
+#import hyperledger.fabric.tls.Endpoints
+namespace hyperledger::fabric::tls {
+  //
+  // Extract an endpoint series from the syntax, returning the Endpoints
+  // There must be at least one endpoint.
+  //
+  // endpoints ::= endpoint | endpoint ',' endpoints
+  //
+  // If any endponit is invalid, then the whole sequence is invalid.
+  //
+  template<> inline auto from_string<Endpoints>(std::string const &) -> Outcome<Endpoints>;
+}
+#endiv
+#divert <ipp>
+#import std.move
+#import hyperledger.fabric.tls.from_string.Series
+namespace hyperledger::fabric {
+  template<> auto tls::from_string<tls::Endpoints>(std::string const &candidate) -> Outcome<Endpoints> {
+    using Result = Outcome<Endpoints>;
+    auto got = from_string<endpoints::Series>(candidate);
+    if (!ok(got)) {
+      return Result{error_code(got)};
+    } else {
+      // There is no syntax to set Endpoints::dotls (so it remains false)
+      return Result{Endpoints{value(std::move(got))}};
+    }
+  }
+}
+#endiv

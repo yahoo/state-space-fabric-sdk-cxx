@@ -17,7 +17,7 @@ public:
 };
 #endiv
 #divert <cpp>
-#import hyperledger::fabric.Boolean
+#import hyperledger.fabric.Boolean
 auto tests::unit::fabric::Fixture::test_Boolean() -> void {
   using namespace ::hyperledger::fabric;
   auto b = Boolean{true};
@@ -25,7 +25,7 @@ auto tests::unit::fabric::Fixture::test_Boolean() -> void {
   b = false;
   CPPUNIT_ASSERT(!b);
 }
-#import hyperledger::fabric.Context
+#import hyperledger.fabric.Context
 auto tests::unit::fabric::Fixture::test_Context() -> void {
   using namespace ::hyperledger::fabric;
   struct Subject : public Context {
@@ -33,7 +33,7 @@ auto tests::unit::fabric::Fixture::test_Context() -> void {
   } subject;
   CPPUNIT_ASSERT(0 == sizeof(subject) || 0 != sizeof (subject));
 }
-#import hyperledger::fabric.Contact
+#import hyperledger.fabric.Contact
 auto tests::unit::fabric::Fixture::test_Contact() -> void {
   using namespace ::hyperledger::fabric;
   struct Subject : public Contact {
@@ -41,14 +41,14 @@ auto tests::unit::fabric::Fixture::test_Contact() -> void {
   CPPUNIT_ASSERT(!subject.auth);
   CPPUNIT_ASSERT(!subject.client);
 }
-#import hyperledger::fabric.Outcome
+#import hyperledger.fabric.Outcome
 auto tests::unit::fabric::Fixture::test_Outcome() -> void {
   using namespace ::hyperledger::fabric;
   Outcome<int> subject{3};
   CPPUNIT_ASSERT(ok(subject));
   CPPUNIT_ASSERT(3 == value(subject));
 }
-#import hyperledger::fabric.Success
+#import hyperledger.fabric.Success
 auto tests::unit::fabric::Fixture::test_Success() -> void {
   using namespace ::hyperledger::fabric;
   Success subject{SUCCESS};

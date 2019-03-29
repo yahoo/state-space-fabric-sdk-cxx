@@ -24,6 +24,7 @@ namespace hyperledger::fabric::tls::endpoints {
 #import hyperledger.fabric.tls.endpoint.Basis
 class hyperledger::fabric::tls::endpoints::Endpoint : public endpoint::Basis {
   using ancestor = endpoint::Basis;
+public:
   Endpoint() = default;
   using ancestor::Basis;
 };

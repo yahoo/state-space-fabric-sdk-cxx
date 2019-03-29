@@ -45,6 +45,16 @@ namespace hyperledger::fabric::error {
       return "success";
     case Code::FAILURE:
       return "failure"; // totally generic, no further details given
+    case Code::SYNTAX_HOST:
+      return "syntax error in host name or host address"; 
+    case Code::SYNTAX_PORT:
+      return "syntax error in port number or value out of bounds"; 
+    case Code::SYNTAX_ENDPOINT:
+      return "syntax error in endpoint"; 
+    case Code::SYNTAX_ENDPOINTS:
+      return "syntax error in endpoint list"; 
+    case Code::BOUNDS_PORT:
+      return "port value is out is bounds"; // 1..65535
     case Code::CONFIGURATION_TLS_SERVER:
       return "the configuration of tls for server-to-client authorization is inconsistent or incomplete";
     case Code::CONFIGURATION_TLS_CLIENT:

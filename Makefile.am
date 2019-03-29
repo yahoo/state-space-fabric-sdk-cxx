@@ -42,7 +42,6 @@ INSTALLATION_AREAS = \
 
 default: all
 
-# SOON ---> module_SOURCE_SET = $(lib_libhyperledger_fabric_la_MODULES)
 module_SOURCE_SET = \
   $(lib_libhyperledger_fabric_la_SOURCES) \
   $(lib_libwant_la_SOURCES) \

@@ -13,6 +13,10 @@ public:
   auto test_Endpoint_2arg_host_port() -> void;
   auto test_Endpoint_3arg() -> void;
   auto test_Endpoints() -> void;
+  auto test_get_port() -> void;
+  auto test_get_hostport() -> void;
+  auto test_from_string_Endpoint() -> void;
+  auto test_from_string_Endpoints() -> void;
   static auto suite() -> cppunit::Test *;
 };
 #endiv
@@ -96,6 +100,112 @@ auto tests::unit::tls::Fixture::test_Endpoints() -> void {
     auto const actual = to_string(subject);
   }
 }
+#import hyperledger.fabric.detail.get_port
+auto tests::unit::tls::Fixture::test_get_port() -> void {
+  using namespace ::hyperledger::fabric;
+  using ::hyperledger::fabric::detail::get_port;
+  auto all = true;
+  std::cerr << "all: ";
+  auto const expect = [&all](bool expected, Outcome<ip::Port> oc) {
+                        all &= expected == ok(oc);
+                        std::cerr << all;
+                      };
+  expect(false, get_port(""));
+  expect(true, get_port("1"));
+  expect(true, get_port("20"));
+  expect(true, get_port("80"));
+  expect(true, get_port("8080"));
+  expect(true, get_port("07050"));
+  expect(true, get_port("00007050"));
+  expect(false, get_port("70050"));
+  expect(false, get_port("0"));
+  expect(false, get_port("-1"));
+  expect(false, get_port("apple"));
+  expect(false, get_port("banana"));
+  expect(false, get_port(":80"));
+  std::cerr << '\n';
+  CPPUNIT_ASSERT(all);
+}
+#import hyperledger.fabric.detail.get_hostport
+auto tests::unit::tls::Fixture::test_get_hostport() -> void {
+  using namespace ::hyperledger::fabric;
+  using ::hyperledger::fabric::detail::get_hostport;
+  auto all = true;
+  std::cerr << "all: ";
+  auto const expect = [&all](bool expected, Outcome<std::tuple<ip::Host, ip::Port>> oc) {
+                        all &= expected == ok(oc);
+                        std::cerr << all;
+                      };
+  expect(false, get_hostport(""));
+  expect(true, get_hostport("h:1"));
+  expect(true, get_hostport("lo.c.a.host:20"));
+  expect(true, get_hostport("80.com"));
+  expect(true, get_hostport("80.co:80"));
+  expect(true, get_hostport("7.8.9.100"));
+  expect(false, get_hostport("7.8.9.1000"));
+  expect(false, get_hostport("7.8.9.10:11"));
+  expect(false, get_hostport("0"));
+  expect(false, get_hostport("-1"));
+  expect(false, get_hostport("apple"));
+  expect(false, get_hostport("banana"));
+  expect(false, get_hostport(":80"));
+  std::cerr << '\n';
+  CPPUNIT_ASSERT(all);
+}
+#import hyperledger.fabric.tls.from_string.ALL
+auto tests::unit::tls::Fixture::test_from_string_Endpoint() -> void {
+  using namespace ::hyperledger::fabric;
+  namespace hf = ::hyperledger::fabric;
+  auto all = true;
+  std::cerr << "all: ";
+  using Subject = hf::tls::Endpoint;
+  using hf::tls::from_string;
+  auto const expect = [&all](bool expected, Outcome<Subject> oc) {
+                        auto g = expected == ok(oc);
+                        all &= g;
+                        std::cerr << '(' << g << all << ')';
+                      };
+  expect(false, from_string<Subject>(""));
+  expect(true, from_string<Subject>("localhost"));
+  expect(true, from_string<Subject>("localhost:80"));
+  expect(true, from_string<Subject>(":localhost:80:80")); // OK not checking for valid hostname syntax
+  expect(false, from_string<Subject>(":localhost"));
+  expect(true, from_string<Subject>("127.0.0.1"));
+  expect(true, from_string<Subject>("127.0.0.1:80"));
+  expect(true, from_string<Subject>("::1"));
+  expect(true, from_string<Subject>("2001:db8::1"));
+  expect(true, from_string<Subject>("[2001:db8::1]:80"));
+  expect(true, from_string<Subject>("example.com"));
+  expect(true, from_string<Subject>("example.com:7051"));
+  expect(false, from_string<Subject>("example.com:70051"));
+  std::cerr << '\n';
+  CPPUNIT_ASSERT(all);
+}
+auto tests::unit::tls::Fixture::test_from_string_Endpoints() -> void {
+  using namespace ::hyperledger::fabric;
+  namespace hf = ::hyperledger::fabric;
+  auto all = true;
+  std::cerr << "all: ";
+  using Subject = hf::tls::Endpoints;
+  using hf::tls::from_string;
+  auto const expect = [&all](bool expected, Outcome<Subject> oc) {
+                        auto g = expected == ok(oc);
+                        all &= g;
+                        std::cerr << '(' << g << all << ')';
+                   };
+  expect(false, from_string<Subject>(""));
+  expect(true, from_string<Subject>("localhost"));
+  expect(true, from_string<Subject>("localhost:80"));
+  //
+  expect(false, from_string<Subject>(",a"));
+  expect(false, from_string<Subject>("a,"));
+  expect(false, from_string<Subject>("a,,a"));
+  expect(true, from_string<Subject>("a,b,c,d"));
+  expect(false, from_string<Subject>("a,b,c,example.com:70051,c,d"));
+  expect(true, from_string<Subject>("example1.com:1,example2.com:2,example3.com:3"));
+  std::cerr << '\n';
+  CPPUNIT_ASSERT(all);
+}
 #import unit.rigging.suite.Stream
 #import unit.rigging.suite.call
 #import unit.rigging.suite.add
@@ -112,7 +222,15 @@ auto tests::unit::tls::Fixture::suite() -> cppunit::Test * {
     series << move(end);
   }
   series << call("Endpoints", &Fixture::test_Endpoints)
+         << call("get_port", &Fixture::test_get_port)
     ;
+  {
+    Stream fro("from_string");
+    fro << call("Endpoint", &Fixture::test_from_string_Endpoint)
+        << call("Endpoints", &Fixture::test_from_string_Endpoints)
+      ;
+    series << move(fro);
+  }
   return series.release();
 }
 #endiv
