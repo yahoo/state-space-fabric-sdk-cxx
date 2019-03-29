@@ -1,0 +1,131 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::run { class Push_Back; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.run.Arguments
+class tests::unit::run::Push_Back : public cppunit::test::Fixture {
+public:
+  using Subject = hyperledger::fabric::run::Arguments;
+  template<typename TYPE> auto test_receive_copy() -> void;
+  template<typename TYPE> auto test_receive_move() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#import std.string
+#import std.string_view
+#import std.filesystem.path
+namespace tests::unit::run {
+  template<> auto Push_Back::test_receive_copy<char>() -> void;
+  template<> auto Push_Back::test_receive_copy<int>() -> void;
+  template<> auto Push_Back::test_receive_copy<double>() -> void;
+  template<> auto Push_Back::test_receive_copy<char const *>() -> void;
+  template<> auto Push_Back::test_receive_copy<char const (&)[5]>() -> void; // N=5 -- can't do partial function specialization
+  template<> auto Push_Back::test_receive_copy<std::string>() -> void;
+  template<> auto Push_Back::test_receive_copy<std::string>() -> void;
+  template<> auto Push_Back::test_receive_copy<std::string_view>() -> void;
+  template<> auto Push_Back::test_receive_copy<std::filesystem::path>() -> void;
+  //
+  template<> auto Push_Back::test_receive_move<std::string>() -> void;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.run.push_back
+template<> auto tests::unit::run::Push_Back::test_receive_copy<char>() -> void {
+  // ADL won't find templates so we have to make the name visible
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = '.';
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<int>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = 99;
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<double>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = 99.88;
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<char const *>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = "99.88";
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<char const (&)[5]>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  char specimen[] = "9988";
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<std::string>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = "99.88.77.66"s;
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+#import std.move
+template<> auto tests::unit::run::Push_Back::test_receive_move<std::string>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = "99.88.77.66"s;
+  push_back<3>(lhs) << '{' << std::move(specimen) << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<std::string_view>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = "99.88.77.66"sv;
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+template<> auto tests::unit::run::Push_Back::test_receive_copy<std::filesystem::path>() -> void {
+  using hyperledger::fabric::run::push_back;
+  Subject lhs;
+  auto specimen = std::filesystem::path{"/dev"};
+  push_back<3>(lhs) << '{' << specimen << '}';
+  CPPUNIT_ASSERT(3 == lhs.size());
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::run::Push_Back::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("push_back");
+  {
+    Stream rec("receive_copy");
+    {
+      Stream cop("copy");
+      cop << call("char", &Push_Back::test_receive_copy<char>)
+          << call("int", &Push_Back::test_receive_copy<int>)
+          << call("double", &Push_Back::test_receive_copy<double>)
+          << call("char const *", &Push_Back::test_receive_copy<char const *>)
+          << call("char const [5]", &Push_Back::test_receive_copy<char const (&)[5]>)
+          << call("string", &Push_Back::test_receive_copy<std::string>)
+          << call("string_view", &Push_Back::test_receive_copy<std::string_view>)
+          << call("filesystem::path", &Push_Back::test_receive_copy<std::filesystem::path>)
+        ;
+      rec << add(cop.release());
+    } {
+      Stream mov("move");
+      mov << call("string", &Push_Back::test_receive_move<std::string>)
+        ;
+      rec << add(mov.release());
+    }
+    series << add(rec.release());
+  }
+  return series.release();
+}
+#endiv

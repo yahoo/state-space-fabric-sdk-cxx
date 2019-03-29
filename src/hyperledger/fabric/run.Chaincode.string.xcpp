@@ -7,12 +7,19 @@ namespace hyperledger::fabric::run {
   //
   // The Hyperledger Fabric peer(1) program, chaincode subcommand.
   // Returning a string payload.
-  // There are two such subcommands 'invoke' and 'query'
+  // There are (only) two such subcommands 'invoke' and 'query'
+  // e.g.
+  //   peer chaincode invoke       e.g. {"Args":["get", key]}
+  //   peer chaincode query        also {"Args":["history", key]}
+  //
+  // Implements:
+  //
+  //   peer chaincode <subcommand> ...options... ...arguments...
   //
   // Usage:
   //
   //   auto context = Call{...};
-  //   Program<std::string> prog{context};
+  //   Program<std::string> prog{"invoke", context};
   //   peer::Context const &context = ...somehow...;
   //   Program<std::string> prog{context};
   //   auto s = prog.start();
@@ -39,10 +46,17 @@ namespace hyperledger::fabric::run {
 #endiv
 #divert <hpp>
 #import hyperledger.fabric.run.chaincode.Basis
+#import std.string
 #import want.run.Piped_From
 template<> class hyperledger::fabric::run::Chaincode<std::string> : public chaincode::Basis<want::run::Piped_From> {
   using ancestor = chaincode::Basis<want::run::Piped_From>;
 public:
-  inline explicit Chaincode(Context const &context) : ancestor{context} { }
+  inline explicit Chaincode(std::string subcommand, Context const &);
 };
+#endiv
+#divert <ipp>
+#import std.move
+hyperledger::fabric::run::Chaincode<std::string>::Chaincode(std::string subcommand, Context const &context)
+  : ancestor{std::move(subcommand), context}
+{ }
 #endiv

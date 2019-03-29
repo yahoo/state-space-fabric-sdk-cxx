@@ -16,8 +16,6 @@ public:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
-using namespace std::string_literals;
 #import hyperledger.fabric.ip.Port
 auto tests::unit::ip::Fixture::test_Port() -> void {
   using namespace ::hyperledger::fabric::ip;

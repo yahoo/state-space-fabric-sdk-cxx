@@ -3,11 +3,15 @@
 #divert <fpp>
 namespace hyperledger::fabric::run::peer {
   //
-  // The Hyperledger Fabric peer(1) program ... other commands than 'chaincode'
+  // The Hyperledger Fabric peer(1) program ... commands other than 'chaincode'
   // Descendants only.  Everything is set up here to avoid cut & paste in the descendant.
   //
   // That Curiously-Recurring Template Pattern!
   // RUNNER is run::Runner or run::Pipe_From
+  //
+  // Implements:
+  //
+  //   peer <subcommand> ...options... ...arguments...
   //
   // Usage:
   //
@@ -22,7 +26,7 @@ namespace hyperledger::fabric::run::peer {
 #import hyperledger.fabric.run.Loader.Orderer
 #import hyperledger.fabric.run.Loader.Client
 #import hyperledger.fabric.peer.Context
-#import std.filesystem.path
+#import std.string
 template<typename RUNNER> class hyperledger::fabric::run::peer::Basis
   : public RUNNER,
     private Loader<fabric::Context>,
@@ -42,7 +46,7 @@ public:
   using Context = fabric::peer::Context;
 protected:
   ~Basis() = default;
-  inline explicit Basis(Context const &);
+  inline Basis(std::string subcommand, Context const &);
   struct tests { struct Access; };
   friend struct tests::Access;
 };
@@ -50,10 +54,12 @@ protected:
 #divert <ipp>
 #import hyperledger.fabric.error.Code
 #import std.error_code
-template<typename _> hyperledger::fabric::run::peer::Basis<_>::Basis(Context const &context)
+#import std.move
+template<typename _> hyperledger::fabric::run::peer::Basis<_>::Basis(std::string subcommand, Context const &context)
   : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
   auto &arguments = ancestors::Runner::args;
   using ld = typename ancestors::loaders;
+  push_back<1>(arguments) << std::move(subcommand);
   ld::Fabric::load(arguments,context);
   ld::Peer::load(arguments, context);
   if (context.orderer) {

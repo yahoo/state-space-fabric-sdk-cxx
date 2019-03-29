@@ -11,6 +11,10 @@ namespace hyperledger::fabric::run::chaincode {
   // That Curiously-Recurring Template Pattern!
   // RUNNER is run::Runner or run::Pipe_From
   //
+  // Impements:
+  //
+  //   peer chaincode <subcommand> ...options... ...arguments...
+  //
   // Usage:
   //
   //   see run.Chaincode<TYPE>
@@ -27,6 +31,7 @@ namespace hyperledger::fabric::run::chaincode {
 #import hyperledger.fabric.run.Loader.Peers
 #import hyperledger.fabric.run.Loader.Client
 #import hyperledger.fabric.peer.chaincode.Call
+#import std.string
 #import want.run.Piped_From
 template<typename RUNNER> class hyperledger::fabric::run::chaincode::Basis
   : public RUNNER,
@@ -53,7 +58,7 @@ public:
   using Context = peer::chaincode::Call;
 protected:
   ~Basis() = default;
-  inline explicit Basis(Context const &);
+  inline Basis(std::string subcommand, Context const &);
   struct tests { struct Access; };
   friend struct tests::Access;
 };
@@ -61,12 +66,15 @@ protected:
 #divert <ipp>
 #import hyperledger.fabric.error.Code
 #import hyperledger.fabric.run.loader.are_the_same
+#import hyperledger.fabric.run.push_back
 #import std.error_code
+#import std.move
 namespace hyperledger::fabric::run::chaincode {
-  template<typename _> Basis<_>::Basis(Context const &context)
+  template<typename _> Basis<_>::Basis(std::string subcommand, Context const &context)
     : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
     auto &arguments = ancestors::Runner::args;
     using ld = typename ancestors::loaders;
+    push_back<2>(arguments) << "chaincode" << std::move(subcommand);
     ld::Fabric::load(arguments, context);
     ld::Peer::load(arguments, context);
     ld::Chaincode::load(arguments, context);

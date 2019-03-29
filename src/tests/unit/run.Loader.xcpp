@@ -1,0 +1,109 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace tests::unit::run { class Loader; }
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.run.Arguments
+class tests::unit::run::Loader : public cppunit::test::Fixture {
+public:
+  using Arguments = ::hyperledger::fabric::run::Arguments;
+  auto test_fabric() -> void;
+  auto test_peer() -> void;
+  auto test_chaincode() -> void;
+  auto test_orderer() -> void;
+  auto test_peers() -> void;
+  auto test_client() -> void;
+  auto test_call() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  template<typename LOADER> struct Reloader : public LOADER {
+    // Make enough of it public for testing
+    Reloader() = default;;
+    using LOADER::load;
+  };
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.peer.chaincode.Call // this one is a complete type (the others are fragments)
+#import hyperledger.fabric.run.Loader.fabric.Context
+#import hyperledger.fabric.Context
+auto tests::unit::run::Loader::test_fabric() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::Context>> subject;
+  Arguments args;
+  hf::peer::chaincode::Call context;
+  subject.load(args, context); // <-------------- test this (does it construct?)
+}
+#import hyperledger.fabric.run.Loader.peer.Context
+#import hyperledger.fabric.peer.Context
+auto tests::unit::run::Loader::test_peer() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::peer::Context>> subject;
+  Arguments args;
+  hf::peer::chaincode::Call context;
+  subject.load(args, context);
+}
+#import hyperledger.fabric.run.Loader.chaincode.Context
+#import hyperledger.fabric.peer.chaincode.Context
+auto tests::unit::run::Loader::test_chaincode() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::peer::chaincode::Context>> subject;
+  Arguments args;
+  hf::peer::chaincode::Call context;
+  subject.load(args, context);
+}
+#import hyperledger.fabric.run.Loader.Call
+auto tests::unit::run::Loader::test_call() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::peer::chaincode::Call>> subject;
+  Arguments args;
+  hf::peer::chaincode::Call context;
+  subject.load(args, context);
+}
+#import hyperledger.fabric.run.Loader.Orderer
+#import hyperledger.fabric.orderer.Contact
+auto tests::unit::run::Loader::test_orderer() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::orderer::Contact>> subject;
+  Arguments args;
+  hf::orderer::Contact contact;
+  subject.load(args, contact.endpoint);
+}
+#import hyperledger.fabric.run.Loader.Peers
+#import hyperledger.fabric.peers.Contact
+auto tests::unit::run::Loader::test_peers() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::peers::Contact>> subject;
+  Arguments args;
+  hf::peers::Contact contact;
+  subject.load(args, contact.endpoints);
+}
+#import hyperledger.fabric.run.Loader.Client
+#import hyperledger.fabric.tls.Client
+auto tests::unit::run::Loader::test_client() -> void {
+  namespace hf = ::hyperledger::fabric;
+  Reloader<hf::run::Loader<hf::tls::Client>> subject;
+  Arguments args;
+  hf::tls::Client contact;
+  subject.load(args, contact);
+}
+#import unit.rigging.suite.Stream
+#import unit.rigging.suite.call
+#import unit.rigging.suite.add
+auto tests::unit::run::Loader::suite() -> cppunit::Test * {
+  using namespace ::unit::rigging::suite;
+  Stream series("Loader<TYPE>");
+  series << call("fabric", &Loader::test_fabric)
+         << call("peer", &Loader::test_peer)
+         << call("chaincode", &Loader::test_chaincode)
+         << call("call", &Loader::test_call)
+         << call("orderer", &Loader::test_orderer)
+         << call("peers", &Loader::test_peers)
+         << call("client", &Loader::test_client)
+    ;
+  return series.release();
+}
+#endiv

@@ -67,7 +67,6 @@ private:
 };
 #endiv
 #divert <ipp>
-#import std.cerr
 #import std.move
 want::run::Runner::Runner(std::filesystem::path filepath)
   : Runner{EXECP, std::move(filepath)}
@@ -173,14 +172,26 @@ auto want::run::Runner::fork_invariance_check(results::Fork const &forked) const
   }
 }
 #import write
+#import std.cerr
 auto want::run::Runner::dying_utterance(std::string_view frag) const noexcept -> void {
   auto const pack = std::string_view{"hyperledger::fabric(want)"}; // [[FIXTHIS]] using ac = autotools::autoconf::Config<CONFIG>; ac::package_name()
+#if 1
+  // We're in the child, beyond an exec(...) that failed to exec;
+  // above us in the call stack, grow_child(...) returns into exit.
+  // but cerr stil works ... let's use it.
+  std::cerr << pack << " failed to exec " << arg0 << " because " << frag << '\n';
+#else
   auto const pref = std::string_view{"run::::Runner: "};
+  auto const program = (std::string) arg0;
+  auto const space = std::string_view{" "};
   auto const crnl = std::string_view{"\n"};
   auto errfd{2};
   ::write(errfd, pack.data(), pack.size());
   ::write(errfd, pref.data(), pref.size());
+  ::write(errfd, frag.data(), arg0.size());
+  ::write(errfd, frag.data(), space.size());
   ::write(errfd, frag.data(), frag.size());
   ::write(errfd, crnl.data(), crnl.size());
+#endif
 }
 #endiv

@@ -18,8 +18,6 @@ private:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
-using namespace std::string_literals;
 #import std.all_of
 auto tests::unit::southside::Fixture::contains_only(std::string const &candidate, char match) -> bool {
   return std::all_of(candidate.begin(), candidate.end(), [match](char each) { return each == match; });

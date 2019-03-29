@@ -15,6 +15,7 @@ check_bin_unit_MODULES = $(call TF_SOURCEStoMODULES, $(check_bin_unit_SOURCES))
 check_bin_unit_SOURCES = \
   obj/src/tests/unit/main.cpp \
   obj/src/tests/unit/namespace.cpp \
+  obj/src/tests/unit/call.Fixture.cpp \
   obj/src/tests/unit/chaincode.Fixture.cpp \
   obj/src/tests/unit/fabric.Fixture.cpp \
   obj/src/tests/unit/ip.Fixture.cpp \
@@ -23,6 +24,9 @@ check_bin_unit_SOURCES = \
   obj/src/tests/unit/peer.Fixture.cpp \
   obj/src/tests/unit/peers.Fixture.cpp \
   obj/src/tests/unit/pki.Fixture.cpp \
+  obj/src/tests/unit/run.Fixture.cpp \
+  obj/src/tests/unit/run.Push_Back.cpp \
+  obj/src/tests/unit/run.Loader.cpp \
   obj/src/tests/unit/southside.Fixture.cpp \
   obj/src/tests/unit/tls.Fixture.cpp \
   obj/src/tests/unit/want.Fixture.cpp \

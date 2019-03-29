@@ -66,9 +66,10 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/peer.Context.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.Call.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.call.cpp \
+  obj/src/hyperledger/fabric/peer.chaincode.Context.cpp \
+  obj/src/hyperledger/fabric/peer.chaincode.Function.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.required.Is_Result.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.required.Result.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Context.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.query.cpp \
   obj/src/hyperledger/fabric/peer.chaincode.invoke.cpp \
   \
@@ -126,7 +127,6 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/tls.endpoints.Series.cpp \
   obj/src/hyperledger/fabric/tls.endpoints.series.Formatter.cpp \
   $(end)
-$(info DEBUG $(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libhyperledger_fabric_la_SOURCES)))
 $(scold_cxxdir)/hyperledger/fabric/dependencies.mk:
 	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libhyperledger_fabric_la_SOURCES))
 	$(TF_V_DONE) test -e $@

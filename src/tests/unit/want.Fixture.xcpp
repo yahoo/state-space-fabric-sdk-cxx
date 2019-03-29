@@ -13,8 +13,6 @@ public:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
-using namespace std::string_literals;
 #import want.Boolean
 auto tests::unit::want::Fixture::test_Boolean() -> void {
   using ::want::Boolean;

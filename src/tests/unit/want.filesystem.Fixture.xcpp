@@ -13,8 +13,6 @@ public:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
-using namespace std::string_literals;
 #import std.filesystem.path
 #import want.filesystem.dequote
 auto tests::unit::want::filesystem::Fixture::test_usage_dequote() -> void {

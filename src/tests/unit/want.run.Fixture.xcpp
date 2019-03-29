@@ -19,8 +19,6 @@ protected:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
-using namespace std::string_literals;
 #import tests.unit.want.run.Fixture.Runner
 auto tests::unit::want::run::Fixture::test_Runner() -> void {
   Runner go;

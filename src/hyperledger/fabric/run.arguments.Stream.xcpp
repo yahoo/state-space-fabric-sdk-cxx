@@ -7,7 +7,7 @@ namespace hyperledger::fabric::run::arguments {
   // The count-safe stream
   //
   //   Arguments &lhs = ...somehow...;
-  //   Stream<2>{lhs} << "--file" << filename;
+  //   Stream<2>{lhs} << "--file" << std::move(filename);
   //   Stream<1>{lhs} << "--tls";
   //
   struct [[nodiscard]] Null { };
@@ -19,15 +19,23 @@ namespace hyperledger::fabric::run::arguments {
 #import hyperledger.fabric.time.Duration
 #import std.filesystem.path
 #import std.string
+#import std.string_view
 namespace hyperledger::fabric::run::arguments {
   template<typename TYPE> inline auto operator<<(Null, TYPE const &) -> void = delete;
   template<typename TYPE> inline auto operator<<(Stream<0>, TYPE const &) -> Null;
   template<std::size_t N, typename TYPE> inline auto operator<<(Stream<N>, TYPE const &) -> Stream<N-1>;
-  template<typename TYPE> inline auto push_back(Arguments &, TYPE const &) -> void; // a candidate for specialization
+  template<std::size_t N, typename TYPE> inline auto operator<<(Stream<N>, TYPE &&) -> Stream<N-1>;
+  //
+  // push_back(Arguments, TYPE const &) is a a candidate for specialization
+  // the default implementation  uses the available to_string(...)
+  //
+  template<typename TYPE> inline auto push_back(Arguments &, TYPE const &) -> void;
   template<typename INTEGER, typename RATIO> inline auto push_back(Arguments &, std::chrono::duration<INTEGER,RATIO> const &) -> void;
   template<> inline auto push_back(Arguments &, time::Duration const &) -> void;
   template<> inline auto push_back(Arguments &, std::filesystem::path const &) -> void;
   template<> inline auto push_back(Arguments &, std::string const &) -> void;
+  inline auto push_back(Arguments &, std::string &&) -> void;
+  inline auto push_back(Arguments &, std::string_view) -> void;
   inline auto push_back(Arguments &, char const *) -> void;
   template<std::size_t N> inline auto push_back(Arguments &, char const (&)[N]) -> void;
 }
@@ -41,7 +49,9 @@ namespace hyperledger::fabric::run {
   public:
     inline explicit Stream(Arguments &);
     inline explicit Stream(Stream<N+1>);
-    template<typename TYPE> inline auto receive(TYPE const &) -> void; // Avoid push_back(...) having to be a friend; whereas friend-function-template-of-class-template is fraught.
+    // Avoid push_back(...) having to be a friend; whereas friend-function-template-of-class-template is fraught.
+    template<typename TYPE> inline auto receive(TYPE const &) -> void;
+    template<typename TYPE> inline auto receive(TYPE &&) -> void;
   protected:
     template<std::size_t> friend class Stream;
     Arguments &receiver;
@@ -49,12 +59,17 @@ namespace hyperledger::fabric::run {
 }
 #endiv
 #divert <ipp>
+#import std.forward
 namespace hyperledger::fabric::run {
   template<typename TYPE> auto arguments::operator<<(Stream<0>, TYPE const &) -> Null {
     return Null{};
   }
   template<std::size_t N, typename TYPE> auto arguments::operator<<(Stream<N> s, TYPE const &t) -> Stream<N-1> {
     s.receive(t);
+    return Stream<N-1>{s};
+  }
+  template<std::size_t N, typename TYPE> auto arguments::operator<<(Stream<N> s, TYPE &&t) -> Stream<N-1> {
+    s.receive(std::forward<TYPE>(t));
     return Stream<N-1>{s};
   }
   template<typename TYPE> auto arguments::push_back(Arguments &lhs, TYPE const &rhs) -> void {
@@ -66,14 +81,15 @@ namespace hyperledger::fabric::run {
   template<typename INTEGER, typename RATIO> auto arguments::push_back(Arguments &lhs, std::chrono::duration<INTEGER,RATIO> const &rhs) -> void { lhs.push_back(std::to_string(rhs.count())); }
   template<> auto arguments::push_back(Arguments &lhs, std::filesystem::path const &rhs) -> void { lhs.push_back((std::string) rhs); }
   template<> auto arguments::push_back(Arguments &lhs, std::string const &rhs) -> void { lhs.push_back(rhs); }
+  auto arguments::push_back(Arguments &lhs, std::string &&rhs) -> void { lhs.push_back(std::forward<std::string>(rhs)); }
+  auto arguments::push_back(Arguments &lhs, std::string_view rhs) -> void { lhs.push_back(std::string{rhs.begin(), rhs.end()}); }
   auto arguments::push_back(Arguments &lhs, char const *rhs) -> void { lhs.push_back(rhs); }
   template<std::size_t N> auto arguments::push_back(Arguments &lhs, char const (&rhs)[N]) -> void { lhs.push_back(rhs); }
 }
 namespace hyperledger::fabric::run::arguments {
   template<std::size_t _> Stream<_>::Stream(Arguments &receiver) : receiver{receiver} { }
   template<std::size_t N> Stream<N>::Stream(Stream<N+1> source) : receiver{source.receiver} { }
-  template<std::size_t _> template<typename TYPE> auto Stream<_>::receive(TYPE const &value) -> void {
-    push_back(receiver, value);
-  }
+  template<std::size_t _> template<typename TYPE> auto Stream<_>::receive(TYPE const &value) -> void { push_back(receiver, value); }
+  template<std::size_t _> template<typename TYPE> auto Stream<_>::receive(TYPE &&value) -> void { push_back(receiver, std::forward<TYPE>(value)); }
 }
 #endiv

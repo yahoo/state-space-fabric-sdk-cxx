@@ -13,10 +13,8 @@ public:
 };
 #endiv
 #divert <cpp>
-#import std.string_literals
 #import std.filesystem.path
 #import std.ostringstream
-using namespace std::string_literals;
 #import want.format.dq
 auto tests::unit::want::format::Fixture::test_usage_dq() -> void {
   using ::want::format::dq;

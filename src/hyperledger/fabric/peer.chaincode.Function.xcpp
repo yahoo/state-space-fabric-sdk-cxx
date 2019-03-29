@@ -1,0 +1,45 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::peer::chaincode {
+  // 
+  // The Function is an implementation detail of call(...)
+  //                       and its callers (sic) which are query(...) and invoke(...)
+  // It is not intended for use beyond that.
+  // As such it is declared and supported with a 'namespace packaging'
+  //
+  // Usage: (e.g.)
+  //
+  //   namespace packaging::query::function {
+  //     using packaging::call::function::call;
+  //     using packaging::call::function::QUERY;
+  //     ...declarations
+  //    }
+  //
+  namespace packaging::call::function {
+    enum Function {
+      LIGHT,
+      HEAVY,
+      QUERY = LIGHT,
+      INVOKE = HEAVY,
+    };
+  }
+}
+#endiv
+#divert <hpp>
+#import std.string
+namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
+  inline auto to_string(Function) -> std::string;
+}
+#endiv
+#divert <ipp>
+#import std.runtime_error
+auto hyperledger::fabric::peer::chaincode::packaging::call::function::to_string(Function f) -> std::string {
+  switch (f) {
+    // /opt/hyperledger/fabric/bin/peer chaincode <function>
+  case Function::QUERY:  return "query";
+  case Function::INVOKE: return "invoke";
+  default: throw std::runtime_error{"Function"};
+  }
+}
+#endiv

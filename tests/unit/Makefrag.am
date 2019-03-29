@@ -1,6 +1,7 @@
 tests_unit_TESTS = \
   tests/unit/list.test \
   \
+  tests/unit/call.test \
   tests/unit/chaincode.test \
   tests/unit/fabric.test \
   tests/unit/ip.test \
@@ -8,6 +9,7 @@ tests_unit_TESTS = \
   tests/unit/peer.test \
   tests/unit/peers.test \
   tests/unit/pki.test \
+  tests/unit/run.test \
   tests/unit/southside.test \
   tests/unit/tls.test \
   tests/unit/want.test \

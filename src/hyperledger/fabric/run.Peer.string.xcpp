@@ -38,9 +38,10 @@ namespace hyperledger::fabric::run {
 #divert <hpp>
 #import hyperledger.fabric.run.peer.Basis
 #import want.run.Piped_From
+#import std.string
 template<> class hyperledger::fabric::run::Peer<std::string> : public peer::Basis<want::run::Piped_From> {
   using ancestor = peer::Basis<want::run::Piped_From>;
 public:
-  inline explicit Peer(Context const &context) : ancestor{context} { }
+  inline Peer(std::string subcommand, Context const &context) : ancestor{subcommand, context} { }
 };
 #endiv

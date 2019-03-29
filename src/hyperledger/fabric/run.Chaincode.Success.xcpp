@@ -8,29 +8,38 @@ namespace hyperledger::fabric::run {
   // The Hyperledger Fabric peer(1) program, chaincode subcommand.
   // Returning merely a Success indication.
   // e.g.
-  //   peer channel create
-  //   peer channel join
-  //   peer channel ...etc....
+  //   peer chaincode invoke       e.g. {"Args":["set", key, value]}
+  //   peer chaincode query
   //
-  // These sorts of operations *require* contact with an orderer.
-  // They do not use the peer set yet; will not have a peer::Contact
+  // Implements:
+  //
+  //   peer chaincode <subcommand> ...options... ...arguments...
   //
   // Usage:
   //
   //   auto context = ...somehow...   <--------------------- and that's the hard part now isn't it?
-  //   Chaincode<Success> prog{context};
+  //   Chaincode<Success> prog{"query", context};
   //   auto w = prog.run();
-  //   auto b = ok(w);
+  //   auto b = ok(w); <-------------------- this checks the OS invocation; does not check for "200"
+  //
+  //        [[FIXTHIS]] document how to recover the Gossip-level "200"; see run.Chaincode.string.xcpp
   //
   template<> class Chaincode<Success>;
 }
 #endiv
 #divert <hpp>
 #import hyperledger.fabric.run.chaincode.Basis
+#import std.string
 #import want.run.Runner
 template<> class hyperledger::fabric::run::Chaincode<hyperledger::fabric::Success> : public chaincode::Basis<want::run::Runner> {
   using ancestor = chaincode::Basis<want::run::Runner>;
 public:
-  inline explicit Chaincode(Context const &context) : ancestor{context} { }
+  inline explicit Chaincode(std::string subcommand, Context const &);
 };
+#endiv
+#divert <ipp>
+#import std.move
+hyperledger::fabric::run::Chaincode<hyperledger::fabric::Success>::Chaincode(std::string subcommand, Context const &context)
+  : ancestor{std::move(subcommand), context}
+{ }
 #endiv

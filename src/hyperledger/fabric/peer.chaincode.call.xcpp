@@ -1,15 +1,5 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
 // Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
-#divert <fpp>
-namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
-  enum Function {
-    LIGHT,
-    HEAVY,
-    QUERY = LIGHT,
-    INVOKE = HEAVY,
-  };
-}
-#endiv
 #divert <hpp>
 #import hyperledger.fabric.Outcome
 #import hyperledger.fabric.peer.chaincode.Call
@@ -18,7 +8,21 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
 #import hyperledger.fabric.required.container.Push_Back
 #import std.byte
 #import std.string
+#import std.string_literals
 #import std.vector
+namespace hyperledger::fabric::peer::chaincode {
+  namespace constants {
+    using namespace std::string_literals;
+    //
+    // A constructor call requires a JSON object shaped as
+    //
+    //   constructor ::= { "Args" : [ ...items... ] }
+    //
+    inline auto const ARGS = "Args"s;
+  }
+  using constants::ARGS;
+}
+#import hyperledger.fabric.peer.chaincode.Function
 namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
   //
   // call(...) is an implementation detail of the chaincode operations.
@@ -77,7 +81,7 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
 namespace hyperledger::fabric::peer::chaincode::packaging::call {
   template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Outcome<literal::Success> {
     using Result = Success;
-    run::Chaincode<Success> prog{context};
+    run::Chaincode<Success> prog{to_string(function), context};
     auto ran = prog.run();
     if (ok(ran)) {
       return Result{SUCCESS};
@@ -97,7 +101,7 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
     auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
     // Whatever the system-level reason, we're going to return Code::RUN_PEERS
     auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
-    run::Chaincode<std::string> prog{context};
+    run::Chaincode<std::string> prog{to_string(function), context};
     auto started = prog.start();
     if (!ok(started)) {
       return badrun(error_code(started));
