@@ -69,6 +69,9 @@ check_PROGRAMS = \
   $(end)
 
 include tests/unit/Makefrag.am
+XFAIL_TESTS = \
+  $(tests_unit_XFAIL_TESTS) \
+  $(end)
 TESTS = \
   $(tests_unit_TESTS) \
   $(end)

@@ -51,12 +51,12 @@ namespace hyperledger::fabric::run {
 template<> class hyperledger::fabric::run::Chaincode<std::string> : public chaincode::Basis<want::run::Piped_From> {
   using ancestor = chaincode::Basis<want::run::Piped_From>;
 public:
-  inline explicit Chaincode(std::string subcommand, Context const &);
+  inline explicit Chaincode(std::string subcommand, Context const &, std::string constructor_args_blob);
 };
 #endiv
 #divert <ipp>
 #import std.move
-hyperledger::fabric::run::Chaincode<std::string>::Chaincode(std::string subcommand, Context const &context)
-  : ancestor{std::move(subcommand), context}
+hyperledger::fabric::run::Chaincode<std::string>::Chaincode(std::string subcommand, Context const &context, std::string constructor_args_blob)
+  : ancestor{std::move(subcommand), context, std::move(constructor_args_blob)}
 { }
 #endiv

@@ -49,28 +49,57 @@ namespace hyperledger::fabric::detail {
 #import std.error_code
 auto hyperledger::fabric::detail::packaging::get_hostport::function::get_hostport(std::string const &syntax) -> Result {
   auto const fail = []() { return Result{std::error_code{error::Code::SYNTAX_ENDPOINT}}; };
-  if (syntax.empty()) { return fail(); }
-  if ('[' == syntax.front()) {
+  if (syntax.empty()) { 
+    return fail();
+  } else if ('[' == syntax.front()) {
     auto const ket = syntax.find(']');
     if (std::string::npos == ket) { return fail(); }
-    // With "[address]:port" the port is not optional
-    if (':' != syntax.at(1+ket)) { return fail(); }
-    auto ported = detail::get_port(syntax.substr(2+ket));
-    if (!ok(ported)) {
-      return Result{error_code(ported)};
+    //
+    // With "[address]:port"
+    //      "[address]"
+    //
+    // WATCHOUT - the IPv6 addresses are ambiguous with a trailing port
+    //
+    //   2001:db8::1   <-------- invalid
+    //   [2001:db8::1]
+    //   [2001:db8::1]:8088
+    //
+    if (1+ket == syntax.size())  {
+      //
+      // With an unchecked anddress and no trailing port
+      //
+      // [...address...]
+      //
+      return Result{Host_Port{syntax.substr(1, ket-2), ip::Port{}}};
+    } else if (':' != syntax.at(1+ket)) {
+      return fail(); // not  a colon afterthe ]
     } else {
-      return Result{Host_Port{ip::Host{syntax.substr(1, ket)}, value(ported)}};
+      //
+      // With an unchecked anddress and a trailing port.
+      //
+      // [...address...]:port 
+      // 
+      auto ported = detail::get_port(syntax.substr(2+ket));
+      if (!ok(ported)) {
+        return Result{error_code(ported)};
+      } else {
+        return Result{Host_Port{ip::Host{syntax.substr(1, ket)}, value(ported)}};
+      }
     }
   } else {
-    // the ":port" syntax is optional here
     auto const colon = syntax.rfind(':');
-    if (std::string::npos == colon) {
+    if (false) {
+    } else if (0 == colon) {
+      return fail(); // empty host
+    } else if (std::string::npos == colon) {
       //
       // WATCHOUT - weak checking here ... but we're avoiding going out to DNS.
       // allows bogus domain names       e.g. "localhost:80:80"
       // allows bogus addresses          e.g.  127.0.0.1000     or    2001::db8::::1
       // 
       return Result{Host_Port{syntax, ip::Port{}}};
+    } else if (1+colon == syntax.size()) {
+      return fail(); // empty port after the colon
     } else {
       auto ported = detail::get_port(syntax.substr(1+colon));
       if (!ok(ported)) {

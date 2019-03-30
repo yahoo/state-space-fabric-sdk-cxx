@@ -54,8 +54,8 @@ protected:
   using Streambuf = nonstd::stream::Posixbuf;
   Stream streamobj; // only has a rdbuf buffer pointer after 'start' & before 'run'
   std::unique_ptr<Streambuf> streambuf;
-private:
-  auto grow_child(/*[[WRITETHIS]]sys::file::Descriptor const &*/int readfd) -> sys::exits::Code;
+  // Descendants may overide to dup2(...) differently; e.g. capture both stdout and stderr
+  auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code override;
 };
 #endiv
 #divert <ipp>
@@ -102,7 +102,7 @@ auto want::run::Piped_To::start() -> results::Start {
     if (!ok(closed)) {
       exit(sys::exits::OSERR);
     } else {
-      exit(grow_child(read_side(piped)));
+      exit(grow_child(read_side(piped), -1));
     }
   }
   fork_invariance_check(forked);
@@ -179,7 +179,7 @@ auto want::run::Piped_To::wait() -> results::Wait {
 #import sys.exits.constants
 #import sys.posix.close
 #import sys.posix.dup2
-auto want::run::Piped_To::grow_child(int readfd) -> sys::exits::Code {
+auto want::run::Piped_To::grow_child(int readfd, int) const noexcept -> sys::exits::Code {
   // We're in the child now, NOTHING ESCAPES
   try {
     auto duped = sys::posix::dup2(readfd, 0);
@@ -196,7 +196,6 @@ auto want::run::Piped_To::grow_child(int readfd) -> sys::exits::Code {
     }
   } catch (std::exception const &e) {
     dying_utterance(e.what());
-    return sys::exits::OSERR;
   } catch (...) {
     dying_utterance("unknown");
   }

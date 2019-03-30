@@ -45,13 +45,18 @@ namespace hyperledger::fabric::ip {
 #endiv
 #divert <hpp>
 namespace hyperledger::fabric::ip {
-  inline auto to_string(Host const &) -> std::string;
+  namespace host {
+    // ADL would naturally find it here
+    inline auto to_string(Host const &) -> std::string;
+  }
+  // But you expect to find it here because you think that Host is a full type, not just a type alias.
+  using host::to_string;
 }
 #import hyperledger.fabric.ip.host.Formatter
 #endiv
 #divert <ipp>
 #import std.ostringstream
-auto hyperledger::fabric::ip::to_string(Host const &hh) -> std::string {
+auto hyperledger::fabric::ip::host::to_string(Host const &hh) -> std::string {
   std::ostringstream buf;
   buf << format(hh);
   return buf.str();

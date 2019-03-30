@@ -58,7 +58,8 @@ public:
   using Context = peer::chaincode::Call;
 protected:
   ~Basis() = default;
-  inline Basis(std::string subcommand, Context const &);
+  inline Basis(std::string subcommand, Context const &, std::string constructor_args_blob);
+  auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code override;
   struct tests { struct Access; };
   friend struct tests::Access;
 };
@@ -70,7 +71,7 @@ protected:
 #import std.error_code
 #import std.move
 namespace hyperledger::fabric::run::chaincode {
-  template<typename _> Basis<_>::Basis(std::string subcommand, Context const &context)
+  template<typename _> Basis<_>::Basis(std::string subcommand, Context const &context, std::string constructor_args_blob)
     : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
     auto &arguments = ancestors::Runner::args;
     using ld = typename ancestors::loaders;
@@ -79,7 +80,9 @@ namespace hyperledger::fabric::run::chaincode {
     ld::Peer::load(arguments, context);
     ld::Chaincode::load(arguments, context);
     ld::Call::load(arguments, context);
-    ld::Peers::load(arguments, context.peers.endpoints);
+    if (!context.peers.endpoints.empty()) {
+      ld::Peers::load(arguments, context.peers.endpoints);
+    }
     if (context.peers.client) {
       ld::Client::load(arguments, *context.peers.client);
     }
@@ -94,6 +97,37 @@ namespace hyperledger::fabric::run::chaincode {
         throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
       }
     }
+    push_back<2>(arguments) << "--ctor" << std::move(constructor_args_blob);
+  }
+}
+#import std.exception
+#import sys.exits.constants
+#import sys.posix.close
+#import sys.posix.dup2
+namespace hyperledger::fabric::run::chaincode {
+  template<typename _> auto Basis<_>::grow_child(int, int writefd) const noexcept -> sys::exits::Code {
+    // We're in the child now, NOTHING ESCAPES
+    try {
+      // Because .../bin/peer writes its emissions to stderr, not stdout, we have to dup2(..., 1), dup2(..., 2)
+      // The ancestor's grow_child(...) will handle the case of stdout.
+      //
+      // Example: (all this appears on stderr, not stdout)
+      //
+      //   2019-03-30 00:03:22.385 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (microphone) orderer endpoint: nervous.clown:7050
+      //   2019-03-30 00:03:22.403 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"5678" 
+      //
+      auto duped = sys::posix::dup2(writefd, 2);
+      if (!ok(duped)) {
+        ancestors::Runner::dying_utterance(error_code(duped).message());
+      } else {
+        return ancestors::Runner::grow_child(-1, writefd);
+      }
+    } catch (std::exception const &e) {
+      ancestors::Runner::dying_utterance(e.what());
+    } catch (...) {
+      ancestors::Runner::dying_utterance("unknown");
+    }
+    return sys::exits::OSERR;
   }
 }
 #endiv

@@ -62,8 +62,8 @@ protected:
   auto dying_utterance(std::string_view fragment) const noexcept -> void;
   auto do_exec() const -> sys::call::Result;
   auto fork_invariance_check(results::Fork const &forked) const -> void;
-private:
-  auto grow_child() const noexcept -> sys::exits::Code;
+  // Descendants may overide to dup2(...) differently
+  virtual auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code;
 };
 #endiv
 #divert <ipp>
@@ -110,7 +110,7 @@ auto want::run::Runner::start() -> results::Start {
   if (is_parent(forked)) {
     running = pid(forked);
   } else if (is_child(forked)) {
-    exit(grow_child());
+    exit(grow_child(-1, -1));
   }
   fork_invariance_check(forked);
   return results::Start{ok(forked), error_num(forked), value(forked)};
@@ -126,7 +126,7 @@ auto want::run::Runner::wait() -> results::Wait {
 #import sys.exits.constants
 #import sys.exits.constants
 #import std.exception
-auto want::run::Runner::grow_child() const noexcept -> sys::exits::Code {
+auto want::run::Runner::grow_child(int, int) const noexcept -> sys::exits::Code {
   // We're in the child now, NOTHING ESCAPES
   try {
     auto execed = do_exec();

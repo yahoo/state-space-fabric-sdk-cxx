@@ -81,7 +81,7 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call {
 namespace hyperledger::fabric::peer::chaincode::packaging::call {
   template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Outcome<literal::Success> {
     using Result = Success;
-    run::Chaincode<Success> prog{to_string(function), context};
+    run::Chaincode<Success> prog{to_string(function), context, constructor};
     auto ran = prog.run();
     if (ok(ran)) {
       return Result{SUCCESS};
@@ -101,17 +101,19 @@ namespace hyperledger::fabric::peer::chaincode::packaging::call::function {
     auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
     // Whatever the system-level reason, we're going to return Code::RUN_PEERS
     auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
-    run::Chaincode<std::string> prog{to_string(function), context};
+    run::Chaincode<std::string> prog{to_string(function), context, constructor};
     auto started = prog.start();
     if (!ok(started)) {
       return badrun(error_code(started));
     }
-    std::string spew;
-    if (!(prog.stream() >> spew).eof()) {
+    char buf[1<<17];
+    auto &s = prog.stream();
+    if (!s.read(&buf[0], sizeof (buf)).eof()) {
       // If the stream is still good but not at EOF then a short read.
       // If the stream is bad or failed but not at EOF then there was a transmission error
       return badness(!prog.stream() ? error::Code::TRANSMISSION_INCOMPLETE : error::Code::PAYLOAD_TOO_SHORT);
     }
+    auto spew = std::string_view(&buf[0], s.gcount());
     auto waited = prog.wait();
     if (!ok(waited)) {
       // Arguably this should not happen. We got a valid dpew of lines from teh service, but the wait(2) to clean up the process failed.

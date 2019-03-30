@@ -41,7 +41,7 @@ namespace hyperledger::fabric::southside {
   // 
   namespace packaging::hack_the_spew::function {
     template<required::container::Push_Back CONTAINER> using Result = std::tuple<Code, CONTAINER>;
-    template<required::container::Push_Back CONTAINER> auto hack_the_spew(std::string const &) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type>;
+    template<required::container::Push_Back CONTAINER> auto hack_the_spew(std::string_view const &) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type>;
   }
   using packaging::hack_the_spew::function::hack_the_spew;
 }
@@ -53,7 +53,7 @@ namespace hyperledger::fabric::southside {
 #import std.stoi
 #import hyperledger.fabric.southside.Code
 namespace hyperledger::fabric::southside::packaging::hack_the_spew {
-  template<required::container::Push_Back CONTAINER> auto function::hack_the_spew(std::string const &specimen) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type> try {
+  template<required::container::Push_Back CONTAINER> auto function::hack_the_spew(std::string_view const &specimen) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type> try {
     using namespace std::string_literals;
     using Octet = typename CONTAINER::value_type; // e.g. char or std::byte
     auto const RESULT = "result:"s;

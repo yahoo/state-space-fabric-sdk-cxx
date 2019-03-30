@@ -29,12 +29,12 @@ namespace tests::unit::run {
 template<> auto tests::unit::run::Fixture::Fixture::test_usage_Chaincode<hyperledger::fabric::Success>() -> void {
   namespace hf = ::hyperledger::fabric;
   hf::peer::chaincode::Call context;
-  hf::run::Chaincode<hf::Success> subject{"package", context}; // <--------------- does it construct?
+  hf::run::Chaincode<hf::Success> subject{"invoke", context, "...bogus-args..."}; // <--------------- does it construct?
 }
 template<> auto tests::unit::run::Fixture::Fixture::test_usage_Chaincode<std::string>() -> void {
   namespace hf = ::hyperledger::fabric;
   hf::peer::chaincode::Call context;
-  hf::run::Chaincode<std::string> subject{"query", context}; // <--------------- does it construct?
+  hf::run::Chaincode<std::string> subject{"query", context, "...bogus-args..."}; // <--------------- does it construct?
 }
 #import hyperledger.fabric.peer.Context
 #import hyperledger.fabric.run.Peer.ALL
