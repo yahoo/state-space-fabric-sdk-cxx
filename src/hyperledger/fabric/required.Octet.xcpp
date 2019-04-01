@@ -1,0 +1,18 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#if 0
+[[FIXTHIS]] This should be available as nonstd::required::Octet, but not until at least module-nonstd-devel >= 0.3.0
+IMPORT nonstd.required.Octet
+namespace hyperledger::fabric::required {
+  //
+  // Is this an 8-bit item?
+  //
+  template<typename OCTET> concept bool Octet = nonstd::required::Octet<OCTET>;
+}
+#else
+namespace hyperledger::fabric::required {
+  template<typename OCTET> concept bool Octet = 1 == sizeof (OCTET);
+}
+#endif
+#endiv

@@ -84,6 +84,7 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/required.Character_Traits.cpp \
   obj/src/hyperledger/fabric/required.container.Push_Back.cpp \
   obj/src/hyperledger/fabric/required.Endpointy.cpp \
+  obj/src/hyperledger/fabric/required.Octet.cpp \
   \
   obj/src/hyperledger/fabric/run.Arguments.cpp \
   obj/src/hyperledger/fabric/run.arguments.Stream.cpp \

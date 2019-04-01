@@ -47,15 +47,20 @@ namespace hyperledger::fabric::southside {
 }
 #endiv
 #divert <tpp>
-#import std.string_literals
+#import std.back_inserter
 #import std.isdigit
+#import std.isspace
 #import std.move
 #import std.stoi
+#import std.string_literals
+#import std.transform
 #import hyperledger.fabric.southside.Code
+#import hyperledger.fabric.required.Octet
 namespace hyperledger::fabric::southside::packaging::hack_the_spew {
   template<required::container::Push_Back CONTAINER> auto function::hack_the_spew(std::string_view const &specimen) -> Result<CONTAINER> requires nonstd::required::Octet<typename CONTAINER::value_type> try {
     using namespace std::string_literals;
     using Octet = typename CONTAINER::value_type; // e.g. char or std::byte
+    static_assert(required::Octet<Octet>);
     auto const RESULT = "result:"s;
     auto const END = specimen.size();
     auto const NPOS = std::string::npos;
@@ -74,11 +79,39 @@ namespace hyperledger::fabric::southside::packaging::hack_the_spew {
           auto const PAYLOAD = "payload:"s;
           auto payload = specimen.find(PAYLOAD, result+RESULT.size()+number.size());
           if (NPOS != payload) {
-            CONTAINER body;
             auto quote1 = payload+PAYLOAD.size();
             auto const QQ = '"';
-            auto i{1lu+quote1};
-            if (i < END && QQ == specimen.at(quote1)) {
+            auto start{1lu+quote1};
+            if (start < END && QQ == specimen.at(quote1)) {
+              //
+              // WATCHOUT - the payload can have embedded quotes in it
+              //
+              // Example:                                                     \n and end of string --------\ (here)
+              //                                                                                           |
+              //                                                                                           v
+              //     ...etc... Chaincode invoke successful. result: status:200 payload:"{"apple":"banana"}"\n 
+              //                                                                        ^                 ^
+              //                                                                        |                 |
+              //                                                        start-----------/                 |
+              //                                                       finish-----------------------------/
+#if 1
+              auto quote2 = END-1;
+              while (start < quote2 && std::isspace(specimen.at(quote2))) {
+                --quote2;
+              }
+              if (QQ == specimen.at(quote2)) {
+                auto finish = quote2;
+                if (start < finish) {
+                  auto begin = specimen.begin();
+                  CONTAINER body;
+                  std::transform(begin+start, begin+finish, std::back_inserter(body), [](auto c) { return Octet(c); });
+                  return Result<CONTAINER>{code, std::move(body)};
+                }
+              }
+#else
+              //
+              // THIS IS WRONG ... it assumes no quotes inside the payload [[DELETEWHEN]] soon
+              //
               for (auto const e{END} ; e != i && QQ != specimen.at(i); ++i) {
 #pragma GCC diagnostic push  // Octet{...} will warn; Octet(...) will not warn.  Either way, Make It Messy & Hard To Read
 #pragma GCC diagnostic ignored "-Wnarrowing"
@@ -89,6 +122,7 @@ namespace hyperledger::fabric::southside::packaging::hack_the_spew {
               if (i < END && QQ == specimen.at(i)) {
                 return Result<CONTAINER>{code, std::move(body)};
               }
+#endif
             }
           }
         }

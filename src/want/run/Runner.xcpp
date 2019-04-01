@@ -140,6 +140,7 @@ auto want::run::Runner::grow_child(int, int) const noexcept -> sys::exits::Code 
 }
 #import sys.posix.exec
 #import sys.posix.execp
+#import c.str
 auto want::run::Runner::do_exec() const -> sys::call::Result {
   // Returning from exec is an error on its face;
   // e.g. arg0 is not valid, No such file or directory.
@@ -148,15 +149,6 @@ auto want::run::Runner::do_exec() const -> sys::call::Result {
   if (EXEC == exec) {
     return sys::posix::exec(arg0, args);
   } else {
-#if 0
-    std::cerr << "arg0=" << arg0 << ' ' << args.size();
-    std::cerr << " front=" << args.front() << '\n';
-    // return sys::posix::execp("/bin/true", args);
-    // return sys::posix::execp("/bin/true", "true");
-    auto r = ::execlp("/bin/true", "true-enough", 0);
-    std::cerr << " FAILING r=" << r << " errno=" << errno << "\n";
-    return sys::call::Result{false, errno, r}; // returning indicates a failure
-#endif
     return sys::posix::execp(/*blik blik blik - FIXTHIS*/c::str((std::string)arg0), args);
   }
 }
@@ -171,27 +163,15 @@ auto want::run::Runner::fork_invariance_check(results::Fork const &forked) const
     }
   }
 }
-#import write
 #import std.cerr
-auto want::run::Runner::dying_utterance(std::string_view frag) const noexcept -> void {
+auto want::run::Runner::dying_utterance(std::string_view frag) const noexcept -> void try {
   auto const pack = std::string_view{"hyperledger::fabric(want)"}; // [[FIXTHIS]] using ac = autotools::autoconf::Config<CONFIG>; ac::package_name()
-#if 1
-  // We're in the child, beyond an exec(...) that failed to exec;
+  // We're in the child, beyond an exec(...) that failed to take.
   // above us in the call stack, grow_child(...) returns into exit.
-  // but cerr stil works ... let's use it.
+  // but cerr still works, or maybe dup2 has redirected it into the pipe
+  // let's use it if we can.
   std::cerr << pack << " failed to exec " << arg0 << " because " << frag << '\n';
-#else
-  auto const pref = std::string_view{"run::::Runner: "};
-  auto const program = (std::string) arg0;
-  auto const space = std::string_view{" "};
-  auto const crnl = std::string_view{"\n"};
-  auto errfd{2};
-  ::write(errfd, pack.data(), pack.size());
-  ::write(errfd, pref.data(), pref.size());
-  ::write(errfd, frag.data(), arg0.size());
-  ::write(errfd, frag.data(), space.size());
-  ::write(errfd, frag.data(), frag.size());
-  ::write(errfd, crnl.data(), crnl.size());
-#endif
+} catch (...) {
+  // Not much we can do here (process exit is imminent anyway)
 }
 #endiv
