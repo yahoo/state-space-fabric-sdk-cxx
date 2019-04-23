@@ -62,6 +62,8 @@ lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/error.Category.cpp \
   obj/src/hyperledger/fabric/error.category.cpp \
   \
+  obj/src/hyperledger/fabric/exception.Aspect.cpp \
+  \
   obj/src/hyperledger/fabric/orderer.Contact.cpp \
   obj/src/hyperledger/fabric/peers.Contact.cpp \
   \

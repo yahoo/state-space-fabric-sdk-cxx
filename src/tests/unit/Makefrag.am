@@ -18,6 +18,7 @@ check_bin_unit_SOURCES = \
   obj/src/tests/unit/call.Fixture.cpp \
   obj/src/tests/unit/chaincode.Fixture.cpp \
   obj/src/tests/unit/fabric.Fixture.cpp \
+  obj/src/tests/unit/fabric.Fixture.Exceptional.cpp \
   obj/src/tests/unit/ip.Fixture.cpp \
   obj/src/tests/unit/ip.host.Fixture.cpp \
   obj/src/tests/unit/orderer.Fixture.cpp \

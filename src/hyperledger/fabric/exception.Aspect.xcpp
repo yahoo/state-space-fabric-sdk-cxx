@@ -1,0 +1,27 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+namespace hyperledger::fabric::exception {
+  //
+  // The aspect of a Hyperledger Fabric exception.
+  // This is a mixin in the standard styling.
+  // Descendants.
+  //
+  // Usage:
+  //
+  //   class my::Problem : public hyperledger::fabric::Aspect, public std::runtime_error {
+  //     explicit Problem(std;:string reason);
+  //     auto what() const -> char const * final { return std::runtime_error::what(); }
+  //   };
+  //
+  class Aspect;
+}
+#endiv
+#divert <hpp>
+class hyperledger::fabric::exception::Aspect {
+protected:
+  ~Aspect() = default;
+public:
+  virtual auto what() const noexcept -> char const * = 0;
+};
+#endiv
