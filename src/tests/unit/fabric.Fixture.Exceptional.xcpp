@@ -1,0 +1,33 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+#divert <fpp>
+#include <hpp/tests.unit.fabric.Fixture>
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.exception.Aspect
+#import std.runtime_error
+#import std.string
+class tests::unit::fabric::Fixture::Exceptional : public ::hyperledger::fabric::exception::Aspect, public std::runtime_error {
+  struct ancestors {
+    using Aspect = ::hyperledger::fabric::exception::Aspect;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline Exceptional(std::string const &reason);
+  auto what() const noexcept -> char const * final;
+};
+#endiv
+#divert <ipp>
+namespace tests::unit::fabric {
+  inline Fixture::Exceptional::Exceptional(std::string const &reason)
+    : ancestors::Exception{reason}
+  { }
+}
+#endiv
+#divert <cpp>
+namespace tests::unit::fabric {
+  auto Fixture::Exceptional::what() const noexcept -> char const * {
+    return ancestors::Exception::what();
+  }
+}
+#endiv

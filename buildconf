@@ -1,6 +1,7 @@
 #!/bin/sh
+# Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 
-cd ${0%/*} || exit 255
+cd ${0%/*} || exit 70
 # the minimum needed to get autotools to allow configure to check the rest
 declare -a REQUIRED_RPMS=(autoconf automake libtool)
 

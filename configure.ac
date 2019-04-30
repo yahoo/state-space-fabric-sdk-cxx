@@ -1,4 +1,5 @@
 dnl -*- autoconf -*-
+dnl Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
 dnl
 dnl ./buildconf &&
 dnl ./configure --prefix=/opt/hyperledger/fabric --with-std-tunitas=/opt/tunitas --with-std-scold=/opt/std/scold &&
