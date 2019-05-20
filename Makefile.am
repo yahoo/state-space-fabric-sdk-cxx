@@ -1,5 +1,7 @@
-# Obviously, this is a GNU -*- Makefile -*- which is managed by automake
-# Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright 2019, Oath Inc.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 
 # [[FIXTHIS]] - ACLOCAL_AMFLAGS is evaluated by automake *before* make even runs
 # It uses /bin/bash eval to evaluate the line ...

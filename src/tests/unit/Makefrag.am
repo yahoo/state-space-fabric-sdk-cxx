@@ -1,5 +1,8 @@
-# Not so obviously, this is a GNU -*- Makefile -*- which is included by automake, not by GNU make
-# Copyright (c) 2019 Verizon Media, Inc.  See the LICENSE statement nearby.
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright 2019, Oath Inc.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
 check_bin_unit = check/bin/unit
 check_bin_unit_LDADD = \
   $(lib_libhyperledger_fabric_la) \
