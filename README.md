@@ -10,18 +10,18 @@ This repo supports the State Space reference implementation of the IAB PrivacyCh
 
 A summary overview is as follows:
 * IAB [PrivacyChain](https://github.com/InteractiveAdvertisingBureau/PrivacyChain), contains
-** Specification Documents
-** Runbooks, Operation Documents
-** Project Governance Documents
-** Reference Design
+    * Specification Documents
+    * Runbooks, Operation Documents
+    * Project Governance Documents
+    * Reference Design
 * State Space reference implementation of the IAB PrivacyChain Technology Specification
-** [Packaging](https://github.com/yahoo/state-space-packaging), the packaging, the top-level repository.
-** [Apanolio](https://github.com/yahoo/tunitas-apanolio), a "Northside" API Service, as a macroservice, in [Apache HTTPd](https://httpd.apache.org/).
-** [Montara](https://github.com/yahoo/tunitas-montara), a "Northside" API Service, as a microservice.
-** [Tooling](https://github.com/yahoo/state-space-tooling), some operability tooling.
-** [Testing](https://github.com/yahoo/state-space-testing), some testing and performance assessments.
-** [PrivacyChain C++](https://github.com/yahoo/PrivacyChain-sdk-cxx), part of the "Southside" service components.
-** [Hyperledger Fabric C++](https://github.com/yahoo/hyperledger-fabric-sdk-cxx), part of the "Southside" service components.
+    * [Packaging](https://github.com/yahoo/state-space-packaging), the packaging, the top-level repository.
+    * [Apanolio](https://github.com/yahoo/tunitas-apanolio), a "Northside" API Service, as a macroservice, in [Apache HTTPd](https://httpd.apache.org/).
+    * [Montara](https://github.com/yahoo/tunitas-montara), a "Northside" API Service, as a microservice.
+    * [Tooling](https://github.com/yahoo/state-space-tooling), some operability tooling.
+    * [Testing](https://github.com/yahoo/state-space-testing), some testing and performance assessments.
+    * [PrivacyChain C++](https://github.com/yahoo/PrivacyChain-sdk-cxx), part of the "Southside" service components.
+    * [Hyperledger Fabric C++](https://github.com/yahoo/hyperledger-fabric-sdk-cxx), part of the "Southside" service components.
 * [Hyperledger Fabric](https://github.com/hyperledger/fabric), the upstream.
 
 ## Table of Contents
@@ -49,10 +49,11 @@ The [configuration](#configuration) step will check for many but not all require
 
 Generally, the dependencies are among:
 - The Hyperledger Fabric database and its Public Key Infrastructure (PKI) services.
+- Various components of the Tunitas system; <em>e.g.</em> the [Basic Components](https://github.com/yahoo/tunitas-basic).
 - A modern (C++2a) development environment.
 - A recent Fedora, but any recent Linux distro should suffice.
 
-The State Space was developed on Fedora 27 through Fedora 30 using GCC 7 and GCC 8 with `-fconcepts` and at least `-std=c++1z`.  More details on the development environment and the build system can be found in [temerarious-flagship](https://github.com/yahoo/temerarious-flagship/blob/master/README.md).
+The State Space project was developed on Fedora 27 through Fedora 30 using GCC 7 and GCC 8 with `-fconcepts` and at least `-std=c++1z`.  More details on the development environment and the build system can be found in [temerarious-flagship](https://github.com/yahoo/temerarious-flagship/blob/master/README.md).
 
 ## Installation
 
