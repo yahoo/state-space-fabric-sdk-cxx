@@ -4,8 +4,6 @@ This repository contains a C++ API for use with [Hyperledger Fabric](https://git
 
 The main body of documentation for the State Space reference implementation of the IAB PrivacyChain Technology Specification can be found with the [packaging](https://github.com/yahoo/state-space-packaging]).  The overview and administrative declarations herein are necessarily summary in nature. The declarations and definitions in the packaging area are complete and should be interpreted as superceding these when the two are in conflict.
 
-![banner](logo.png)
-
 This repo supports the State Space reference implementation of the IAB PrivacyChain Technology Specification.
 
 A summary overview is as follows:
