@@ -116,7 +116,7 @@ Please refer to [the contributing.md file](Contributing.md) for information abou
 
 ## Maintainers
 - Wendell Baker <wbaker@verizonmedia.com>
-- the State Space Team
+- The State Space Team at Verizon Media <state-space@verizonmedia.com>
 
 You may contact us at least at <state-space@verizonmedia.com>
 
