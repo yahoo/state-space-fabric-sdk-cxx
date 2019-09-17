@@ -10,7 +10,7 @@ dnl make check &&
 dnl make install &&
 dnl echo OK DONE
 dnl
-AC_INIT([fabric-sdk-c++], [0.0.0], [state-space@verizonmedia.com])
+AC_INIT([fabric-sdk-c++], [0.0.2], [state-space@verizonmedia.com])
 TF_INIT(AC_PACKAGE_NAME, AC_PACKAGE_VERSION, AC_PACKAGE_BUGREPORT)
 
 dnl These options are also in the Makefile.am in AUTOMAKE_OPTIONS
@@ -36,15 +36,29 @@ TF_ENABLE_GDB
 TF_ENABLE_GCC
 TF_ENABLE_MOCK_BUILD
 
-TF_WITH_STD([scold]) dnl the core modules system
-TF_WITH_STD([tunitas]) dnl application data types
-TF_WITH_STD([hyperledger-fabric]) dnl this is us, we are the Hyperledger Fabric C++ API
+#
+# To perform production builds, only the WITH_STD mentions must be replicated in
+#   Makefile.am: INSTALLATION_AREAS
+#
+# To perform development builds, the mentions herein must be replicated faithfully
+#   Makefile.am: DEVLOPMENT_AREAS, TESTING_AREAS
+#   Makefile.am: INSTALLATION_AREAS (same as before)
+#
 
+dnl Release 01 (Maximum Hammer) does not use this
+TF_WITH_STD([hyperledger-fabric]) dnl You won't need this until Hyperledger Fabric delivers (we deliver) a C++ API (an "SDK")
+TF_WITH_SUBSYSTEM([hyperledger-fabric-db], [], [The Hyperledger Fabric Data Base C++ Client-side SDK])
+TF_WITH_SUBSYSTEM([hyperledger-fabric-ca], [], [The Hyperledger Fabric Certificate Authority C++ Client-side SDK])
+TF_WITH_SUBSYSTEM([hyperledger-fabric], [], [The Hyperledger Fabric C++ Client-side SDK])
+TF_WITH_SUBSYSTEM([hyperledger], [], [The Hyperledger C++ Client-side SDK])
+
+TF_WITH_STD([tunitas])
 TF_WITH_SUBSYSTEM([temerarious-flagship], [], [The Tunitas Build System])
 TF_WITH_SUBSYSTEM([tunitas-basics], [], [The Tunitas Basics])
 
 # And mention these in $(DEVELOPMENT_AREAS) in Makefile.am
-dnl NO DEPENDENCY ON JSON ---> TF_WITH_MODULE([json]) <--- NO DEPENDENCY ON JSON
+TF_WITH_STD([scold]) dnl the core modules system
+dnl NO ---> TF_WITH_MODULE([json]) <--- NO ----> NO DEPENDENCY ON module-json (there is no JSON in fabric)
 TF_WITH_MODULE([nonstd])
 TF_WITH_MODULE([posix])
 TF_WITH_MODULE([std])
