@@ -1,0 +1,119 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::protocol {
+  //
+  // The "headers" of a request are meta-context about the request.
+  // They are typically expressed as "headers" within the HTTP transport protocol.
+  // There is no ordering sense among the headers.
+  // There may be duplicates in the header names.
+  //
+  // The std::initializer_list<Header> makes them convenient to assemble.
+  //
+  // Usage:
+  //
+  //   auto headers = Headers{{"A","apple"},{"B","banana"},{"C","cherry"}};
+  //   headers += {"D", "dog"};
+  //   headers = headers + {"E", "eagle"};
+  //   headers = {"F", "frog"} + headers;
+  //
+  class Headers;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.Header
+#import std.multimap
+namespace hyperledger::http {
+  class protocol::Headers : public std::multimap<Header::Name, Header::Value> {
+    using Ancestor = std::multimap<Header::Name, Header::Value>;
+  public:
+    inline Headers() = default;
+    using Ancestor::multimap;
+    Headers(Headers &&) = default;
+    inline auto operator=(Headers &&) -> Headers & = default;
+    inline auto operator+=(Header &&) -> Headers &;
+    inline auto operator+=(Headers &&) -> Headers &;
+    //inline auto insert(Header &&) -> void;
+    using Ancestor::insert;
+  };
+  namespace protocol {
+    // Yuk.  Is there no better way to do this?
+    inline auto operator+(Headers, Headers) -> Headers;
+    inline auto operator+(Headers &&, Headers) -> Headers;
+    inline auto operator+(Headers, Headers &&) -> Headers;
+    inline auto operator+(Headers &&, Headers &&) -> Headers;
+    //
+    inline auto operator+(Header, Header) -> Headers;
+    inline auto operator+(Headers &&, Header) -> Headers;
+    inline auto operator+(Header, Headers &&) -> Headers;
+  }
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http {
+  auto protocol::operator+(Headers a, Headers b) -> Headers {
+    a += move(b);
+    return move(a);
+  }
+  auto protocol::operator+(Headers &&a, Headers b) -> Headers {
+    a += move(b);
+    return move(a);
+  }
+  auto protocol::operator+(Headers a, Headers &&b) -> Headers {
+    a += forward<Headers>(b);
+    return move(a);
+  }
+  auto protocol::operator+(Headers &&a, Headers &&b) -> Headers {
+    a += forward<Headers>(b);
+    return move(a);
+  }
+}
+namespace hyperledger::http {
+#if 0
+  auto protocol::operator+(Header a, Header b) -> Headers {
+    // Wanted Headers{move(a), move(b)};
+    auto ret = Headers{};
+    ret.insert(move(a));
+    ret.insert(move(b));
+    return ret;
+  }
+  auto protocol::operator+(Headers &&a, Header b) -> Headers {
+    a += b;
+    return move(a);
+  }
+  auto protocol::operator+(Header a, Headers &&b) -> Headers {
+    b += a;
+    return move(b);
+  }
+#endif
+}
+namespace hyperledger::http::protocol {
+#if 0
+  auto Headers::operator+=(Header a) -> Headers & {
+    return operator=(move(a));
+  }
+  auto Headers::operator+=(Headers a) -> Headers & {
+    return operator=(move(a));
+  }
+#endif
+  auto Headers::operator+=(Header &&a) -> Headers & {
+    auto &self{*this};
+    self.insert(forward<Header>(a));
+    return *this;
+  }
+  auto Headers::operator+=(Headers &&a) -> Headers & {
+    auto &self{*this};
+    for (auto &aa : forward<Headers>(a)) {
+      // WATCHOUT - this sucks the members out of a living multimap.
+      self.insert(move(aa));
+    }
+    return *this;
+  }
+#if 0
+  auto Headers::insert(Header &&a) -> void {
+    Ancestor::insert(forward<Header>(a));
+  }
+#endif
+}
+#endiv

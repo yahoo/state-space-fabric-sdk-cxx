@@ -1,0 +1,35 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.v0.run.Loader
+#import hyperledger.fabric.v0.peer.Context
+namespace hyperledger::fabric::v0::run {
+  //
+  // The (argument) loader for hyperledger fabric peer commands
+  //
+  template<> class Loader<fabric::v0::peer::Context>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.loader.Basis
+template<> struct hyperledger::fabric::v0::run::Loader<hyperledger::fabric::peer::Context> : public loader::Basis {
+  using Source = fabric::v0::peer::Context;
+protected:
+  ~Loader() = default;
+  Loader() = default;
+  inline auto load(Arguments &lhs, Source const &rhs) -> void;
+};
+#endiv
+#divert <ipp>
+#import std.chrono.duration_cast
+#import std.chrono.seconds
+auto hyperledger::fabric::v0::run::Loader<hyperledger::fabric::peer::Context>::load(Arguments &lhs, Source const &rhs) -> void {
+  if (rhs.connection_timeout) {
+    using namespace std::chrono;
+    push_back<2>(lhs) << "--connTimeout" << duration_cast<seconds>(*rhs.connection_timeout);
+  }
+  // [[FIXTHIS]] add support for the --transient [[why?]] [[what is that for?]]
+}
+#endiv

@@ -1,0 +1,12 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_net_SUBSOURCES = \
+  obj/src/hyperledger/net/namespace.cpp \
+  $(obj_src_hyperledger_net_endpoint_SUBSOURCES) \
+  $(obj_src_hyperledger_net_error_SUBSOURCES) \
+  $(end)
+net-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_net_endpoint_SUBSOURCES))
+include src/hyperledger/net/endpoint/Makefrag.am
+include src/hyperledger/net/error/Makefrag.am

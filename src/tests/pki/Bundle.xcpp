@@ -1,0 +1,49 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+namespace tests::pki {
+  namespace bundle {
+    class Bundle;
+    namespace library = ::hyperledger::pki;
+  }
+  using bundle::Bundle;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.pki.Bundle
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Secret
+#import hyperledger.pki.Request
+namespace tests::pki {
+  struct bundle::Bundle : public cppunit::test::Fixture {
+    template<typename... TYPE> using Subject = library::Bundle<TYPE...>;
+    template<typename BUNDLE> auto test_constructor() -> void;
+    static auto suite() -> cppunit::Test *;
+  };
+  namespace bundle {
+    template<> auto Bundle::test_constructor<Bundle::Subject<library::Secret, library::Certificate, library::Certificates>>() -> void;
+  }
+}
+#endiv
+#divert <cpp>
+namespace tests::pki::bundle {
+  template<> auto Bundle::test_constructor<Bundle::Subject<library::Secret, library::Certificate, library::Certificates>>() -> void {
+#warning WRITETHIS template<> auto Bundle::test_constructor<Bundle::Subject<library::Secret, library::Certificate, library::Certificates>>() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::pki::bundle::Bundle::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Bundle<...>"};
+  series << call("Bundle<Secret,Certificate,Certificates>", &Bundle::test_constructor<Subject<library::Secret, library::Certificate, library::Certificates>>)
+#warning MORE needed
+         << END;
+  return finalize(series);
+}
+#endiv

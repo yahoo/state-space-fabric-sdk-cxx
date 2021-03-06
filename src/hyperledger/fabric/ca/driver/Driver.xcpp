@@ -1,0 +1,378 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.literals
+namespace hyperledger::fabric::ca::driver {
+  //
+  // The Certificate Driver.
+  //
+  // The driver is used for communicating between the client (our process; "us") and the Fabric CA APIs in the Server (Service; a.k.a. "them")
+  // The driver is used by service::Core
+  // The driver uses the transport (a transport::Prototype specialization)
+  // Was CAClient, from caservice.py
+  //
+  // Concept:
+  //
+  //   The driver does NOT maintain state.
+  //   State is maintained at the level above (in Service<MAIN> and main::Service)
+  //   State is maintained at the level below (in Transport<NAME> and transport::Prototype)
+  //
+  //   The transport driver communicates RPC style from the client (us) the server (them), with the Server being far away, across the transport.
+  //
+  // Sends Request-shaped objects after converting them into protocol::Request objects for the transport.
+  //
+  //     Request<REGISTRATION>    a.k.a. registration::Request
+  //     Request<ENROLLMENT>      a.k.a. enrollment::Request
+  //     Request<...something...> a.k.a. something::Request
+  //
+  // Returns a Response object that contains PKI elements
+  //
+  //     Certificates,
+  //     Bundles of Certificates.
+  //     Revocation Bundle of Certificates.
+  //     Revocation Bundle of Certificate Names [[signatures]]
+  //
+  // If you want default-argument behavior then use a transport::Configuration.
+  //
+  // Usage:
+  //
+  //   see main::Service{...};
+  //
+  class Driver;
+}
+#endiv
+#divert <hpp>
+#if 0 // [[REMOVETHIS]] as it is moved to service::Heavyweight
+// interface results
+#forward hyperledger.pki.Bundle
+#forward hyperledger.pki.Certificates
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Secret
+#forward hyperledger.pki.revocation.Certificates
+#forward hyperledger.pki.revocation.Names
+#endif
+// interface arguments
+#forward hyperledger.fabric.ca.Request
+#forward hyperledger.fabric.ca.Package
+#forward hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.required.configuration.Transport
+// private:
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.Response
+#import hyperledger.fabric.ca.transport.Prototype
+#forward hyperledger.http.url.String
+#forward hyperledger.json.Object
+#import hyperledger.Optional
+#import std.function
+#import std.unique_ptr
+struct hyperledger::fabric::ca::driver::Driver {
+  //
+  // Construct the transport to the Certificate Authority Service.
+  //
+  /*
+    Arguments:
+      target (str): CA server address including protocol,hostname,port
+      ca_certs_path (str): Local ca certs path
+      ca_name (str): The optional name of the CA. Fabric-ca servers support multiple Certificate Authorities from a single server
+    If omitted or null or an empty string, then the default CA is the target of requests.
+  */
+  template<required::configuration::Transport CONFIGURATION> inline explicit Driver(ca::Configuration<DRIVER> &&driver_configuration, CONFIGURATION &&transport_configuration);
+#if 0 // [[REMOVETHIS]] as it is moved to service::Heavyweight
+  inline auto get_cainfo() -> pki::Certificates;
+  [[deprecated("AVOID")]] auto enregister(ca::Request<REGISTRATION> &&) -> pki::Secret;
+  inline auto enregister(ca::Request<REGISTRATION> &&, Package<ENROLLMENT> const &) -> pki::Secret;
+  inline auto enroll(ca::Request<ENROLLMENT> &&) -> pki::Bundle<pki::Certificate, pki::Certificates>;
+  inline auto reenroll(ca::Request<ENROLLMENT> &&, Package<ENROLLMENT> const &) -> pki::Bundle<pki::Certificate, pki::Certificates>;
+  inline auto revoke(ca::Request<REVOCATION> &&, Package<ENROLLMENT> const &) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names>;
+  // revocations(...) was generateCRL(...)
+  inline auto revocations(ca::Request<REVOCATIONS> &&, Package<ENROLLMENT> const &) -> pki::revocation::Names;
+#endif
+  //
+  // call - an uninterpreted call.
+  // Given a path & a dictionary, recover a dictionary.
+  // Good luck to you.
+  //
+  // Return:
+  //   Success ... returns a dictionary
+  //   failure ... signalled by a REST exception; just like the other driver interface functions
+  //
+  using Path = http::url::String;
+  using Transport = ca::transport::Prototype;
+  inline auto call(Response (Transport::*)(Path const &, Headers const &), Path const &, Headers const &) -> Response;
+  inline auto call(Response (Transport::*)(Path const &, Headers const &, Request const &), Path const &, Headers const &, Request const &) -> Response;
+  inline auto call(Path const &, Headers const &) -> Response;
+  inline auto call(Path const &, Headers const &, Request const &) -> Response;
+#if 0 // [[REMOVETHIS]] because it is down the transport as tls::Client and up in service::Core as the Core::tenant
+public:
+  // Public because ... why not, and because the outlying services need access to it.  So either lotsa friends or it is public.
+  Optional<string::Storage> ca_name;
+#endif
+private:
+  std::unique_ptr<Transport> transport;
+  //
+  // Avoid cut & paste in and among the enregister(...), reenroll(..), revoke(...), generateCRL(..)
+  // [[neat!]] the RESULT type can be deduced from the recovery parameter!
+  //
+  template<typename RESULT, typename REQUEST> auto standard_post_and_response(REQUEST &&, Package<ENROLLMENT> const &, http::url::String const &path, std::function<RESULT (json::Object const &)> recovery) -> RESULT;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.traits.Configuration
+#import hyperledger.fabric.ca.transport.Transport
+#import std.make_unique
+namespace hyperledger::fabric::ca::driver {
+  template<required::configuration::Transport CONFIGURATION> Driver::Driver(ca::Configuration<DRIVER> &&driver_configuration, CONFIGURATION &&transport_configuration)
+    :
+#if 0
+    ca_name{move(driver_configuration.ca_name)},
+#endif
+    transport{std::make_unique<ca::transport::Transport<typename traits::template Configuration<CONFIGURATION>::Name>>(forward<CONFIGURATION>(transport_configuration))}
+  { }
+  auto Driver::call(Path const &path, Headers const &headers) -> Response                         { return call(&Transport::GET, path, headers); }
+  auto Driver::call(Path const &path, Headers const &headers, Request const &request) -> Response { return call(&Transport::POST, path, headers, request); }
+  auto Driver::call(Response (Transport::*bodyless)(Path const &, Headers const &), Path const &path, Headers const &headers) -> Response                                          { return (transport.get()->*bodyless)(path, headers); }
+  auto Driver::call(Response (Transport::*bodyfull)(Path const &, Headers const &, Request const &), Path const &path, Headers const &headers, Request const &request) -> Response { return (transport.get()->*bodyfull)(path, headers, request); }
+}
+#if 0 // [[REMOVETHIS]] as it is moved to service::Heavyweight
+// The complete types of the arguments and the return values
+#import hyperledger.pki.Bundle
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Secret
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+#import hyperledger.fabric.ca.Request
+#import hyperledger.fabric.ca.Package
+#endif
+#endiv
+#divert <tpp>
+#if 0 // [[REMOVETHIS]] as it is moved to service::Heavyweight
+#import hyperledger.Dictionary
+#import hyperledger.http.exception.Call
+#import std.any
+#import std.make_shared
+#import hyperledger.Dictionary
+namespace hyperledger::fabric::ca::driver {
+  template<typename RESULT, typename REQUEST> auto Driver::standard_post_and_response(REQUEST &&request, Package<ENROLLMENT> const &registrar, http::url::String const &path, std::function<RESULT (json::Object const &)> recovery) -> RESULT {
+    auto document = [&]() -> Dictionary {
+                        auto authorization = generateAuthToken(request, registrar);
+                        auto headers = Dictionary{{"Authorization", move(authorization)}};
+                        //
+                        // WATCHOUT -- what we're about to do is (1) take the non-JSON request
+                        //                                       (2) wrap it in a std::any, um, what exactly is that?
+                        //                                       (3) add it to the dictionary
+                        //
+                        auto magic = std::any(std::make_shared<REQUEST>(forward<REQUEST>(request)));
+                        //
+                        //                                                       dictionary::to_json(...)
+                        // WATCHOUT -- much magic happens right here wherein the dictionary serializer knows how to transform all possible REQUEST objects into protocol-valid JSON.
+                        //                                         |
+                        //              ////////////---------------/
+                        //              |||||||||||
+                        //              vvvvvvvvvvv
+                        return {{"json",move(magic)},{"headers",move(headers)},{"verify", this->ca_certs_path}}; // <---- FIXTHIS <-------------------- this cannot be correct
+                  }();
+    auto posted = transport->POST(path, document);
+    if (!ok(posted)) {
+      throw exception::Call<HTTP>{path, status(posted)};
+    } else {
+      auto const &blob = value(posted);
+      //
+      // success
+      // errors
+      // result.something <--\ (an object)
+      // result.something <--+-------------------- the result object is processed in the recover(...) thunk
+      // result.dark_side <--/
+      //
+      if (blob.contains("success")) {
+        return RESULT{recovery(blob.at("result"))};
+      } else {
+        throw exception::Call<REST>{path, "POST"_method, 400_status, to_string(blob.at("errors"))};
+      }
+    }
+  }
+}
+#endif
+#endiv
+#divert <cpp>
+#if 0 // [[REMOVETHIS]] as it is moved to service::Heavyweight
+#import hyperledger.fabric.ca.protocol.deserialize
+#import hyperledger.fabric.ca.driver.exception // blends the exception namespaces
+#import hyperledger.http.exception.Call
+#import hyperledger.http.url.String
+#import hyperledger.json.Object
+namespace hyperledger::fabric::ca::driver {
+  auto Driver::call(Response (Transport::*bodyless)(Path const &, Headers const &), Path const &path, Headers const &headers) -> Response {
+    auto gotten = (transport.get()->*bodyless)(path, headers);
+    if (!good(gotten)) {
+      throw exception::Call<HTTP>{path, status(gotten), "GET"};
+    } else {
+      auto &blob = value(gotten);
+      //
+      // success
+      // errors
+      // result.something <--\ (an object)
+      // result.something <--+-------------------- the result object is processed in the recover(...) thunk
+      // result.dark_side <--/
+      //
+      if (blob.contains("success")) {
+        return deserialize(blob.at("result"));
+      } else {
+        throw exception::Call<REST>{path, "GET"_method, 400_status, to_string(blob.at("errors"))}; //[[FIXTHIS]] the exception system copies the explanation always
+      }
+    }
+  }
+  auto Driver::call(Response (Transport::*bodyfull)(Path const &, Headers const &, Request const &), Path const &path, Headers const &headers, Request const &request) -> Response {
+    auto posted = (transport.get()->*bodyfull)(path, headers, request);
+    if (!good(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), "POST"};
+    } else {
+      auto const &blob = value(posted);
+      //
+      // success
+      // errors
+      // result.something <--\ (an object)
+      // result.something <--+-------------------- the result object is processed in the recover(...) thunk
+      // result.dark_side <--/
+      //
+      if (blob.contains("success")) {
+        return deserialize(blob.at("result"));
+      } else {
+        throw exception::Call<REST>{path, "POST"_method, 400_status, to_string(blob.at("errors"))};
+      }
+    }
+  }
+}
+#import hyperledger.base64.decode
+#import hyperledger.dictionary.to_json
+#import hyperledger.protocol.exception.Empty
+#import hyperledger.http.exception.Call
+#import hyperledger.Dictionary
+#import hyperledger.pki.from
+namespace hyperledger::fabric::ca::driver {
+  auto Driver::get_cainfo() -> pki::Certificates {
+    auto const path = "cainfo"_url; // [[FIXTHIS]] why is this "get_cainfo" when the the REST call was /cainfo
+    auto document = [&]() -> Request {
+                        auto body_data = Request{};
+                        if (this->ca_name) {
+                          body_data["caname"] = *this->ca_name;
+                        }
+                        return {{"json", move(body_data)},{"verify",this->ca_certs_path}};
+                      }();
+    auto posted = transport->POST(path, document);
+    if (!ok(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), "get_cainfo"};
+    }
+    auto const &blob = value(posted);
+    //
+    // success
+    // errors
+    // result.secret
+    // result.CAChain
+    // result.CAName
+    //
+    if (blob["success"]) {
+      auto const &result = blob["result"];
+      if (!ca_name || result["CAName"] == *ca_name) {
+        // We got the CA we were asking for
+        return pki::from<pki::Certificates>(base64::decode<string::Storage>(json::as<string::Storage>(result["CAChain"])));
+      }
+    }
+    throw exception::Call<REST>{path, "POST"_method, status(posted), "get_cainfo"}; // FIXTHIS ... there is --> blob["errors"]} <-- with somehow more detail
+  }
+  auto Driver::enregister(ca::Request<REGISTRATION> &&request, package<ENROLLMENT> const &registrar) -> pki::Secret {
+    auto recovery = [](json::Object const &result) -> pki::Secret {
+                       auto secret = [&]() {
+                                       auto bytes = base64::decode<std::vector<std::byte>>(result["secret"].asString());
+                                       return pki::from<pki::Secret>(bytes);
+                                     };
+                       return secret();
+                     };
+    return standard_post_and_response(forward<ca::Request<REGISTRATION>>(request), registrar, "register"_url, recovery);
+  }
+  auto Driver::enroll(ca::Request<ENROLLMENT> &&request) -> pki::Bundle<pki::Certificate, pki::Certificates> {
+#warning FIXTHIS auto Driver::enroll(ca::Request<ENROLLMENT> &&request) -> pki::Bundle<pki::Certificate, pki::Certificates> // ... is there really no possible way to put this into the standard_post_and_response call cycle?
+    auto const path = "enroll"_url;
+    if (empty(request.name)) {
+      throw exception::Empty{"name"};
+    }
+    if (empty(request.secret)) {
+      throw exception::Empty{"secret"};
+    }
+    auto selfcoded = [&request, this]() -> Dictionary {
+                         auto first = Dictionary::Value{"certificate_request"s, std::any(std::make_shared<pki::Request>(move(request.csr)))};
+                         auto ret = Dictionary{move(first)};
+                         if (this->ca_name) { ret["caname"] = this->ca_name; };
+                         if (request.profile) { ret["profile"] = move(request.profile); };
+                         ret["attr_reqs"] = move(request.attr_reqs);
+                         return ret;
+                       }();
+    // [[OBSERVE]] why are we sending the (enrollment) secret of the (enrollment) name up to the server, out on the wire.
+    // [[FIXTHIS]] is is NOT the secret used to sign the CSR.
+    // [[FIXME][ why is the request payload called "json" when it is base64 of JSON of a Certificate Signing Request (CSR) 
+    auto document = Dictionary{{"json", to_json(selfcoded)},{"auth",dictionary::Pair{request.name, request.secret}},{"verify",this->ca_certs_path}};
+    auto posted = transport->POST(path, document);
+    if (!ok(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), "could not enroll"};
+    }
+    auto const &blob = value(posted);
+    //
+    // success
+    // errors
+    // result.CAChain
+    // result.CAName
+    //
+    if (blob["success"]) {
+      auto const &result = blob["result"];
+      auto certificate_bytes = base64::decode<string::Storage>(result["Cert"].asString());
+      auto certificates_chain_bytes = base64::decode<string::Storage>(result["ServerInfo"]["CAChain"].asString());
+      auto certificate = pki::from<pki::Certificate>(certificate_bytes);
+      auto certificates_chain = pki::from<pki::Certificates>(certificates_chain_bytes);
+      return {move(certificate), move(certificates_chain)};
+    }
+    throw exception::Call<REST>{path, http::method::Name::POST, status(posted), blob["errors"].asString()};
+  }
+  auto Driver::reenroll(ca::Request<ENROLLMENT> const &request, package<ENROLLMENT> const &registrar) -> pki::Bundle<pki::Certificate, pki::Certificates> {
+    auto recovery = [](json::Object const &result) -> pki::Bundle<pki::Certificate, pki::Certificates> {
+                       auto certificate = [&]() {
+                                              auto bytes = base64::decode<std::vector<std::byte>>(result["Cert"].asString());
+                                              return pki::from<pki::Certificate>(bytes);
+                                          };
+                       auto chain = [&]() {
+                                      auto bytes = base64::decode<string::Storage>(result["ServerInfo"]["CAChain"].asString());
+                                        return pki::from<pki::Certificates>(bytes);
+                                      };
+                       return {certificate(), chain()};
+                     };
+    return standard_post_and_response(forward<ca::Request<ENROLLMENT>>(request), registrar, "reenroll"_url, recovery);
+  }
+  auto Driver::revoke(ca::Request<REVOCATION> const &request, Package<ENROLLMENT> const &registrar) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names> {
+    auto recovery = [](json::Object const &result) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names> {
+                       auto certificates = [&]() {
+                                             auto bytes = base64::decode<string::Storage>(result["RevokedCerts"].asString());
+                                               return pki::from<pki::revocation::Certificates>(bytes);
+                                             };
+                       auto list = [&]() {
+                                     auto bytes = base64::decode<string::Storage>(result["CRL"].asString());
+                                       return pki::from<pki::revocation::Names>(bytes);
+                                     };
+                       return {certificates(), list()};
+                     };
+    return standard_post_and_response(forward<ca::Request<REVOCATION>>(request), registrar, "revoke"_url, recovery);
+  }
+  auto Driver::revocations(ca::Request<REVOCATIONS> &&request, Package<ENROLLMENT> const &registrar) -> pki::revocation::Names {
+    auto recovery = [](json::Object const &result) pki::revocation::Names {
+                       auto list = [&]() {
+                                     auto bytes = base64::decode<string::Storage>(result["CRL"].asString());
+                                       auto list = pki::from<pki::revocation::Names>(bytes);
+                                       return list;
+                                     };
+                       return list();
+                     };
+    return standard_post_and_response(forward<ca::Request<REVOCATIONS>>(request), registrar, "gencrl"_url, recovery);
+  }
+}
+#endif
+#endiv

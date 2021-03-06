@@ -1,0 +1,57 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Octet
+#import hyperledger.http.required.response.Body
+namespace hyperledger::http::detail {
+  //
+  // The Transfoerer is a pesky implementation detail
+  // Transformer aids in std::transform
+  //
+  // The Transformer performs that pesky conversion
+  // ... from byte to char
+  // ... from char to some-other-traits-char
+  //
+  // Well yuk.
+  // See template<required::response::Body BODY> auto something::value_as(Response const &r) -> BODY
+  //     which requires this sleight of hand.
+  //
+  // Example:
+  //
+  //   using Result = ...the result body type, e.g. json::String...
+  //   auto source = ...the source body, e.g. http::request::Response...
+  //
+  //   Transformer<Result> constructor;
+  //   return constructor(source.begin(), source.end());
+  //
+  template<required::response::Body BODY, nonstd::required::Octet RHS> struct Transformer;
+}
+#endiv
+#divert <hpp>
+#import nonstd.required.iterator.Producing
+namespace hyperledger::http {
+  template<required::response::Body BODY, nonstd::required::Octet RHS> struct detail::Transformer {
+    using Body = BODY;
+    using Lhs = typename Body::value_type; // assume at least old_school
+    using Rhs = RHS;
+    template<nonstd::required::iterator::Producing<Rhs> ITERATOR> inline auto operator()(ITERATOR start, ITERATOR finish) -> Body;
+  };
+}
+#endiv
+#divert <ipp>
+#import std.transform
+#import std.back_inserter
+#import std.is_same
+namespace hyperledger::http::detail {
+  template<required::response::Body B, nonstd::required::Octet R> template<nonstd::required::iterator::Producing<R> ITERATOR> auto Transformer<B,R>::operator()(ITERATOR start, ITERATOR finish) -> Body {
+    if constexpr (std::is_same<Lhs, Rhs>::value) {
+      return Body{start, finish};
+    } else {
+      Body ret;
+      std::transform(start, finish, std::back_inserter(ret), [](auto rhs) -> Lhs { return Lhs(rhs); });
+      return ret;
+    }
+  }
+}
+#endiv

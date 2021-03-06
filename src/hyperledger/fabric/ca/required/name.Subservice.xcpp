@@ -1,0 +1,28 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_same
+#import hyperledger.fabric.ca.required.name.Service
+namespace hyperledger::fabric::ca::required::name {
+  //
+  // Is this enumeration in the universe of Sub-Service names?
+  //
+  template<typename MATCH> concept bool Subservice = Service<MATCH> && ! std::is_same_v<MATCH, MAIN>;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    static_assert(required::name::Subservice<AFFILIATION>);
+    static_assert(required::name::Subservice<CERTIFICATE>);
+    static_assert(required::name::Subservice<ENROLLMENT>);
+    static_assert(required::name::Subservice<IDENTITY>);
+    static_assert(not required::name::Subservice<MAIN>); // <---------------------- one of these things is not like the others
+    static_assert(required::name::Subservice<REGISTRATION>);
+    static_assert(required::name::Subservice<REVOCATION>);
+  }
+}
+#endiv

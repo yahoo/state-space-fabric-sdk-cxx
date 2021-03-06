@@ -1,0 +1,52 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::fabric::ca::traits::name {
+  template<required::Enumeration> struct Service;
+  template<> struct Service<AFFILIATION>;
+  template<> struct Service<CERTIFICATE>;
+  template<> struct Service<ENROLLMENT>;
+  template<> struct Service<IDENTITY>;
+  template<> struct Service<INFORMATION>;
+  template<> struct Service<MAIN>;
+  template<> struct Service<REGISTRATION>;
+  template<> struct Service<REVOCATION>;
+  template<> struct Service<REVOCATIONS>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::ca::traits {
+  template<required::Enumeration> struct name::Service : public False { };
+  namespace name {
+    template<> struct Service<AFFILIATION>  : public True<AFFILIATION> { };
+    template<> struct Service<CERTIFICATE>  : public True<CERTIFICATE> { };
+    template<> struct Service<ENROLLMENT>   : public True<ENROLLMENT> { };
+    template<> struct Service<IDENTITY>     : public True<IDENTITY> { };
+    template<> struct Service<INFORMATION>  : public True<INFORMATION> { };
+    template<> struct Service<MAIN>         : public True<MAIN> { };
+    template<> struct Service<REGISTRATION> : public True<REGISTRATION> { };
+    template<> struct Service<REVOCATION>   : public True<REVOCATION> { };
+    template<> struct Service<REVOCATIONS>  : public True<REVOCATIONS> { };
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.required.name.Service
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    // Because these two are defined independently of each other ... are they consistent?
+    static_assert(traits::name::Service<AFFILIATION>::value == required::name::Service<AFFILIATION>);
+    static_assert(traits::name::Service<CERTIFICATE>::value == required::name::Service<CERTIFICATE>);
+    static_assert(traits::name::Service<ENROLLMENT>::value == required::name::Service<ENROLLMENT>);
+    static_assert(traits::name::Service<IDENTITY>::value == required::name::Service<IDENTITY>);
+    static_assert(traits::name::Service<INFORMATION>::value == required::name::Service<INFORMATION>);
+    static_assert(traits::name::Service<MAIN>::value == required::name::Service<MAIN>);
+    static_assert(traits::name::Service<REGISTRATION>::value == required::name::Service<REGISTRATION>);
+    static_assert(traits::name::Service<REVOCATION>::value == required::name::Service<REVOCATION>);
+    static_assert(traits::name::Service<REVOCATIONS>::value == required::name::Service<REVOCATIONS>);
+  }
+}
+#endiv

@@ -1,0 +1,54 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::exception {
+  //
+  // Declare that the random number device via std::random_device is unusable.
+  // In The Old Days ... it was hardcoded to return nothing helpful.
+  // In The Modern Era ... it reads from /dev/urandom
+  //
+  // This exception signals a condition that is substantially a fatal problem
+  // because if there is no randomness then crypto won't work (well).
+  // This is a runtime error because it is detectable only at runtime.
+  // It likely won't go away ... it is a function of -lstdc++, -lc and the kernel itself.
+  //
+  // Usage:
+  //
+  //   throw Deterministic{};
+  //   throw Deterministic{"ouch"};
+  //
+  class Deterministic;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.exception.Aspects
+#import hyperledger.exception.feature.Random
+#import hyperledger.string.View
+#import std.runtime_error
+class hyperledger::crypto::exception::Deterministic : public Aspects,
+                                                      public hyperledger::exception::feature::Random,
+                                                      public std::runtime_error {
+  struct Ancestors {
+    using Aspects = crypto::exception::Aspects;
+    using Feature = crypto::exception::feature::Random;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Deterministic();
+  inline explicit Deterministic(string::View reason);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.string.Storage
+namespace hyperledger::crypto::exception {
+  Deterministic::Deterministic() : Ancestors::Exception{"std::random_device is deterministic"} { }
+  Deterministic::Deterministic(string::View reason) : Ancestors::Exception{string::Storage{reason.begin(), reason.end()}} { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::exception {
+  auto Deterministic::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

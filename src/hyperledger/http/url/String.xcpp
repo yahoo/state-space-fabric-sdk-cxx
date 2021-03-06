@@ -1,0 +1,96 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.char_traits
+namespace hyperledger::http::url {
+  //
+  // A string that is an URL, a URI, a URN.
+  // A distinct type to give us some type safety among all the strings that are floating around in Hyperledger.
+  //
+  // Usage:
+  //
+  //   just like std::string, only more urlie.
+  //
+  //   auto function(url::String, std::string) -> Result { ...somehow... }
+  //
+  namespace traits {
+    struct Character : public std::char_traits<char> { };
+  }
+  class String;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.View
+#import std.basic_string
+class hyperledger::http::url::String : public std::basic_string<char, traits::Character> {
+  using Ancestor = std::basic_string<char, traits::Character>;
+public:
+  String() = default;
+  using Ancestor::basic_string;
+  inline explicit String(Ancestor const &);
+  inline explicit String(Ancestor &&);
+  // You can construct an url::String from a regular string without a lot of ceremony
+  inline explicit String(string::View);
+};
+#import std.string_view
+#import std.string
+namespace hyperledger::http::url {
+  inline auto operator/(String, std::string_view const &) -> String;
+  inline auto operator+(String, std::string_view const &) -> String;
+#if 0 // NO NEED if there is a string view variant
+  //
+  inline auto operator/(String, std::string const &) -> String;
+  inline auto operator+(String, std::string const &) -> String;
+#endif
+  //
+  inline auto operator/(String, String const &) -> String;
+  inline auto operator+(String, String const &) -> String;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http {
+  auto url::operator/(String earl, std::string_view const &path) -> String {
+    if (path.empty()) {
+      return earl;
+    } else {
+      auto ret = String{std::move(earl)};
+      if (earl.empty()) {
+        earl.append("file:///");
+      } else if ('/' != earl.back() && '/' != path.front()) {
+        earl.push_back('/');
+      }
+      earl.append(path.begin(), path.end());
+      return earl;
+    }
+  }
+  auto url::operator+(String earl, std::string_view const &path) -> String {
+    auto ret = String{std::move(earl)};
+    ret.append(path.begin(), path.end());
+    return ret;
+  }
+}
+#if 0 // [[REMOVETHIS]]
+namespace hyperledger::http {
+  auto url::operator+(String earl, std::string const &path) -> String {
+    return operator+(move(earl), std::string_view{path.data(), path.size()});
+  }
+  auto url::operator/(String earl, std::string const &path) -> String {
+    return operator+(move(earl), std::string_view{path.data(), path.size()});
+  }
+}
+#endif
+namespace hyperledger::http {
+  auto url::operator+(String earl, String const &path) -> String {
+    return operator+(move(earl), std::string_view{path.data(), path.size()});
+  }
+  auto url::operator/(String earl, String const &path) -> String {
+    return operator+(move(earl), std::string_view{path.data(), path.size()});
+  }
+}
+namespace hyperledger::http::url {
+  String::String(Ancestor const &a) : Ancestor{a} { }
+  String::String(Ancestor &&a) : Ancestor{std::forward<Ancestor>(a)} { }
+  String::String(string::View v) : Ancestor{v.begin(), v.end()} { }
+}
+#endiv

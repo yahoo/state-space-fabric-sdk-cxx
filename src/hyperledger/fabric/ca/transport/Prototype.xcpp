@@ -1,0 +1,132 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The prototype of the low-level driver.
+  // Descendants only (obviously).
+  //
+  // was (parts of) CAClient, from caservice.py
+  //
+  // Usage:
+  //
+  //   auto cfg = transport::Configuration<HTTP>{};
+  //   auto dri = transport::Driver{HTTP{}, move(cfg)};
+  //
+  class Prototype;
+}
+#endiv
+#divert <hpp>
+#if 0 // DELETE ALL OF THIS
+#import hyperledger.Dictionary
+// #import hyperledger.crypto.Primitives
+// #import hyperledger.crypto.ecies
+#import hyperledger.fabric.ca.auth.Token
+#forward hyperledger.fabric.ca.enrollment.Request
+#forward hyperledger.fabric.ca.registration.Request
+#forward hyperledger.fabric.ca.Package
+// REMOVE #forward hyperledger.fabric.ca.service.Affiliation
+// REMOVE #forward hyperledger.fabric.ca.service.Certificate
+// REMOVE #forward hyperledger.fabric.ca.service.Identity
+#import hyperledger.http.json.Request
+#import hyperledger.http.json.Response
+#import hyperledger.http.url.String
+#import hyperledger.pki.Bundle // something about tls::Triple already exists at this level
+#import hyperledger.pki.Secret
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates // .............. a.k.a. the certificate chainto_string(
+#import hyperledger.pki.revocation.Certificates // ... some certificates
+#import hyperledger.pki.revocation.Names // .......... a.k.a. the certificate revocation list (CRL)
+#import std.filesystem.path
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#endif
+#forward hyperledger.fabric.ca.protocol.Headers
+#forward hyperledger.fabric.ca.protocol.Request
+#forward hyperledger.fabric.ca.protocol.Response
+#forward hyperledger.http.url.String
+struct hyperledger::fabric::ca::transport::Prototype {
+protected:
+  Prototype() = default;
+public:
+  [[key_method]] virtual ~Prototype();
+  Prototype(Prototype const &) = delete;
+  auto operator=(Prototype const &) -> Prototype & = delete;
+  //
+  // Some protocol types
+  //
+  // The Path is *only* the path compnent of the URL
+  // It MUST NOT contain the authority part (scheme, username, password, hostname, port)
+  // e.g. "/api/v1/user"
+  // n.b. if the Path does not begin with a '/' then it will never match anything.
+  //
+  using Path = http::url::String;
+  using Headers = protocol::Headers;
+  using Request = protocol::Request;
+  using Response = protocol::Response;
+  //
+  //
+  // -------- REMINDER ----------------------------------------
+  // Used:   POST                (as request-response)
+  // Unused: GET, DELETE, PUT    (these are uncallable and unused)
+  // -------- REMINDER ----------------------------------------
+  //
+  // Send a DELETE request to the ca service
+  // was: auto _send_ca_delete(Path const &, Dictionary const &params) -> Response;
+  //
+  /*
+    Arguments:
+      path: sub path after the base_url_path
+      param: delete request params
+    Returns:
+      The response body in JSON
+  */
+  virtual auto DELETE(Path const &, Headers const &) -> Response = 0;
+  //
+  // Send a GET request to the ca service
+  // was: auto _send_ca_get(Path const &, Dictionary const &params) -> Response;
+  /*
+    Arguments:
+      path: sub path after the base_url_path
+      param: get request params
+    Returns:
+      The response body in JSON
+  */
+  virtual auto GET(Path const &, Headers const &) -> Response = 0;
+  //
+  // Send a POST request to the ca service
+  // was: auto _send_ca_post(Path const &, Dictionary const &params) -> Response = 0;
+  //
+  /*
+    Arguments:
+      path: sub path after the base_url_path
+      param: post request params
+    Returns:
+      The response body in JSON
+  */
+  virtual auto POST(Path const &, Headers const &, Request const &) -> Response = 0;
+  //
+  // Send an update request to the ca service
+  // An "update" is voiced as "PUT"
+  // was: auto _send_ca_update(Path const &, Dictionary const &params) -> Response;
+  /*
+    Arguments:
+      path: sub path after the base_url_path
+      param: update request params
+    Returns:
+      The response body in JSON
+  */
+  virtual auto PUT(Path const &, Headers const &, Request const &) -> Response = 0;
+};
+// All specializations will need these
+#import hyperledger.http.url.String
+#import hyperledger.fabric.ca.protocol.Headers
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.Response
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::transport {
+  Prototype::~Prototype() = default;
+}
+#endiv

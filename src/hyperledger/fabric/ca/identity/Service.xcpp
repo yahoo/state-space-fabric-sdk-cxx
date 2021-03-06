@@ -1,0 +1,221 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.error
+#import hyperledger.fabric.ca.protocol // Force, Spontaneous, etc.
+#forward hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.exception
+namespace hyperledger::fabric::ca::identity {
+  //
+  // The (user) identity sub-api
+  // Descendants only.
+  // You will use Service<IDENTITY>
+  //
+  // Lifetimes
+  //
+  //   The lifetime of the Service (service) must be longer than that of the Service whence it came.
+  //
+  // Usage:
+  //
+  //   auto main = Service<MAIN>{...somehow...};
+  //   auto identity = main.api<IDENTITY>{};
+  //
+  //   auto created = identity.create(...arguments...);
+  //   auto got = identity.getOne(...arguments...);
+  //   auto got = identity.gotAll(...arguments...);
+  //   auto deleted = identity.deeleete(...arguments...);
+  //   auto updated = identity.update(...arguments...);
+  //   
+  namespace [[eponymous]] service {
+    class Service;
+    using namespace ca::protocol;
+    using ca::protocol::Request;; // prefer instead of ca::Request<...>
+    namespace exception {
+      using namespace protocol::exception; // Announcing this here means that other denizens of hyperledger::fabric::ca::affiliation do NOT get it.
+    }
+    namespace error {
+      using namespace http::error; // ibidem.
+    }
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.fabric.ca.Package
+#forward hyperledger.fabric.ca.Request
+#import hyperledger.fabric.ca.protocol.Response
+#forward hyperledger.fabric.ca.protocol.Doublet
+#forward hyperledger.fabric.ca.protocol.Triplet
+#import hyperledger.fabric.ca.service.Lightweight
+#import hyperledger.fabric.ca.protocol // Spontaneous
+#import hyperledger.Outcome
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import hyperledger.Success
+class hyperledger::fabric::ca::identity::service::Service : public ca::service::Lightweight {
+  using Ancestor = ca::service::Lightweight;
+protected:
+  using Ancestor::Lightweight;
+public:
+  //
+  // Create a new identity with the Fabric CA server.
+  // An enrollment secret is returned which can then be used, along with the enrollment ID, to enroll a new identity.
+  // The caller must have `hf.Registrar` authority.
+  //
+  /*
+    Arguments:
+      enrollmentID (str): enrollmentID ID which will be used for enrollment
+      enrollmentSecret (str): enrollmentSecret Optional enrollment secret to set for the registered user.
+          If not provided, the server will generate one.
+          When not including, use a null for this parameter.
+      role (str): Optional type of role for this user.
+          When not including, use a null for this parameter.
+      affiliation (str):  Affiliation with which this user will be associated
+      maxEnrollments (number): The maximum number of times the user is permitted to enroll [[WATCHOUT -- the Python code seems to prefer 'maxEnrollments' (CamelCase), yet the protocol itself uses 'max_enrollments' (snake_case)
+      attrs (dict):  Array of key/value attributes to assign to the user
+    Returns:
+      secret (str): The enrollment secret to use when this user enrolls
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike>
+      ValueError: Failed response, json parse error, args missing
+  */
+  // def create(self, registrar, enrollmentID, enrollmentSecret=None, role=None, affiliation=None, maxEnrollments=1, attrs=None):
+  // def update(self, enrollmentID, registrar, type=None, affiliation=None, maxEnrollments=None, attrs=None, enrollmentSecret=None, caname=None):
+  auto create(ca::Package<ENROLLMENT> const &registrar, ca::Request<IDENTITY> const &) -> Outcome<Response>;
+  auto getOne(ca::Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID) -> Outcome<Response>;
+  auto getAll(ca::Package<ENROLLMENT> const &registrar) -> Outcome<Response>;
+  auto deeleete(ca::Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID, Force = Force::NO) -> Success;
+  auto update(ca::Package<ENROLLMENT> const &registrar, ca::Request<IDENTITY> const &) -> Success;
+protected:
+  inline auto get_doublet(ca::Package<ENROLLMENT> const &registrar, Spontaneous enrollmentID) -> Doublet; // you can't force spontaneity
+  inline auto get_doublet(ca::Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID, Force = Force::NO) -> Doublet;
+  inline auto get_doublet(ca::Package<ENROLLMENT> const &registrar, Path &&path) -> Doublet;
+  inline static auto const VARIABLE = string::View{"identitites"}; // ...... singular
+  inline static auto const PATH_BASE = string::View{"/identities"}; // ... plural, with a leading slash and not yet an url::String because we compose it with other tokens
+  inline auto get_path(Spontaneous) -> Path;
+  inline auto get_path(string::Storage const &enrollmentID, Force = Force::NO) -> Path;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.Tenant
+#import hyperledger.string.literals
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::identity::service {
+  using namespace string::literals;
+  using protocol::serialize;
+}
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.Request.IDENTITY
+#import hyperledger.fabric.ca.protocol.Doublet
+#import hyperledger.fabric.ca.protocol.Triplet
+namespace hyperledger::fabric::ca::identity::service {
+  auto Service::get_doublet(ca::Package<ENROLLMENT> const &registrar, Spontaneous enrollmentID) -> Doublet                         { return get_doublet(registrar, get_path(enrollmentID)); }
+  auto Service::get_doublet(ca::Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID, Force force) -> Doublet { return get_doublet(registrar, get_path(enrollmentID, force)); }
+  auto Service::get_doublet(ca::Package<ENROLLMENT> const &registrar, Path &&path) -> Doublet {
+    auto headers = [&authorizer=this->authorizer, &registrar]() -> Headers {
+                     auto generated = authorizer.generate(registrar);
+                     if (!generated) {
+                       return {}; // This is "valid" in the sense that some authorization schemes are defined-null; e.g. Authorization<PASS>
+                     } else {
+                       return authorizer.standard_headers(move(*generated));
+                     }
+                   }();
+    return {forward<Path>(path), move(headers)};
+  }
+  auto Service::get_path(Spontaneous) -> Path { return Path{PATH_BASE}; }
+  auto Service::get_path(string::Storage const &enrollmentID, Force force) -> Path {
+    auto path = string::Storage{PATH_BASE} + "/"s + enrollmentID;
+    auto append = [&path, separator='?'](auto name_eq_value) mutable {
+                    path += separator;
+                    separator = '&';
+                    path += name_eq_value;
+                  };
+    static_assert(sizeof (hyperledger::fabric::ca::Tenant)); // WATCHOUT - with an incomplete type, the error messaging is too cryptic to diagnosee
+    if (this->tenant)        { append("ca="s + *this->tenant); } // should have been che3cked for emptiness at an earier stage
+    if (Force::YES == force) { append("force=true"); }
+    return Path{move(path)};
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.protocol.exception.Empty
+#import hyperledger.fabric.ca.protocol.exception.Missing
+#import hyperledger.fabric.ca.protocol.exception.Number
+#import hyperledger.fabric.ca.protocol.is
+#import hyperledger.http.error.Code
+namespace hyperledger::fabric::ca::identity::service {
+  // auto Service::create(self, registrar, enrollmentID, enrollmentSecret=None, role=None, affiliation=None, maxEnrollments=1, attrs=None):
+  auto Service::create(Package<ENROLLMENT> const &registrar, ca::Request<IDENTITY> const &request) -> Outcome<Response> {
+    if (!request.enrollmentID)                 { throw exception::Missing{"enrollmentID"}; }
+    if (empty(*request.enrollmentID))          { throw exception::Empty{"enrollmentID"}; }
+    if (!is_enrollment(*request.enrollmentID)) { throw exception::Identifier{"enrollmentID"}; }
+    if (request.max_enrollments) {
+      if (!is_numeric(*request.max_enrollments)) { throw exception::Number{"max_enrollments"}; }
+    }
+    // TODO -- affiliation -- default should be equal to registrar https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+#warning WATCHOUT -- this was "max_enrollments" and also "maxEnrollments" elsewhere
+#if 1
+#warning FIXTHIS ... it is stubbed out
+    auto document = Request{"WRONG"};
+#else
+    auto document = Request{{"id", request.enrollmentID},
+                            {"affiliation", request.affiliation.value_or("")},
+                            {"max_enrollments", request.max_enrollments}, // [[preferring]]
+                            {"maxEnrollments", request.max_enrollments}, // [[deprecating]]
+                            {"type", request.type}, // WATCHOUT - the python had this variously as 'role' or 'type
+                            {"attrs", serialize(request.attrs)},
+                            {"secret", request.secret}};
+#endif
+    auto [path, headers] = get_doublet(registrar, Spontaneous{});
+    return driver.call(move(path), move(headers), move(document));
+  }
+  auto Service::getOne(Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID) -> Outcome<Response> {
+    if (empty(enrollmentID)) { throw exception::Empty{"enrollmentID"}; }
+    auto [path, headers] = get_doublet(registrar, enrollmentID);
+    return driver.call(move(path), move(headers));
+  }
+  auto Service::getAll(Package<ENROLLMENT> const &registrar) -> Outcome<Response> {
+    auto [path, headers] = get_doublet(registrar, Spontaneous{});
+    return driver.call(move(path), move(headers));
+  }
+  auto Service::deeleete(Package<ENROLLMENT> const &registrar, string::Storage const &enrollmentID, Force force) -> Success {
+    if (empty(enrollmentID))       { throw exception::Empty{"enrollmentID"}; }
+    if (!is_numeric(enrollmentID)) { throw exception::Identifier{"enrollmentID"}; }
+    auto [path, headers] = get_doublet(registrar, enrollmentID, force);
+    auto del = driver.call(&transport::Prototype::DELETE, move(path), move(headers));
+    if (good(del)) {
+      return SUCCESS;
+    } else {
+      return {error::Code{status(del)}};
+    }
+  }
+  auto Service::update(Package<ENROLLMENT> const &registrar, ca::Request<IDENTITY> const &request) -> Success {
+    if (!request.enrollmentID)        { throw exception::Missing{"enrollmentID"}; }
+    if (empty(*request.enrollmentID)) { throw exception::Empty{"enrollmentID"}; }
+    if (request.max_enrollments) {
+      if (!is_numeric(*request.max_enrollments)) { throw exception::Number{"max_enrollments"}; }
+    }
+#warning WATCHOUT -- this was "max_enrollments" ad also "maxEnrollments" (elsewhere)
+#if 1
+#warning FIXTHIS ... it is stubbed out
+    auto document = Request{"WRONG"};
+#else
+    auto document = Request{{"type", request.type},
+                            {"affiliation", request.affiliation},
+                            {"max_enrollments": request.max_enrollments}, // [[preferring]]
+                            {"maxEnrollments": request.max_enrollments}, // [[deprecating]]
+                            {"attrs", serialize(request.attrs)},
+                            {"secret", request.secret},
+                            {"caname", request.caname}};
+#endif
+    auto [path, headers] = get_doublet(registrar, *request.enrollmentID);
+    auto upd = driver.call(&transport::Prototype::PUT, move(path), move(headers), move(document));
+    if (good(upd)) {
+      return SUCCESS;
+    } else {
+      return {error::Code{status(upd)}};
+    }
+  }
+}
+#endiv

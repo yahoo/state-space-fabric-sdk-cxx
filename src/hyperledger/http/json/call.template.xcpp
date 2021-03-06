@@ -1,0 +1,51 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.method.Name
+namespace hyperledger::http::json {
+  using Method = method::Name;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.http.json.Response
+#forward hyperledger.http.json.Request
+#forward hyperledger.http.protocol.Headers
+#forward hyperledger.http.url.String
+#forward hyperledger.tls.Client
+namespace hyperledger::http::json {
+  //
+  // The HTTP calls (that we need herein, specialized to JSON)
+  // Specializations only (for the ones that aren't trivial)
+  //
+  // Concept:
+  //
+  //   Not all methods have specializations.
+  //   Only the methods that meaningful JSON bodies or responses.
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto url = url::String{...somehow...};
+  //   auto headers = http::Headers{...somehow...};
+  //   auto json = json::Object{...somehow...}
+  //
+  //   auto response = call<GET>(client, url, headers);
+  //   auto response = call<POST>(client, url, headers, json);
+  //
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &) -> Response;
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.json.Request
+#import hyperledger.http.json.Response
+#import hyperledger.http.protocol.Headers
+#import hyperledger.http.url.String
+#import hyperledger.tls.Client
+// all specializations will need these
+#import hyperledger.json.Object
+namespace hyperledger::http {
+  template<json::Method METHOD> auto json::call(tls::Client const &client, url::String const &earl, protocol::Headers const &head) -> Response { return call<METHOD>(client, earl, head, Request{}); }
+}
+#endiv

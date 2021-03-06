@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca {
+  //
+  // A tenant is one of the { virtual, conceptual, multi-tenant } "certification authorities" that live inside the remote server.
+  // There can be many tenant Certificate Authorities.
+  // Or not.
+  //
+  // Concept:
+  //
+  //   It's an optional name.
+  //
+  // Design:
+  //
+  //   Make it an actual subtype so that ADL can find it and not just namespace std (a.k.a. namespace of Optional<Storage>)
+  //
+  // Usage:
+  //
+  //   Oh Come On.  It's an optional name (a short string).
+  //
+  namespace [[eponymous]] tenant {
+    struct Tenant;
+  }
+  using tenant::Tenant;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+namespace hyperledger::fabric::ca {
+  namespace tenant {
+    using std::move;
+    using std::swap;
+    inline auto swap(Tenant &, Tenant &) noexcept -> void;
+  }
+  class tenant::Tenant : public Optional<string::Storage> {
+    using Ancestor = Optional<string::Storage>;
+    friend auto swap(Tenant &, Tenant &) noexcept -> void;
+  public:
+    Tenant() = default;
+    using Ancestor::optional;
+    [[implicit]] Tenant(Ancestor const &a) : Ancestor{a} { }
+    [[implicit]] Tenant(Ancestor &&a) : Ancestor{forward<Ancestor>(a)} { }
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca {
+  auto tenant::swap(Tenant &a, Tenant &b) noexcept -> void {
+    Tenant::Ancestor &aa{a}, &bb{b};
+    swap(aa, bb);
+  }
+}
+#endiv

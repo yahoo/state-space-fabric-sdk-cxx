@@ -1,0 +1,39 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Subservice
+#import hyperledger.fabric.ca.required.Service
+#import hyperledger.fabric.ca.traits.Service
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this Service<NAME> in the universe of Sub-Services?
+  //
+  // Design: see required::Service<SERVICE>
+  // Usage:: same.
+  //
+  //   ca::required::Service<ca::Service<ca::MAIN>>
+  //
+  template<typename SUBSERVICE> concept bool Subservice = requires(SUBSERVICE) {
+    typename traits::template Service<SUBSERVICE>::Name;
+    requires Service<SUBSERVICE>;
+    requires name::Subservice<typename traits::template Service<SUBSERVICE>::Name>;
+  };
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Service
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    static_assert(required::Subservice<Service<AFFILIATION>>);
+    static_assert(required::Subservice<Service<CERTIFICATE>>);
+    static_assert(required::Subservice<Service<ENROLLMENT>>);
+    static_assert(required::Subservice<Service<IDENTITY>>);
+    static_assert(not required::Subservice<Service<MAIN>>); // <---------------------- one of these things is not like the others
+    static_assert(required::Subservice<Service<REGISTRATION>>);
+    static_assert(required::Subservice<Service<REVOCATION>>);
+  }
+}
+#endiv

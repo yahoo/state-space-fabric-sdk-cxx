@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.dictionary.Dictionary
+#import hyperledger.string.Storage
+namespace hyperledger::dictionary {
+  //
+  // Convert the dictionary to a string
+  //
+  // Converts to special JSON and thence to a string.
+  //
+  // Usage:
+  //
+  //   auto dict = Dictionary{...somehow...};
+  //
+  //   auto sss = to_string(dict);
+  //
+  inline auto to_string(Dictionary const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.dictionary.to_json
+#import hyperledger.json.to_string
+auto hyperledger::dictionary::to_string(Dictionary const &dict) -> string::Storage {
+  auto const jason = to_json(dict);
+  return json::to_string(jason);
+}
+#endiv

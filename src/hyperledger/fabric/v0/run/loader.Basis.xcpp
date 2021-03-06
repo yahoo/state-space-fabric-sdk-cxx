@@ -1,0 +1,26 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::fabric::v0::run::loader {
+  //
+  // Common ancestor of all Loader<CONTEXT> specializations
+  // Descendants only
+  //
+  struct Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.Arguments
+struct hyperledger::fabric::v0::run::loader::Basis {
+  using Arguments = run::Arguments;
+protected:
+  ~Basis() = default;
+  Basis() = default;
+};
+// every loader will use these
+#import hyperledger.fabric.error.Code
+#import hyperledger.fabric.v0.run.push_back
+#import std.error_code
+#endiv

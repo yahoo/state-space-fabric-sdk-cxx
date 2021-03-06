@@ -1,0 +1,256 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.protocol
+#forward hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.exception
+#import hyperledger.http.error
+namespace hyperledger::fabric::ca::affiliation {
+  //
+  // The affiliation sub-api
+  // Descendants only.
+  // You will use ca::Service<AFFILIATION>
+  //
+  // Lifetimes
+  //
+  //   The lifetime of the Affiliation (service) must be longer than that of the Service whence it came.
+  //
+  // Design:
+  //
+  //   The affiliation is always passed by constie reference.
+  //   The name, ca_name (caname) are always passed by value and moved into the request with move(...)
+  //
+  // Usage:
+  //
+  //   auto main = Service<MAIN>{...somehow...};
+  //   auto affiliation = main.api<AFFILIATION>{};
+  //
+  //   auto created = affiliation.create(...somehow...);
+  //   auto got = affiliation.getOne(...somehow...);
+  //   auto got = affiliation.getAll(...somehow...);
+  //   auto deleted = affiliation.deeleet(...somehow...);
+  //   auto updated = affiliation.update(...somehow...);
+  //
+  namespace [[eponymous]] service {
+    class Service;
+    using namespace ca::protocol;
+    using ca::protocol::Request; // prefer this one lieu of ca::Request<...>
+    namespace exception {
+      // Announcing this here means that other denizens of hyperledger::fabric::ca::affiliation do NOT get it.
+      using namespace protocol::exception;
+    }
+    namespace error {
+      // Announcing this here means that other denizens of hyperledger::fabric::ca::affiliation do NOT get it.
+      using namespace http::error;
+    }
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.service.Lightweight
+#import hyperledger.fabric.ca.protocol.Response
+#forward hyperledger.fabric.ca.protocol.Doublet
+#forward hyperledger.fabric.ca.protocol.Triplet
+#import hyperledger.Optional
+#import hyperledger.Outcome
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import hyperledger.Success
+class hyperledger::fabric::ca::affiliation::service::Service : protected ca::service::Lightweight {
+  using Ancestor = ca::service::Lightweight;
+protected:
+  using Ancestor::Lightweight;
+public:
+  //
+  // Create a new affiliation.
+  // The caller must have hf.AffiliationMgr authority.
+  // If any of the parent affiliations do not exist and 'force' is true, create all parent affiliations also.
+  //
+  /*
+    Arguments:
+      registrar (Enrollment): Required. The identity of the registrar (i.e. who is performing the registration)
+      name (str): The affiliation path to create
+      caname (str): Optional. Name of the CA to send the request to within the Fabric CA server
+      force (boolean): Optional.
+    Returns:
+      res (Dict): result
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike>
+      ValueError: Failed response, json parse error, args missing
+  */
+  inline auto create(Package<ENROLLMENT> const &registrar, string::Storage name, Optional<string::Storage> caname = {}, Force = Force::NO) -> Outcome<Response>;
+  //
+  // List a specific affiliation at or below the caller's affinity.
+  // The caller must have hf.AffiliationMgr authority.
+  //
+  /*
+    Arguments:
+      affiliation (str): The affiliation path to be queried.
+      registrar (Package<ENROLLMENT>): Required. The identity of the registrar (i.e. who is performing the registration)
+    Returns:
+      res (Dict): result
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike> returns an Outcome<Response>
+      ValueError: Failed response, json parse error, args missing
+  */
+  inline auto getOne(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation) -> Outcome<Response>;
+  //
+  // List all affiliations equal to and below the caller's affiliation.
+  // The caller must have hf.AffiliationMgr authority.
+  //
+  /*
+    Arguments:
+      registrar (Package<ENROLLMENT>): Required. The identity of the registrar (i.e. who is performing the registration)
+    Returns:
+      res (Dict): result
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike>
+      ValueError: Failed response, json parse error, args missing
+  */
+  inline auto getAll(Package<ENROLLMENT> const &registrar) -> Outcome<Response>;
+  //
+  // Delete an affiliation.
+  // The caller must have hf.AffiliationMgr authority.
+  // Ca server must have cfg.affiliations.allowremove: true
+  // If force is true and there are any child affiliations or any identities are associated with this affiliation or child affiliations,
+  // these identities and child affiliations will be deleted; otherwise, an error is returned.
+  //
+  /*
+    Arguments
+      registrar (Package<ENROLLMENT>): Required. The identity of the registrar (i.e. who is performing the registration)
+    Returns:
+      res (Dict): result
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike>
+      ValueError: Failed response, json parse error, args missing
+  */
+  inline auto deeleete(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, Force = Force::NO) -> Success;
+  //
+  // Rename an affiliation.
+  // The caller must have hf.AffiliationMgr authority.
+  // If any identities are associated with this affiliation, 'force' is true causes these identities' affiliations to be renamed;
+  // otherwise, an error is returned.
+  //
+  /*
+    Arguments:
+      registrar (Package<ENROLLMENT>): Required. The identity of the registrar (i.e. who is performing the registration)
+      affiliation (str): The affiliation path to be updated.
+      name (str): The affiliation path to create
+      caname (str): Optional. Name of the CA to send the request to within the Fabric CA server
+      force (boolean): Optional.
+    Returns:
+      res (Dict): result
+    Raises:
+      <strike>RequestException: errors in requests.exceptions</strike>
+      ValueError: Failed response, json parse error, args missing
+  */
+  inline auto update(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, string::Storage name, Optional<string::Storage> caname = {}, Force = Force::NO) -> Success;
+protected:
+  using Spontaneous = protocol::Spontaneous;
+  inline auto get_doublet(Package<ENROLLMENT> const &registrar, Spontaneous affiliation, Force force) -> Doublet;
+  inline auto get_doublet(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, Force force) -> Doublet;
+  inline auto get_doublet(Package<ENROLLMENT> const &registrar, Path &&path, Force force) -> Doublet;
+  inline auto get_triplet(Package<ENROLLMENT> const &registrar, Spontaneous affiliation, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet;
+  inline auto get_triplet(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet;
+  inline auto get_triplet(Package<ENROLLMENT> const &registrar, Path &&path, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet;
+  inline static auto const VARIABLE = string::Storage{"affiliation"}; // ...... singular
+  inline static auto const PATH_BASE = string::View{"/affiliations"}; // ... plural, with a leading slash and not yet an url::String because we compose it with other tokens
+  inline auto get_headers(Package<ENROLLMENT> const &registrar) -> Headers;
+  inline auto get_headers(Package<ENROLLMENT> const &registrar, Request const &) -> Headers;
+  inline auto get_headers(Optional<string::Storage> &&) -> Headers;
+  inline static auto get_path(Spontaneous) -> Path;
+  inline static auto get_path(string::Storage const &affiliation, Force force) -> Path;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.string.literals
+#import hyperledger.http.exception.call.Prototype
+#import hyperledger.http.error.Code
+namespace hyperledger::fabric::ca::affiliation::service {
+  using namespace string::literals;
+}
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.Doublet
+#import hyperledger.fabric.ca.protocol.Triplet
+#import hyperledger.fabric.ca.protocol.exception.Empty
+#import hyperledger.fabric.ca.protocol.exception.Identifier
+#import hyperledger.fabric.ca.protocol.is
+#import hyperledger.http.url.String
+namespace hyperledger::fabric::ca::affiliation::service {
+  auto Service::get_doublet(Package<ENROLLMENT> const &registrar, Spontaneous, Force force) -> Doublet                                                         { return get_doublet(registrar, get_path(Spontaneous{}), force); }
+  auto Service::get_triplet(Package<ENROLLMENT> const &registrar, Spontaneous, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet { return get_triplet(registrar, get_path(Spontaneous{}), move(name), move(caname), force); }
+  auto Service::get_doublet(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, Force force) -> Doublet {
+    if (empty(affiliation))           { throw exception::Empty{VARIABLE}; }
+    if (!is_affiliation(affiliation)) { throw exception::Identifier{VARIABLE}; }
+    return get_doublet(registrar, get_path(affiliation, force), force);
+  }
+  auto Service::get_triplet(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet {
+    if (empty(affiliation))           { throw exception::Empty{VARIABLE}; }
+    if (!is_affiliation(affiliation)) { throw exception::Identifier{VARIABLE}; }
+    return get_triplet(registrar, get_path(affiliation, force), move(name), move(caname), force);
+  }
+  auto Service::get_doublet(Package<ENROLLMENT> const &registrar, Path &&path, Force) -> Doublet { return {forward<Path>(path), get_headers(registrar)}; }
+  auto Service::get_triplet(Package<ENROLLMENT> const &registrar, Path &&path, string::Storage name, Optional<string::Storage> caname, Force force) -> Triplet {
+    auto request = Request{move(name)}; // [[REMOVETHIS]] was ...  move(caname)};
+    return {forward<Path>(path), get_headers(registrar, request), move(request)};
+  }
+  auto Service::get_headers(Package<ENROLLMENT> const &registrar) -> Headers                         { return get_headers(authorizer.generate(registrar)); }
+  auto Service::get_headers(Package<ENROLLMENT> const &registrar, Request const &request) -> Headers { return get_headers(authorizer.generate(registrar, request)); }
+  auto Service::get_headers(Optional<string::Storage> &&generated_authorization_token) -> Headers {
+    if (!generated_authorization_token) {
+      return {}; // This is "valid" in the sense that some authorization schemes are defined-null; e.g. Authorization<PASS>
+    } else {
+      return authorizer.standard_headers(move(*generated_authorization_token));
+    }
+  }
+  auto Service::get_path(Spontaneous) -> Path { return Path{PATH_BASE}; }
+  auto Service::get_path(string::Storage const &affiliation, Force force) -> Path {
+    auto assembly = string::Storage{PATH_BASE} + "/"s + affiliation;
+    if (Force::YES == force) {
+      assembly += "?force=true"s;
+    }
+    return Path{assembly};
+  }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::affiliation::service {
+  auto Service::create(Package<ENROLLMENT> const &registrar, string::Storage name, Optional<string::Storage> caname, Force force) -> Outcome<Response> try {
+    auto [path, headers, request] = get_triplet(registrar, Spontaneous{}, move(name), move(caname), force);
+    return driver.call(move(path), move(headers), move(request));
+  } catch (exception::call::Prototype const &e) {
+    return {error::Code{e.status()}};
+  }
+  auto Service::getOne(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation) -> Outcome<Response> try {
+    auto [path, headers] = get_doublet(registrar, affiliation, Force::NO);
+    return driver.call(move(path), move(headers));
+  } catch (exception::call::Prototype const &e) {
+    return {error::Code{e.status()}};
+  }
+  auto Service::getAll(Package<ENROLLMENT> const &registrar) -> Outcome<Response> {
+    auto [path, headers] = get_doublet(registrar, Spontaneous{}, Force::NO);
+    return driver.call(move(path), move(headers));
+  }
+  auto Service::deeleete(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, Force force) -> Success {
+    auto [path, headers] = get_doublet(registrar, affiliation, force);
+    auto del = driver.call(&transport::Prototype::DELETE, move(path), move(headers));
+    if (good(del)) {
+      return SUCCESS;
+    } else {
+      return {error::Code{status(del)}};
+    }
+  }
+  auto Service::update(Package<ENROLLMENT> const &registrar, string::Storage const &affiliation, string::Storage name, Optional<string::Storage> caname, Force force) -> Success {
+    auto [path, headers, request] = get_triplet(registrar, affiliation, move(name), move(caname), force);
+    auto put = driver.call(&transport::Prototype::PUT, move(path), move(headers), move(request));
+    if (good(put)) {
+      return SUCCESS;
+    } else {
+      return {error::Code{status(put)}};
+    }
+  }
+}
+#endiv

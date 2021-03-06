@@ -1,0 +1,57 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::dictionary {
+  //
+  // A dictionary.
+  // Of name-value-pairs, which has got to be the world's most popular data structure.
+  //
+  // Usage:
+  //
+  //   auto dict = Dictionary{};
+  //   dict["apple"] = "banana";
+  //   dict["cherry"] = 99;
+  //   dict["dog"] = 'e'; ...eagle...
+  //   dict["frog"] = 1.4;
+  //
+  class Dictionary;
+}
+#endiv
+#divert <hpp>
+#import std.any
+#import std.map
+#import std.string
+namespace hyperledger {
+  namespace dictionary {
+    using std::move;
+    using std::swap;
+    inline auto swap(Dictionary &, Dictionary &) noexcept -> void;
+  }
+  class dictionary::Dictionary : public std::map<std::string, std::any> {
+    using Ancestor = std::map<std::string, std::any>;
+    friend auto swap(Dictionary &, Dictionary &) noexcept -> void;
+  public:
+    Dictionary() = default;
+    using Ancestor::map;
+    Dictionary(Dictionary const &) = delete;
+    auto operator=(Dictionary const &) -> Dictionary & = delete;
+    Dictionary(Dictionary &&) = default;
+    auto operator=(Dictionary &&) -> Dictionary & = default;
+    // old_school is obviously available directly
+    using Value = value_type;
+    using Mapped = mapped_type;
+    using Key = key_type;
+    using Iterator = iterator;
+    using Const_Iterator = const_iterator;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger {
+  auto dictionary::swap(Dictionary &a, Dictionary &b) noexcept -> void {
+    Dictionary::Ancestor &aa{a}, &bb{b};
+    swap(aa, bb);
+  }
+}
+#endiv

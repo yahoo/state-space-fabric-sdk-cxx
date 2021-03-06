@@ -1,0 +1,49 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // There is some problem with a serialization activity.
+  //
+  // Concept:
+  //
+  //   This is classed as a runtime_error because it is related to the serialization data itself.
+  //
+  //   The reason must be a terse explanation.  Not too flowery.
+  //   Be cognizant that spewing incorrect values upwards through the error recovery channel is problematic.
+  //
+  // Usage:
+  //
+  //   throw exception::Serialize{"zero length array"};
+  //
+  class Serialize;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.exception.Aspects
+#import hyperledger.string.Storage
+#import std.runtime_error
+class hyperledger::fabric::ca::protocol::exception::Serialize : public protocol::exception::Aspects,
+                                                                public std::runtime_error {
+  struct Ancestors {
+    using Aspects = protocol::exception::Aspects;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Serialize(string::Storage const &reason);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  Serialize::Serialize(string::Storage const &reason)
+    : Ancestors::Exception{reason}
+  { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  auto Serialize::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

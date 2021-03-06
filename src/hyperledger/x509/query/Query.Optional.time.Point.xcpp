@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.query.Query.template
+#import hyperledger.Optional
+#import hyperledger.time.Point
+namespace hyperledger::x509::query {
+  //
+  // Query for an expired time (range)
+  //
+  template<> struct Query<Optional<time::Point>>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::x509::query {
+  template<> struct Query<Optional<time::Point>> : public Optional<time::Point> {
+    using Ancestor = Optional<time::Point>;
+  public:
+    Query() = default;
+    using Ancestor::optional;
+    Query(Ancestor const &a) : Ancestor{a} { }
+  };
+}
+#endiv

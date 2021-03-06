@@ -1,0 +1,39 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.Configuration
+#import hyperledger.fabric.ca.required.name.Transport
+namespace hyperledger::fabric::ca::required::configuration {
+  //
+  // Is this Configuration<NAME> in the universe of Configurations, of Transports, as named??
+  // a) is a configuration
+  // b) is a transport
+  //
+  // Usage:
+  //
+  //   Hack The Spew.
+  //
+  template<typename CONFIGURATION> concept bool Transport = requires(CONFIGURATION) {
+    typename traits::template Configuration<CONFIGURATION>::Name;
+    requires required::Configuration<CONFIGURATION>;
+    requires required::name::Transport<typename traits::template Configuration<CONFIGURATION>::Name>;
+  };
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Configuration
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    static_assert(not required::configuration::Transport<Configuration<MAIN>>);
+    static_assert(not required::configuration::Transport<Configuration<DRIVER>>);
+    //
+    static_assert(required::configuration::Transport<Configuration<FILES>>);
+    static_assert(required::configuration::Transport<Configuration<HTTP>>);
+    static_assert(required::configuration::Transport<Configuration<SOCKET>>);
+    static_assert(required::configuration::Transport<Configuration<SQLITE>>);
+  }
+}
+#endiv

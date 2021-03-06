@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.runtime.Management
+namespace hyperledger::x509::name {
+  //
+  // An X.509 Certificate Name
+  // The names (plural) of an x509 certificate
+  //
+  // For Hyperledger Fabric CA, we can only attest to the CN anyway.
+  //
+  // Usage:
+  //
+  //   Request req;
+  //   Name name = req.subject_name();
+  //
+  //   auto n = name.CN();
+  //   name.CN("something");
+  //   
+  template<runtime::Management> class Name;
+}
+#import hyperledger.runtime.constants // all the specialization will need these
+namespace hyperledger::x509::name { using namespace runtime::constants; }
+#endiv
+#divert <hpp>
+// All specializations will need this
+#import hyperledger.x509.name.Prototype
+#endiv

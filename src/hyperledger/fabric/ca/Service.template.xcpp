@@ -1,0 +1,21 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca {
+  //
+  // One of the many services that the CA (Service, the Client thereof) provides
+  // Specializations only.
+  //
+  // --> Service<MAIN> ........................................ the main service, whence cometh the subservices
+  //             |
+  //             \-- Service<REGISTRATION> .................... perform <register>
+  //             \-- Service<ENROLLMENT> ...................... perform <enroll> or <reenroll>
+  //             \-- Service<AFFILIATION> ..................... CRUD on affiliation (roles)
+  //             \-- Service<IDENTITY> ........................ CRUD the identity store
+  //             \-- Service<CERTIFICATE> ..................... (C?)RUD the certificate store using PKI & X.509 terms
+  //             \-- Service<REVOCATION> ...................... perform revocation on the certificate store using PKI & X.509 terms
+  //
+  template<typename> struct Service;
+}
+#endiv

@@ -1,0 +1,36 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Package.template
+namespace hyperledger::fabric::ca {
+  template<> struct Package<REGISTRATION>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.registration.Package
+namespace hyperledger::fabric::ca {
+  template<> class Package<REGISTRATION> : public registration::Package {
+    using Ancestor = registration::Package;
+  public:
+    using Ancestor::Package;
+  };
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+#import std.is_move_constructible
+#import std.is_move_assignable
+namespace {
+  namespace tests {
+    using namespace std;
+    using namespace hyperledger::fabric::ca;
+    static_assert(not is_copy_constructible_v<Package<REGISTRATION>>);
+    static_assert(not is_copy_assignable_v<Package<REGISTRATION>>);
+    static_assert(is_move_constructible_v<Package<REGISTRATION>>);
+    static_assert(is_move_assignable_v<Package<REGISTRATION>>);
+  }
+}
+#endiv

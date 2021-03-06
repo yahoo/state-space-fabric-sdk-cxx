@@ -1,0 +1,85 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls::endpoints {
+  //
+  // A series of TLS endpoints, with the dotls signal factored out
+  // Some calls, e.g. the peer(s) call, allow for a series of endpoints to be used.
+  //
+  // If dotls is true, it is an exception-signalled error for the optional Series' Endpoint::ca to be empty
+  //
+  // Usage:
+  //
+  //   auto es = Endpoints{true, {{"localhost"},{"localhost",8080},{"localhost":8088, "/etc/hyperledger/fabric/tls/ca.crt"}}};
+  //   cerr << format(es);
+  //   auto s = std::to_string(es);
+  //
+  class Endpoints;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Boolean
+#import hyperledger.string.Storage
+#import hyperledger.tls.endpoints.Series
+#import std.swap
+namespace hyperledger::tls {
+  namespace endpoints {
+    using std::move;
+    using std::swap;
+    inline auto swap(Endpoints &, Endpoints &) noexcept -> void;
+    inline auto to_string(Endpoints const &) -> string::Storage;
+  }
+  class endpoints::Endpoints : public tls::endpoints::Series {
+    using Ancestor = tls::endpoints::Series;
+    friend auto swap(Endpoints &, Endpoints &) noexcept -> void;
+  public:
+    using Series = Ancestor;
+    Endpoints() = default;
+    inline Endpoints(Series::Initializer);
+    inline explicit Endpoints(Series);
+    inline Endpoints(bool, Series);
+    Boolean dotls;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.tls.endpoints.Formatter
+#import std.ostringstream
+namespace hyperledger::tls {
+  auto endpoints::swap(Endpoints &a, Endpoints &b) noexcept -> void {
+    Endpoints::Ancestor &aa{a}, &bb{b};;
+    swap(aa, bb);
+    swap(a.dotls, b.dotls);
+  }
+  auto endpoints::to_string(Endpoints const &eps) -> string::Storage {
+    std::ostringstream buf;
+    using hyperledger::tls::endpoints::series::format; // [[FIXTHIS]] remember that namespace ::format occludes ADL for this name; [[REMOVEWHEN]] namespace ::format is subsumed into namespace form::at or such.
+    buf << format(eps); // will be satisfied by the ancestor's format(Series const &)
+    return buf.str();
+  }
+  namespace endpoints {
+    Endpoints::Endpoints(Series series) : Ancestor{move(series)} { }
+    Endpoints::Endpoints(Series::Initializer init) : Ancestor{move(init)} { }
+    Endpoints::Endpoints(bool dotls, Series series)
+      : Ancestor{move(series)}
+      , dotls{dotls}
+    { }
+  }
+}
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::tls::endpoints;
+    template<typename ENDPOINTS> concept Usage = requires(ENDPOINTS endpoints, ENDPOINTS others) {
+      { ENDPOINTS{} };
+      { move(endpoints) };
+      { swap(endpoints, others) };
+      { to_string(endpoints) };
+    };
+    static_assert(Usage<Endpoints>);
+  }
+}
+#endiv

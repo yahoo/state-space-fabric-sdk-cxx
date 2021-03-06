@@ -1,0 +1,17 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_crypto_exception_SUBSOURCES = \
+  obj/src/hyperledger/crypto/exception/namespace.cpp \
+  obj/src/hyperledger/crypto/exception/Aspect.cpp \
+  obj/src/hyperledger/crypto/exception/Aspects.cpp \
+  obj/src/hyperledger/crypto/exception/Algorithm.cpp \
+  obj/src/hyperledger/crypto/exception/Deterministic.cpp \
+  obj/src/hyperledger/crypto/exception/Operation.cpp \
+  obj/src/hyperledger/crypto/exception/Encrypt.cpp \
+  obj/src/hyperledger/crypto/exception/Decrypt.cpp \
+  obj/src/hyperledger/crypto/exception/Sign.cpp \
+  obj/src/hyperledger/crypto/exception/Validate.cpp \
+  $(end)
+exception-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_crypto_exception_SUBSOURCES))

@@ -1,0 +1,99 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::status::literals { }
+#endiv
+#divert <hpp>
+#import hyperledger.http.status.Code
+namespace hyperledger::http::status::literals {
+  //
+  // The (user-defined) literals of HTTP status
+  // Just HTTP 1.0, because that is what Hyperledger has standardized upon for its RPC.
+  //
+  // Usage:
+  //
+  //   #import hyperledger.http.status.literals
+  //   using namespace hyperledger::http::status::literals
+  //
+  template<char...> inline constexpr auto operator""_status() -> Code = delete;
+  template<char... DIGITS> inline constexpr auto operator""_http() -> Code { return operator""_status<DIGITS...>(); }
+
+  // These aren't for on-the-wire anyway
+  template<> inline constexpr auto operator""_status<'0'>() -> Code         { return Code::SUCCESS; }
+  template<> inline constexpr auto operator""_status<'0','0','0'>() -> Code { return Code::SUCCESS; }
+  template<> inline constexpr auto operator""_status<'1'>() -> Code         { return Code::FAILURE; }
+  template<> inline constexpr auto operator""_status<'0','0','1'>() -> Code { return Code::FAILURE; }
+  // 100-series
+  template<> inline constexpr auto operator""_status<'1','0','0'>() -> Code { return Code::CONTINUE; }
+  template<> inline constexpr auto operator""_status<'1','0','1'>() -> Code { return Code::SWITCHING_PROTOCOLS; }
+  template<> inline constexpr auto operator""_status<'1','0','2'>() -> Code { return Code::PROCESSING; }
+  // 200-series
+  template<> inline constexpr auto operator""_status<'2','0','0'>() -> Code { return Code::OK; }
+  template<> inline constexpr auto operator""_status<'2','0','1'>() -> Code { return Code::CREATED; }
+  template<> inline constexpr auto operator""_status<'2','0','2'>() -> Code { return Code::ACCEPTED; }
+  template<> inline constexpr auto operator""_status<'2','0','3'>() -> Code { return Code::NON_AUTHORITATIVE; }
+  template<> inline constexpr auto operator""_status<'2','0','4'>() -> Code { return Code::NO_CONTENT; }
+  template<> inline constexpr auto operator""_status<'2','0','5'>() -> Code { return Code::RESET_CONTENT; }
+  template<> inline constexpr auto operator""_status<'2','0','6'>() -> Code { return Code::PARTIAL_CONTENT; }
+  template<> inline constexpr auto operator""_status<'2','0','7'>() -> Code { return Code::MULTI_STATUS; }
+  template<> inline constexpr auto operator""_status<'2','0','8'>() -> Code { return Code::ALREADY_REPORTED; }
+  template<> inline constexpr auto operator""_status<'2','2','6'>() -> Code { return Code::IM_USED; }
+  // 300-series
+  template<> inline constexpr auto operator""_status<'3','0','0'>() -> Code { return Code::MULTIPLE_CHOICES; }
+  template<> inline constexpr auto operator""_status<'3','0','1'>() -> Code { return Code::MOVED_PERMANENTLY; }
+  template<> inline constexpr auto operator""_status<'3','0','2'>() -> Code { return Code::MOVED_TEMPORARILY; }
+  template<> inline constexpr auto operator""_status<'3','0','3'>() -> Code { return Code::SEE_OTHER; }
+  template<> inline constexpr auto operator""_status<'3','0','4'>() -> Code { return Code::NOT_MODIFIED; }
+  template<> inline constexpr auto operator""_status<'3','0','5'>() -> Code { return Code::USE_PROXY; }
+  template<> inline constexpr auto operator""_status<'3','0','6'>() -> Code { return Code::TEMPORARY_REDIRECT; }
+  template<> inline constexpr auto operator""_status<'3','0','7'>() -> Code { return Code::PERMANENT_REDIRECT; }
+  // 400-series
+  template<> inline constexpr auto operator""_status<'4','0','0'>() -> Code { return Code::BAD_REQUEST; }
+  template<> inline constexpr auto operator""_status<'4','0','1'>() -> Code { return Code::UNAUTHORIZED; }
+  template<> inline constexpr auto operator""_status<'4','0','2'>() -> Code { return Code::PAYMENT_REQUIRED; }
+  template<> inline constexpr auto operator""_status<'4','0','3'>() -> Code { return Code::FORBIDDEN; }
+  template<> inline constexpr auto operator""_status<'4','0','4'>() -> Code { return Code::NOT_FOUND; }
+  template<> inline constexpr auto operator""_status<'4','0','5'>() -> Code { return Code::METHOD_NOT_ALLOWED; }
+  template<> inline constexpr auto operator""_status<'4','0','6'>() -> Code { return Code::NOT_ACCEPTABLE; }
+  template<> inline constexpr auto operator""_status<'4','0','7'>() -> Code { return Code::PROXY_AUTHENTICATION_REQUIRED; }
+  template<> inline constexpr auto operator""_status<'4','0','8'>() -> Code { return Code::REQUEST_TIME_OUT; }
+  template<> inline constexpr auto operator""_status<'4','0','9'>() -> Code { return Code::CONFLICT; }
+  template<> inline constexpr auto operator""_status<'4','1','0'>() -> Code { return Code::GONE; }
+  template<> inline constexpr auto operator""_status<'4','1','1'>() -> Code { return Code::LENGTH_REQUIRED; }
+  template<> inline constexpr auto operator""_status<'4','1','2'>() -> Code { return Code::PRECONDITION_FAILED; }
+  template<> inline constexpr auto operator""_status<'4','1','3'>() -> Code { return Code::REQUEST_ENTITY_TOO_LARGE; }
+  template<> inline constexpr auto operator""_status<'4','1','4'>() -> Code { return Code::REQUEST_URI_TOO_LARGE; }
+  template<> inline constexpr auto operator""_status<'4','1','5'>() -> Code { return Code::UNSUPPORTED_MEDIA_TYPE; }
+  template<> inline constexpr auto operator""_status<'4','1','6'>() -> Code { return Code::RANGE_NOT_SATISFIABLE; }
+  template<> inline constexpr auto operator""_status<'4','1','7'>() -> Code { return Code::EXPECTATION_FAILED; }
+  template<> inline constexpr auto operator""_status<'4','1','8'>() -> Code { return Code::IM_A_TEAPOT; }
+  template<> inline constexpr auto operator""_status<'4','2','1'>() -> Code { return Code::MISDIRECTED_REQUEST; }
+  template<> inline constexpr auto operator""_status<'4','2','2'>() -> Code { return Code::UNPROCESSABLE_ENTITY; }
+  template<> inline constexpr auto operator""_status<'4','2','3'>() -> Code { return Code::LOCKED; }
+  template<> inline constexpr auto operator""_status<'4','2','4'>() -> Code { return Code::FAILED_DEPENDENCY; }
+  template<> inline constexpr auto operator""_status<'4','2','5'>() -> Code { return Code::TOO_EARLY; }
+  template<> inline constexpr auto operator""_status<'4','2','6'>() -> Code { return Code::UPGRADE_REQUIRED; }
+  template<> inline constexpr auto operator""_status<'4','2','8'>() -> Code { return Code::PRECONDITION_REQUIRED; }
+  template<> inline constexpr auto operator""_status<'4','2','9'>() -> Code { return Code::TOO_MANY_REQUESTS; }
+  template<> inline constexpr auto operator""_status<'4','3','1'>() -> Code { return Code::REQUEST_HEADER_FIELDS_TOO_LARGE; }
+  template<> inline constexpr auto operator""_status<'4','5','1'>() -> Code { return Code::UNAVAILABLE_FOR_LEGAL_REASONS; }
+  // 500-series
+  template<> inline constexpr auto operator""_status<'5','0','0'>() -> Code { return Code::INTERNAL_SERVER_ERROR; }
+  template<> inline constexpr auto operator""_status<'5','0','1'>() -> Code { return Code::NOT_IMPLEMENTED; }
+  template<> inline constexpr auto operator""_status<'5','0','2'>() -> Code { return Code::BAD_GATEWAY; }
+  template<> inline constexpr auto operator""_status<'5','0','3'>() -> Code { return Code::SERVICE_UNAVAILABLE; }
+  template<> inline constexpr auto operator""_status<'5','0','4'>() -> Code { return Code::GATEWAY_TIME_OUT; }
+  template<> inline constexpr auto operator""_status<'5','0','5'>() -> Code { return Code::VERSION_NOT_SUPPORTED; }
+  template<> inline constexpr auto operator""_status<'5','0','6'>() -> Code { return Code::VARIANT_ALSO_VARIES; }
+  template<> inline constexpr auto operator""_status<'5','0','7'>() -> Code { return Code::INSUFFICIENT_STORAGE; }
+  template<> inline constexpr auto operator""_status<'5','0','8'>() -> Code { return Code::LOOP_DETECTED; }
+  template<> inline constexpr auto operator""_status<'5','1','0'>() -> Code { return Code::NOT_EXTENDED; }
+  template<> inline constexpr auto operator""_status<'5','1','1'>() -> Code { return Code::NETWORK_AUTHENTICATION_REQUIRED; }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::http::status::literals {
+  static_assert(Code::NETWORK_AUTHENTICATION_REQUIRED == 511_status);
+}
+#endiv

@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.protocol.exception
+namespace hyperledger::fabric::ca::driver::exception {
+  //
+  // Blend these together because we want both right here.
+  //
+  using namespace protocol::exception;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.protocol.exception.constants
+namespace hyperledger::fabric::ca::driver {
+  using namespace ca::protocol::exception::constants; // e.g. HTTP, REST
+}
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca::driver;
+    static_assert(sizeof (HTTP));
+    static_assert(sizeof (REST));
+  }
+}
+#endiv

@@ -1,0 +1,30 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_json_la = lib/libhyperledger-json.la
+lib_libhyperledger_json_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_json_la_LIBADD = \
+  $(end)
+lib_libhyperledger_json_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_json_la_SOURCES))
+lib_libhyperledger_json_la_SOURCES = \
+  obj/src/hyperledger/json/namespace.cpp \
+  obj/src/hyperledger/json/String.cpp \
+  obj/src/hyperledger/json/Value.cpp \
+  \
+  $(obj_src_hyperledger_json_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_json_object_SUBSOURCES) \
+  $(end)
+include src/hyperledger/json/exception/Makefrag.am
+include src/hyperledger/json/object/Makefrag.am
+json-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_json_la_SUBSOURCES))
+$(lib_libhyperledger_json_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/json/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_json_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/json/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/json/dependencies.mk

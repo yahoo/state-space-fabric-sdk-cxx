@@ -1,0 +1,70 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::enrollment {
+  //
+  // The request for an enrollment,
+  // Descendants only.
+  // You will use hyperledger::fabric::ca::Request<ENROLLMENT>
+  //
+  // The request pairs the Certificate Signing Request (CSR) with the other factoids
+  //
+  // [[FIXTHIS]] ... not implemented as such
+  //    If you don't supply the CSR then one will have to be acquired for you. [[FIXTHIS]] now can that work?
+  //    That behavior belongs up in the Service that manages these things.
+  //
+  // Concept
+  //
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  // 
+  // Design:
+  //
+  //   All of the convenience machinery is in the constructor of Bundle
+  //   The Request, as such is simple and provides no real function.
+  //
+  // Usage:
+  //
+  //   auto spec = enrollment::Bundle{...somethow...};
+  //   auto req = enrollment::Request{spec};
+  //
+  //   auto srv = Service{...somehow...};
+  //
+  //   auto face = srv.enroll(req);
+  //   ...use the Package<ENROLLMENT> ...
+  //      e.g. to make some transactions against the database.
+  //
+  class Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Dictionary
+#import hyperledger.fabric.ca.enrollment.Bundle
+#import hyperledger.Optional
+#import hyperledger.pki.Request
+#import hyperledger.pki.Request
+#import hyperledger.string.Storage
+class hyperledger::fabric::ca::enrollment::Request : public Bundle {
+  using Ancestor = Bundle;
+protected:
+  ~Request() = default;
+public:
+  inline Request(Bundle, pki::Request);
+  inline Request(string::Storage name, string::Storage secret, Optional<Dictionary>, Optional<string::Storage> profile, pki::Request);
+  Request(Request &&) = default;
+  auto operator=(Request &&) -> Request & = default;
+  pki::Request request; // ........... was (nameD) 'csr' .......... a PEM blob including the Subject, the Constraints, whatever else these things hold.
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::enrollment {
+  Request::Request(Bundle bundle, pki::Request request)
+    : Ancestor{move(bundle)}
+    , request{move(request)}
+  { }
+  Request::Request(string::Storage name, string::Storage secret, Optional<Dictionary> dictionary, Optional<string::Storage> profile, pki::Request request)
+    : Ancestor{move(name), move(secret), move(dictionary), move(profile)}
+    , request{move(request)}
+  { }
+}
+#endiv

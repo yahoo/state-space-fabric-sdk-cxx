@@ -1,0 +1,40 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Request
+#forward hyperledger.pki.Secret
+#import std.is_same
+#import nonstd.same_as
+namespace hyperledger::pki::required {
+  //
+  // What are the pki (x509) objects that can be slurped or unslurped.
+  // These are they.
+  //
+  // Usage:
+  //
+  //   see pki::slurp(...) which is nearby
+  // 
+  template<typename OBJECT> concept bool Slurpable = (std::is_same_v<OBJECT, Certificate> ||
+                                                      std::is_same_v<OBJECT, Request> ||
+                                                      std::is_same_v<OBJECT, Secret>);
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Request
+#import hyperledger.pki.Secret
+#endiv
+#divert <cpp>
+// Of course, this is test code
+namespace {
+  namespace tests {
+    using namespace hyperledger::pki;
+    static_assert(required::Slurpable<Certificate>);
+    static_assert(required::Slurpable<Request>);
+    static_assert(required::Slurpable<Secret>);
+    static_assert(not required::Slurpable<int>);
+  }
+}
+#endiv

@@ -1,0 +1,26 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import nonstd.Outcome
+#import nonstd.required.constructible.by.Default
+#import nonstd.required.constructible.by.Copy
+#import nonstd.required.constructible.by.Move
+namespace nonstd::required {
+  //
+  // Is type TYPE suitable for an nonstd::Outcome<TYPE>?
+  // We *want* this to be the non-standard repertoire
+  // This is not yet in module-nonstd.  Rly?
+  //
+  // The subtlety here is that the type must be at least one of copyable or movable.
+  //
+  // Usage:
+  //
+  //   oh, come on!
+  // 
+  template<typename TYPE> concept bool Outcomable = (constructible::by::Default<TYPE> &&
+                                                     (constructible::by::Copy<TYPE> || constructible::by::Move<TYPE>) &&
+                                                     0 != sizeof (::nonstd::Outcome<TYPE>));
+}
+#endiv

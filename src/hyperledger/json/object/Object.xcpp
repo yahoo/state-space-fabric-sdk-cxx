@@ -1,0 +1,187 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::json::object {
+  //
+  // An object that is JSON.
+  //
+  // Concept:
+  //
+  //   Only for the OBJECT form to simulate a "document"
+  //   In the olden days we would have used an XML DOM.
+  //   And prior to that ... there was some other populat on-the-wire-du-jour.
+  //
+  //   We're NOT looking for an alternative boxed representation for integers, strings, floats, etc.
+  //   Only the OBJECT form, never the ARRAY form.
+  //
+  // Invariants:
+  //
+  //   The hyperledger::json::OBject will only ever hold the top-level ::json::Value of type OBJECT
+  //
+  // Design:
+  //
+  //   Thin, thin thin on top of Value.
+  //   Always forcing OBJECT.
+  //
+  // Usage:
+  //
+  //   Hack the Spew.
+  //
+  struct Object;
+}
+#endiv
+#divert <hpp>
+#import json.Value // an implementation detail, but an important anchor
+#forward hyperledger.json.object.Reference
+#import hyperledger.json.object.to_string
+#import hyperledger.string.View
+#import hyperledger.Optional
+namespace hyperledger::json {
+  namespace object {
+    using std::move;
+    using std::swap;
+    inline auto swap(Object &, Object &) noexcept -> void;
+    namespace [[detail]] backfill {
+      // WATCHOUT -- there isn't one of these circa module-json <= 0.8.0 so we make up our own
+      using ::json::Value;
+      inline auto swap(Value &, Value &) noexcept -> void;
+    }
+  }
+  class object::Object : private ::json::Value {
+    using Ancestor = ::json::Value;
+    friend auto object::swap(Object &, Object &) noexcept -> void;
+    friend auto object::to_string(Object const &) -> string::Storage;
+    template<runtime::Mutability> friend struct object::Reference;
+  public:
+    inline Object();
+    Object(Object const &) = delete;
+    Object(Object &&) = default;
+    inline Object(Ancestor &&);
+    auto operator=(Object const &) -> Object & = delete;
+    auto operator=(Object &&) -> Object & = default;
+    inline auto operator=(Ancestor &&) -> Object &;
+    //
+    template<runtime::Mutability ABILITY> using Reference = object::Reference<ABILITY>;
+    inline operator Reference<CONSTIE>() const;
+    inline operator Reference<MUTABLE>();
+    //
+    using Ancestor::empty;
+    using Ancestor::size;
+    using Ancestor::begin;
+    using Ancestor::end;
+    inline auto operator[](string::View) -> Reference<MUTABLE>; // ............... make a new one if the key is missing
+    // one index
+    inline auto at(string::View) const -> Reference<CONSTIE>; // ................ throws Missing if the key is ... missing
+    inline auto contains(string::View) const -> bool;
+    inline auto find(string::View) const -> Optional<Reference<CONSTIE>>; // .... will NOT make a new one if it is missing
+    inline auto find(string::View) -> Optional<Reference<MUTABLE>>;
+    // two indexes
+    inline auto at(string::View, string::View) const -> Reference<CONSTIE>; // ................ throws Missing if the key is ... missing
+    inline auto contains(string::View, string::View) const -> bool;
+    inline auto find(string::View, string::View) const -> Optional<Reference<CONSTIE>>; // .... will NOT make a new one if it is missing
+    inline auto find(string::View, string::View) -> Optional<Reference<MUTABLE>>;
+  private:
+    // lazy: not using any concepts because it's local to this private part of the object
+    template<typename RESULT, typename ANCESTOR> inline static auto find(ANCESTOR &, string::View) -> Optional<RESULT>;
+    template<typename RESULT, typename ANCESTOR> inline static auto find(ANCESTOR &, string::View, string::View) -> Optional<RESULT>;
+  };
+}
+#endiv
+#divert <ipp>
+#import json.value.constants // OBJECT
+#import hyperledger.json.exception.Missing
+#import hyperledger.json.object.Reference
+#import nonstd.basic_dope
+namespace hyperledger::json {
+  auto object::swap(Object &a, Object &b) noexcept -> void {
+    Object::Ancestor &aa{a}, &bb{b};
+    backfill::swap(aa, bb);
+  }
+  auto object::backfill::swap(Value &a, Value &b) noexcept -> void {
+    Value _;
+    _ = move(a);
+    a = move(b);
+    b = move(_);
+  }
+  namespace object {
+    Object::Object() : Ancestor{::json::value::OBJECT} { }
+    Object::Object(Ancestor &&object) : Ancestor{forward<Ancestor>(object)} { }
+    auto Object::operator=(Ancestor &&theirs) -> Object & {
+      Ancestor &ours{*this};
+      backfill::swap(ours, theirs);
+      return *this;
+    }
+    Object::operator Reference<CONSTIE>() const { return {static_cast<Ancestor const &>(*this)}; } // cast at the call site else the template constructor will try to do it within the class (and is not friends)
+    Object::operator Reference<MUTABLE>()       { return {static_cast<Ancestor &>(*this)}; }
+    auto Object::operator[](string::View key) -> Reference<MUTABLE> {
+      // because string::View::const_iterator is not a 'char const *' (a pointer)
+      auto rekey = nonstd::basic_dope<char const>{key.data(), key.size()};
+      return {*Ancestor::demand(rekey.begin(), rekey.end())};
+    }
+    auto Object::at(string::View key) const -> Reference<CONSTIE> {
+      // because string::View::const_iterator is not a 'char const *' (a pointer)
+      auto rekey = nonstd::basic_dope<char const>{key.data(), key.size()};
+      if (auto found = Ancestor::find(rekey.begin(), rekey.end()); found) {
+        return {*found};
+      } else {
+        auto rekey = string::Storage{key.begin(), key.end()}; // [[FIXTHIS]] werein runtime_error requires a std::string but immediate copies it
+        throw exception::Missing{move(rekey)};
+      }
+    }
+    auto Object::at(string::View key1, string::View key2) const -> Reference<CONSTIE> {
+      // because string::View::const_iterator is not a 'char const *' (a pointer)
+      auto rekey1 = nonstd::basic_dope<char const>{key1.data(), key1.size()};
+      if (auto found1 = this->Ancestor::find(rekey1.begin(), rekey1.end()); found1) {
+        auto rekey2 = nonstd::basic_dope<char const>{key2.data(), key2.size()};
+        if (auto found2 = found1->Ancestor::find(rekey2.begin(), rekey2.end()); found2) {
+          return {*found2};
+        } else {
+          auto rekey2 = string::Storage{key2.begin(), key2.end()}; // [[FIXTHIS]] werein runtime_error requires a std::string but immediate copies it
+          throw exception::Missing{rekey2};
+        }
+      } else {
+        auto rekey1 = string::Storage{key1.begin(), key1.end()}; // [[FIXTHIS]] werein runtime_error requires a std::string but immediate copies it
+        throw exception::Missing{rekey1};
+      }
+    }
+    auto Object::contains(string::View key) const -> bool { return (bool) find(key); }
+    auto Object::contains(string::View key1, string::View key2) const -> bool { return (bool) find(key1, key2); }
+    auto Object::find(string::View key) const -> Optional<Reference<CONSTIE>> { return find<Reference<CONSTIE>>(static_cast<Ancestor const &>(*this), key); }
+    auto Object::find(string::View key1, string::View key2) const -> Optional<Reference<CONSTIE>> { return find<Reference<CONSTIE>>(static_cast<Ancestor const &>(*this), key1, key2); }
+    auto Object::find(string::View key) -> Optional<Reference<MUTABLE>> {
+      // Yuck; this does the work twice.  But there doesn't seem to be a non-creating mutable-returning query.
+      if (find(key)) {
+        return operator[](key); // find the one that we now know does exist
+      } else {
+        return {}; // signal that it does not exist
+      }
+    }
+    auto Object::find(string::View key1, string::View key2) -> Optional<Reference<MUTABLE>> {
+      if (auto found1 = find(key1); found1) {
+        return find(key2);
+      } else {
+        return {}; // signal that it does not exist
+      }
+    }
+    template<typename RESULT, typename ANCESTOR> auto Object::find(ANCESTOR &container, string::View key) -> Optional<RESULT> {
+      auto rekey = nonstd::basic_dope<char const>{key.data(), key.size()};
+      if (auto found = container.Ancestor::find(rekey.begin(), rekey.end()); found) {
+        return {*found};
+      } else {
+        return {};
+      }
+    }
+    template<typename RESULT, typename ANCESTOR> auto Object::find(ANCESTOR &container, string::View key1, string::View key2) -> Optional<RESULT> {
+      auto rekey1 = nonstd::basic_dope<char const>{key1.data(), key1.size()};
+      if (auto found1 = container.Ancestor::find(rekey1.begin(), rekey1.end()); found1) {
+        auto rekey2 = nonstd::basic_dope<char const>{key2.data(), key2.size()};
+        if (auto found2 = container.Ancestor::find(rekey2.begin(), rekey2.end()); found2) {
+          return {*found2};
+        }
+      }
+      return {};
+    }
+  }
+}
+#endiv

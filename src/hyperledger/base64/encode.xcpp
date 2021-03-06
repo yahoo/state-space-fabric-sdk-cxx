@@ -1,0 +1,85 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import std.iterator_traits
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import hyperledger.required.Octet
+#import std.vector
+namespace hyperledger::base64 {
+  //
+  // Base64 encoding
+  //
+  // On failure to encode, a hyperledger::exception::Encode is thrown.
+  // Of course, hyperledger::exception::Encode is a descendant of hyperledger::exception::Aspect
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto encoded = encode("deadbeef"s);
+  //     auto encoded = encode(vekky);
+  //     ...do something with it...
+  //   } catch (exception::Encode const &e) {
+  //     std::string why = e.what();
+  //     ...explain...
+  //   }
+  //
+  //   oh come on
+  //
+  // This overload set is ambiguous for encode(char const *) ambiguous.  hint: why are you doing that?  wrap such in a "..."sv
+  inline auto encode(string::View) -> string::Storage;
+  template<nonstd::required::Octet OCTET> inline auto encode(std::vector<OCTET> const &) -> string::Storage;
+  template<typename ITERATOR> inline auto encode(ITERATOR start, ITERATOR finish) -> string::Storage requires nonstd::required::Octet<typename std::iterator_traits<ITERATOR>::value_type>;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger {
+  auto base64::encode(string::View origin) -> string::Storage           { return encode(origin.begin(), origin.end()); }
+  template<nonstd::required::Octet OCTET> auto base64::encode(std::vector<OCTET> const &origin) -> string::Storage {
+    return encode(origin.begin(), origin.end());
+  }
+}
+#import hyperledger.exception.Encode
+#import tunitas.base64.Encoder
+#import tunitas.base64.Exception
+#if 1
+#import hyperledger.byte.Octet
+#import std.for_each
+#import nonstd.same_as
+#endif
+namespace hyperledger {
+  template<typename ITERATOR> inline auto base64::encode(ITERATOR start, ITERATOR finish) -> string::Storage requires nonstd::required::Octet<typename std::iterator_traits<ITERATOR>::value_type> try {
+    // [[FIXTHIS]] more efficiency here?  the tunitas::base64::Encoder is a bit-level encoder tuned towards TCF, with its bit-level in-stream subfields
+    using tunitas::base64::Encoder;
+    Encoder enc;
+#if 1
+    // [[FIXTHIS]] Encoder should have an octet-iterator interface any day now.  When that happens, you should use it.
+    using namespace std;
+    using hyperledger::byte::Octet;
+    using namespace nonstd;
+    for_each(start, finish, [&enc](auto unputtable) {
+                              auto puttable = [unputtable]() {
+                                                // [[FIXTHIS^2]] Encoder should sport a Encoder::put(byte) interface.
+                                                using Unputtable = remove_const_t<decltype(unputtable)>;
+                                                if constexpr(same_as<Octet, Unputtable>) {
+                                                  return underlying_type_t<Octet>(unputtable);
+                                                } else {
+                                                  return unputtable;
+                                                }
+                                              }();
+                              enc.put(puttable);
+                            });
+#else
+    enc.put(start, finish);
+#endif
+    enc.put(Encoder::PAD8);
+    return enc.finalize();
+  } catch (tunitas::base64::Exception const &e) {
+    throw exception::Encode{e.what()};
+  }
+}
+#endiv
+#divert <cpp>
+#warning [[FIXTHIS]] tunitas::bas64::Encoder should have an octet-iterator interface any day now.  When that happens, you should use it.
+#endiv

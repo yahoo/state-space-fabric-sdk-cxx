@@ -1,0 +1,120 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto.number
+namespace tests::crypto::number {
+  namespace eponymous {
+    class Number;
+    namespace library = ::hyperledger::crypto::number;
+  }
+  using eponymous::Number;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.crypto.Number
+struct tests::crypto::number::eponymous::Number : public cppunit::test::Fixture {
+  using Subject = library::Number;
+  auto test_constructor_default() -> void;
+  template<typename INTEGER> auto test_constructor_conversion() -> void;
+  auto test_operator_plus() -> void;
+  auto test_operator_minus() -> void;
+  auto test_assignment_copy() -> void;
+  auto test_assignment_move() -> void;
+  auto test_operator_selfadd() -> void;
+  auto test_operator_selfsub() -> void;
+  auto test_operator_selfmul() -> void;
+  auto test_operator_selfdiv() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <tpp>
+namespace tests::crypto::number::eponymous {
+  template<typename INTEGER> auto Number::test_constructor_conversion() -> void {
+    auto const specimen = INTEGER{99};
+    auto subject = Subject{specimen};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+}
+#divert <cpp>
+namespace tests::crypto::number::eponymous {
+  auto Number::test_constructor_default() -> void {
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+#warning WRITETHIS auto Number::test_operator_plus() -> void
+  auto Number::test_operator_plus() -> void {
+  }
+#warning WRITETHIS auto Number::test_operator_minus() -> void
+  auto Number::test_operator_minus() -> void {
+  }
+#warning WRITETHIS auto Number::test_assignment_copy() -> void
+  auto Number::test_assignment_copy() -> void {
+  }
+#warning WRITETHIS auto Number::test_assignment_move() -> void
+  auto Number::test_assignment_move() -> void {
+  }
+#warning WRITETHIS auto Number::test_operator_selfadd() -> void
+  auto Number::test_operator_selfadd() -> void {
+  }
+#warning WRITETHIS auto Number::test_operator_selfsub() -> void
+  auto Number::test_operator_selfsub() -> void {
+  }
+#warning WRITETHIS auto Number::test_operator_selfmul() -> void
+  auto Number::test_operator_selfmul() -> void {
+  }
+#warning WRITETHIS auto Number::test_operator_selfdiv() -> void
+  auto Number::test_operator_selfdiv() -> void {
+  }
+}
+#import rigging.suite.io
+auto tests::crypto::number::eponymous::Number::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Number"};
+  series << []{
+              auto cons = Stream{"constructor"};
+              cons << call("default", &Number::test_constructor_default)
+                   << []{
+                        auto sion = Stream{"conversion"};
+                        sion << call("int8", &Number::test_constructor_conversion<char unsigned>)
+                             << call("int16", &Number::test_constructor_conversion<short unsigned>)
+                             << call("int32", &Number::test_constructor_conversion<unsigned>)
+                             << call("uint64", &Number::test_constructor_conversion<long unsigned>)
+                             << call("uint64+e", &Number::test_constructor_conversion<long long unsigned>)
+                             << END;
+                        return move(sion);
+                      }()
+                   << END;
+              return move(cons);
+            }()
+         << []{
+              auto una = Stream{"unary"};
+              una << call("operator+", &Number::test_operator_plus)
+                  << call("operator-", &Number::test_operator_minus)
+                  << END;
+              return move(una);
+            }()
+         << []{
+              auto ass = Stream{"assignment"};
+              ass << call("copy", &Number::test_assignment_copy)
+                  << call("move", &Number::test_assignment_move)
+                  << END;
+              return move(ass);
+            }()
+         << []{
+              auto self = Stream{"self"};
+              self << call("operator+=", &Number::test_operator_selfadd)
+                  << call("operator-=", &Number::test_operator_selfsub)
+                  << call("operator*=", &Number::test_operator_selfmul)
+                // WATCHOUT - you can't say "/=" lest the test be unaddressable
+                  << call("operator div=", &Number::test_operator_selfdiv)
+                  << END;
+              return move(self);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

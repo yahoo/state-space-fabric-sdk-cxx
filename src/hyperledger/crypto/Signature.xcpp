@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto {
+  //
+  // A signature.
+  //
+  // Usage:
+  //
+  //   you know, like a vector<byte> (a byte buffer)
+  //
+  class Signature;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.Buffer
+class hyperledger::crypto::Signature : public Buffer {
+  using Ancestor = Buffer;
+public:
+  Signature() = default;
+  using Ancestor::Buffer;
+};
+#endiv

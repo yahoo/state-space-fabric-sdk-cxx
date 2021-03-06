@@ -1,33 +1,31 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
 namespace tests::unit::orderer { class Fixture; }
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::orderer::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::orderer::Fixture : public cppunit::test::Fixture {
   auto test_Contact() -> void;
   static auto suite() -> cppunit::Test *;
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.orderer.Contact
+#import hyperledger.fabric.v0.orderer.Contact
 auto tests::unit::orderer::Fixture::test_Contact() -> void {
-  ::hyperledger::fabric::orderer::Contact subject;
+  ::hyperledger::fabric::v0::orderer::Contact subject;
   CPPUNIT_ASSERT(!subject.auth);
   CPPUNIT_ASSERT(!subject.client);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::orderer::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("orderer");
+  using namespace rigging::suite;
+  auto series = Stream{"orderer"};
   series << call("Contact", &Fixture::test_Contact)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

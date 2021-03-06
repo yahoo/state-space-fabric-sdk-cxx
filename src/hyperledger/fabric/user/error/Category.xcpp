@@ -1,0 +1,59 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::user::error {
+  //
+  // The (internal) error categories of the Hyperledger Fabric.
+  // these are distinct from the taxonomy of
+  // - Hyperledger (Runtime) in namespace hyperledger::error
+  // - Hyperledger PKI in namespace hyperledger::pki::errior
+  // - (external) errors of the HTTP status codes.
+  // - operating system errors of system_error or generic_error
+  // - C++ runtime errors of future_error, etc.
+  //
+  class Category;
+}
+#endiv
+#divert <hpp>
+#import std.error_category
+#import std.error_condition
+#import std.string
+class hyperledger::fabric::user::error::Category : public std::error_category {
+  using Ancestor = std::error_category;
+  Category() = default;
+  friend auto category() -> Category const &;
+public:
+  auto name() const noexcept -> char const *;
+  auto default_error_condition(int code) const noexcept -> std::error_condition;
+  auto message(int code) const -> std::string;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.user.error.Condition
+#import hyperledger.fabric.user.error.Code
+#import std.to_string
+namespace hyperledger::fabric::user::error {
+  auto Category::name() const noexcept -> char const * { return "user"; }
+  auto Category::default_error_condition(int code) const noexcept -> std::error_condition {
+    auto condy = 0 != code ? Condition::FAILURE : Condition::SUCCESS;
+    return {condy};
+  }
+  auto Category::message(int codint) const -> std::string {
+    switch (code::Enumeration{codint}) {
+    case Code::SUCCESS:
+      return "success";
+    case Code::FAILURE:
+      return "failure";
+    case Code::CREATE:
+      return "cannot create the user"; 
+    case Code::LOAD:
+      return "cannot load the user"; 
+    case Code::INVALID:
+      return "invalid user record"; 
+    default:
+      return "error #" + std::to_string(codint);
+    }
+  }
+}
+#endiv

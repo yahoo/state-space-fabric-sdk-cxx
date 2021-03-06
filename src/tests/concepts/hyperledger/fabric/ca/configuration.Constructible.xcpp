@@ -1,0 +1,13 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <tpp>
+namespace tests::concepts::hyperledger::fabric::ca::configuration {
+  //
+  // Usage:
+  //
+  //   see hyperledger/fabric/ca/Configuration.$SOMETHING.xcpp
+  //
+  template<typename CONFIGURATION> concept bool Constructible = Can<CONFIGURATION, DEFAULT, MOVE> && (Can<CONFIGURATION, COPY> || Not<CONFIGURATION, COPY>);
+}
+#endiv

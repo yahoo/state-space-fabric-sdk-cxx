@@ -1,0 +1,120 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.variant.Visitor
+namespace hyperledger::fabric::user::packaging::load_implementation {
+  //
+  // The loaded of loading a user; an Outcome<User> by another name.
+  //
+  // This is *almost* an Outcome<User>, but User does not have a default constructor, and Outcome<User> requires such.
+  // Therefore some indirect methods must be some other machinery must be brought to bear.
+  //
+  // Design:
+  //
+  //   Functionally similar to Outcome<User>
+  //   Use one level of indirection to get around the constraint.
+  //
+  // Usage:
+  //
+  //   auto loaded = load(...somehow...);
+  //   if (good(loaded)) {
+  //     auto user = value(move(loaded));
+  //     ...use the user to do some transaction-like behaviors...
+  //   } else {
+  //     auto ec = error_code(loaded);
+  //     ...complain...
+  //      ...leave...
+  //   }
+  //
+  namespace loaded {
+    struct Loaded;
+    using variant::Visitor;
+  }
+  using loaded::Loaded;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Outcome
+#import hyperledger.fabric.user.User
+#import hyperledger.error.Code
+#import hyperledger.string.Storage
+#import std.unique_ptr
+#import std.is_copy_constructible
+namespace hyperledger::fabric::user::packaging::load_implementation {
+  namespace loaded {
+    inline auto ok(Loaded const &) -> bool;
+    inline auto good(Loaded const &) -> bool;
+    inline auto fail(Loaded const &) -> bool;
+    inline auto error_code(Loaded const &) -> error::Code;
+    inline auto error_message(Loaded const &) -> string::Storage;
+    inline auto value(Loaded const &) -> User const &;
+    inline auto value(Loaded &) -> User &;
+    inline auto value(Loaded &&) -> User &&;
+  }
+  class loaded::Loaded : private Outcome<std::unique_ptr<User>> {
+    using Ancestor = Outcome<std::unique_ptr<User>>;
+    using Grandcestor = std::variant<std::error_code, std::unique_ptr<User>>; // WATCHOUT - this presumes the composition of Outcome<VALUE>
+  public:
+    // These have to be public so that the Visitor lambdas can see them
+    using Direct = User;
+    using Indirect = std::unique_ptr<Direct>;
+    friend auto v(Loaded const &loaded) -> Grandcestor const & { return loaded; }
+    friend auto v(Loaded &loaded) -> Grandcestor &             { return loaded; }
+    friend auto v(Loaded &&loaded) -> Grandcestor &&           { return forward<Loaded>(loaded); }
+  public:
+    Loaded() = default;
+    using Error = Ancestor::Error;
+    using Payload = Direct; // Direct argument capture of a User ... or Indirect capture of a user (structure) in the ancestor
+    inline Loaded(Error);
+    inline Loaded(Payload &&);
+    static_assert(!std::is_copy_constructible_v<Payload>);
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.exception.Invalid
+#import hyperledger.variant.Visitor
+#import hyperledger.variant.visit
+#import std.make_unique
+namespace hyperledger::fabric::user::packaging::load_implementation {
+  namespace loaded { using variant::visit; }
+  auto loaded::ok(Loaded const &ll) -> bool   { return good(ll); }
+  auto loaded::fail(Loaded const &ll) -> bool { return !good(ll); }
+  auto loaded::good(Loaded const &ll) -> bool {
+    auto const vv = Visitor{[](Loaded::Error const &)    { return false; },
+                            [](Loaded::Indirect const &) { return true; }};
+    return visit(vv, v(ll));
+  }
+  auto loaded::error_code(Loaded const &ll) -> error::Code {
+    auto const vv = Visitor{[](Loaded::Error const &ee) -> Loaded::Error const &  { return ee; },
+                            [](Loaded::Indirect const &) -> Loaded::Error const & { throw exception::Invalid{"Loaded"}; }};
+    return visit(vv, v(ll));
+  }
+  auto loaded::error_message(Loaded const &ll) -> string::Storage {
+    auto const vv = Visitor{[](Loaded::Error const &ee) -> string::Storage  { return ee.message(); },
+                            [](Loaded::Indirect const &) -> string::Storage { throw exception::Invalid{"Loaded"}; }};
+    return visit(vv, v(ll));
+  }
+  auto loaded::value(Loaded const &ll) -> User const & {
+    auto const vv = Visitor{[](Loaded::Error const &ee) -> User const &    { throw exception::Invalid{"Loaded"}; },
+                            [](Loaded::Indirect const &uu) -> User const & { return *uu; }};
+    return visit(vv, v(ll));
+  }
+  auto loaded::value(Loaded &ll) -> User & {
+    auto const vv = Visitor{[](Loaded::Error &ee) -> User &    { throw exception::Invalid{"Loaded"}; },
+                            [](Loaded::Indirect &uu) -> User & { return *uu; }};
+    return visit(vv, v(ll));
+  }
+  auto loaded::value(Loaded &&ll) -> User && {
+    auto const vv = Visitor{[](Loaded::Error &&ee) -> User &&    { throw exception::Invalid{"Loaded"}; },
+                            [](Loaded::Indirect &&uu) -> User && { return move(*uu); }};
+    return visit(vv, v(forward<Loaded>(ll)));
+  }
+  namespace loaded {
+    Loaded::Loaded(Error ee) : Ancestor{ee} { }
+    Loaded::Loaded(Payload &&pp) : Ancestor{std::make_unique<Payload>(forward<Payload>(pp))} { }
+  }
+}
+#endiv

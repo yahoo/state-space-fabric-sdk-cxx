@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::main {
+  //
+  // Configuration for the creation of the Service<MAIN> of the Certificate Authority (CA)
+  // Descendants only.
+  // You will use Configuration<MAIN>
+  //
+  // With all the defaults codified.
+  // From caservice.py
+  //
+  // Concept:
+  //
+  //   Whereas the fabric-ca service concept supports application-level multiple tenancy,
+  //   the 'ca_name' MAY be used to distinguish among the various named tenants of the Authority.
+  //
+  //   If omitted or null or an empty string, then the default tenant (default Certificate Authority) is the target of requests.
+  //
+  // Originally:
+  // was the constructor in caservice.py.
+  //
+  //   ca_name (str): The optional name of the CA. .............................. which we now refer to as the Tenant
+  //
+  // Usage:
+  //
+  //   auto cfg = ca::Configuration<MAIN>{...somehow...};
+  //   auto srv = ca::Service<MAIN>{move(cfg)};
+  //
+  struct Configuration;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Tenant
+class hyperledger::fabric::ca::main::Configuration {
+protected:
+  ~Configuration() = default;
+public:
+  Tenant tenant; // was: (among) caname, ca_namne
+};
+#endiv

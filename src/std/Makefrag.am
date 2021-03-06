@@ -1,0 +1,34 @@
+# -*- Makefile -*-
+# Copyright Wendell Craig Baker, wbaker@wbaker.org
+# See the LICENSE file nearby.
+lib_libstd_la = lib/libstd.la
+lib_libstd_la_LIBADD = 
+lib_libstd_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libstd_la_MODULES = $(call TF_SOURCEStoMODULES,$(lib_libstd_la_SOURCES))
+lib_libstd_la_SOURCES = \
+  obj/src/std/is_error_condition_enum/hyperledger.error.condition.Enumeration.cpp \
+  \
+  obj/src/std/is_error_code_enum/hyperledger.error.code.Enumeration.cpp \
+  obj/src/std/is_error_code_enum/hyperledger.http.error.code.Enumeration.cpp \
+  obj/src/std/is_error_code_enum/hyperledger.pki.error.code.Enumeration.cpp \
+  obj/src/std/is_error_code_enum/hyperledger.net.error.code.Enumeration.cpp \
+  obj/src/std/is_error_code_enum/hyperledger.pki.revocation.reason.code.Enumeration.cpp \
+  \
+  obj/src/std/is_error_code_enum/hyperledger.fabric.error.code.Enumeration.cpp \
+  obj/src/std/is_error_code_enum/hyperledger.fabric.user.error.code.Enumeration.cpp \
+  $(end)
+NOTREADY_lib_libstd_la_SOURCES_NOTREADY = \
+  obj/src/std/is_error_code_enum/hyperledger.fabric.ca.error.code.Enumeration.cpp \
+  $(end)
+std-objects : $(patsubst %.cpp, %.lo, $(lib_lib_std_la_SOURCES))
+$(lib_libstd_la_SOURCES) $(scold_cxxdir)/std/dependencies.mk : DC_FLAGS+=--no-insert-namespace
+$(lib_libstd_la_SOURCES) $(scold_cxxdir)/std/dependencies.mk : bbDC_FLAGS+=--no-insert-namespace
+$(lib_libstd_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/std/dependencies.mk: Makefile
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libstd_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/std/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/std/dependencies.mk

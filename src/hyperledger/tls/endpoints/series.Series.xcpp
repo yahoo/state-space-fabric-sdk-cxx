@@ -1,0 +1,49 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.tls.endpoints.Endpoint
+#import hyperledger.net.endpoint.Endpoints
+namespace hyperledger::tls::endpoints::series {
+  //
+  // A series of TLS endpoints, with the decision of 'dotls' already factored out.
+  // 
+  // Concept:
+  //
+  //   Some calls, e.g. the peer(s) call, allow for a series of endpoints to be used.
+  //
+  // Design:
+  //
+  //   A new type so that ADL can be used to find the nearby format(...) and series::Formatter
+  //
+  // Usage:
+  //
+  //   auto es = Series{{"localhost"},{"localhost",8080},{"localhost":8088, "/etc/hyperledger/fabric/tls/ca.crt"}};
+  //   cerr << format(es);
+  //   auto s = to_string(es);
+  //
+  struct Series;
+}
+#endiv
+#divert <hpp>
+class hyperledger::tls::endpoints::series::Series : public net::endpoint::Endpoints<Endpoint> {
+  using Ancestor = net::endpoint::Endpoints<Endpoint>;
+public:
+  Series() = default;
+  using Ancestor::Endpoints;
+};
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::tls::endpoints::series;
+    template<typename SERIES> concept Usage = requires(SERIES series, SERIES other) {
+      { SERIES{} };
+      { move(series) };
+      { swap(series, other) };
+      { to_string(series) };
+    };
+    static_assert(Usage<Series>);
+  }
+}
+#endiv

@@ -1,0 +1,124 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.required // for the cascaded namespaces
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import tunitas.base64.Decoder
+#import tunitas.required.Container_Push_Back_Octet // FIXTHIS use the nonstd variant
+#import nonstd.required.iterator.Input
+namespace hyperledger::base64 {
+  //
+  // Base64 decoding
+  //
+  // On failure to decode, a hyperledger::exception::Decode is thrown.
+  // Of course, hyperledger:exception::Decode is a descendant of hyperledger::exception::Aspect.
+  //
+  // The RESULT containers must be able to accept RESULT.push_back(char);
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto decoded = decode<string::Storage>("deadbeef");
+  //     auto decoded = decode<std::vector<std::byte>>("deadbeef");
+  //     auto decoded = decode<std::deque<unsigned char>>("deadbeef");
+  //     ...do something with it...
+  //   } catch (exception::Decode const &e) {
+  //     string::Storage why = e.what();
+  //     ...explain...
+  //   }
+  //
+  namespace packaging {
+    namespace [[implementation]] decode_implementation {
+      using tunitas::base64::Decoder; // WATCHOUT - throws upon construction for invalid base64
+      template<required::Container_Push_Back_Octet RESULT> auto decode_from([[inout]] Decoder &constructed) -> RESULT;
+      namespace [[interface]] interface {
+        // These are guaranteed to catch the Tunias exception space and rethrow in the Hyperledger exception space
+        template<required::Container_Push_Back_Octet RESULT> inline auto decode(string::View) -> RESULT;
+        template<required::Container_Push_Back_Octet RESULT, required::iterator::Input ITERATOR> inline auto decode(ITERATOR, ITERATOR) -> RESULT;
+      }
+    }
+  }
+  using packaging::decode_implementation::interface::decode;
+}
+#endiv
+#divert <ipp>
+#import tunitas.base64.Decoder
+#import tunitas.base64.Exception
+#import hyperledger.exception.Decode
+namespace hyperledger::base64::packaging::decode_implementation {
+  template<required::Container_Push_Back_Octet RESULT> auto interface::decode(string::View source) -> RESULT { return decode<RESULT>(source.begin(), source.end()); }
+}
+#import std.transform
+#import std.back_inserter
+#import nonstd.same_as
+namespace hyperledger::base64::packaging::decode_implementation {
+  template<required::Container_Push_Back_Octet RESULT, required::iterator::Input ITERATOR> auto interface::decode(ITERATOR start, ITERATOR finish) -> RESULT try {
+    auto const FIXTHIS_COPY_BY_FIXING_TUNITAS = [start, finish]() -> string::Storage {
+                                                  if constexpr(nonstd::same_as<char, typename std::iterator_traits<ITERATOR>::value_type>) {
+                                                    return {start, finish};
+                                                  } else {
+                                                    auto fixthis = string::Storage{};
+                                                    std::transform(start, finish, back_inserter(fixthis), [](auto c) { return char(c); });
+                                                    return fixthis;
+                                                  }
+                                                }();
+    auto from = Decoder{FIXTHIS_COPY_BY_FIXING_TUNITAS};
+    return decode_from<RESULT>(from);
+  } catch (tunitas::base64::Exception const &e) {
+    throw exception::Decode{e.what()};
+  } catch (std::exception const &e) {
+    // This isn't supposed to happen because Tunitas' decode(...) should only throw Tunitas-themed exceptions.
+    auto surprise = string::Storage{"surprise! "} + e.what();
+    throw exception::Decode{surprise};
+  }
+}
+#endiv
+#divert <tpp>
+#import tunitas.base64.Decoder
+#import tunitas.base64.Exception
+#import hyperledger.exception.Decode
+#import std.iterator_traits
+#import std.exception
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::base64::packaging {
+  template<required::Container_Push_Back_Octet RESULT> auto decode_implementation::decode_from(Decoder &decoder) -> RESULT {
+#if 1 // [[REMOVETHIS]] when we get to module-nonstd >= 0.4.0-0.devel which has container_traits
+    using Octet= typename RESULT::value_type;
+#else
+    using Octet= typename std::container_traits<RESULT>::value_type;
+#endif
+    if constexpr(false) {
+      // see the #WARNING below return tunitas::base64::decode<RESULT>(start, finish);
+      throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+    } else {
+      // [[FIXTHIS]] is this not already a part of tunitas-basics as tunitas::base64::decode(...)
+      // [[FIXTHIS]] more efficiency here?  the tunitas::base64::Decoder is a bit-level decoder tuned towards TCF, with its bit-level in-stream subfields
+      //
+      // Because base64 is "made of" quads of 6-bit quantities; we may not have octets.
+      // We may wind up being short (i.e. this will throw on underflow)
+      RESULT ret;
+      while ( !decoder.eof() ) {
+        auto got = decoder.get<char>();
+        auto octet = Octet(got);
+        ret.push_back(octet);
+      }
+      return ret;
+    }
+  }
+}
+#endiv
+#divert <cpp>
+#warning FIXTHIS use tunitas::base64::decode<CONTAINER>(ITERATOR, ITERATOR) in auto hyperledger::base64::decode(ITERATOR start, ITERATOR finish) -> RESULT
+#import std.vector
+#import std.byte
+namespace {
+  namespace tests {
+    namespace required = hyperledger::required;
+    static_assert(required::Container_Push_Back_Octet<std::vector<char>>);
+    static_assert(required::Container_Push_Back_Octet<std::vector<char unsigned>>);
+    static_assert(required::Container_Push_Back_Octet<std::vector<std::byte>>);
+  }
+}
+#endiv

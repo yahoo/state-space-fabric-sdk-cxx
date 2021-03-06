@@ -1,0 +1,48 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::curve {
+  //
+  // An abstract base class for elliptic curve crypto.
+  // Descendants only.
+  // Was: class Crypto
+  //
+  // Usage:
+  //
+  //   see curve::Elliptic
+  //
+  class Prototype;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.hash.Algorithm
+#import hyperledger.crypto.hash.Function
+#import hyperledger.crypto.primitives.Interface
+class hyperledger::crypto::curve::Prototype : public primitives::Interface {
+protected:
+  virtual ~Prototype() = default;
+  Prototype() = default;
+public:
+  Prototype(Prototype const &) = delete;
+  auto operator=(Prototype const &) -> Prototype & = delete;
+  Prototype(Prototype &&) = default;
+  auto operator=(Prototype &&) -> Prototype & = default;
+  inline auto hash() const -> crypto::hash::Function;
+  inline auto sign() const -> crypto::hash::Algorithm;
+  virtual auto generate_private_key() const -> key::Private override = 0;
+  virtual auto encrypt(key::Public const &, Message const &plain_text) const -> Message override = 0;
+  virtual auto decrypt(key::Private const &, Message const &cipher_text) const -> Message override = 0;
+  virtual auto sign(key::Private const &, Message const &) const -> Signature override = 0;
+  virtual auto verify(key::Public const &, Message const &, Signature const &) const -> bool override = 0;
+protected:
+  crypto::hash::Algorithm sign_algorithm;
+  crypto::hash::Function hash_function;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::crypto::curve {
+  auto Prototype::hash() const -> crypto::hash::Function  { return hash_function; }
+  auto Prototype::sign() const -> crypto::hash::Algorithm { return sign_algorithm; }
+}
+#endiv

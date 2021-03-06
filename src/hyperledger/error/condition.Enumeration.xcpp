@@ -1,0 +1,20 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::error::condition {
+  enum class Enumeration { SUCCESS, FAILURE };
+}
+#endiv
+#divert <hpp>
+#import std.is_error_condition_enum.hyperledger.error.condition.Enumeration
+#forward hyperledger.error.Condition
+namespace hyperledger::error::condition {
+  inline auto make_error_condition(Enumeration) noexcept -> Condition;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.error.Condition
+#import hyperledger.error.category
+auto hyperledger::error::condition::make_error_condition(Enumeration tion) noexcept -> Condition { return {(int) tion, category()}; }
+#endiv

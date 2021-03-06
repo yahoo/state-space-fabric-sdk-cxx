@@ -1,0 +1,51 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::key {
+  //
+  // An (asymmetric) Private Key
+  // It's just a Buffer with some virtual functions on it that tells what can and cannot be done with it.
+  //
+  // Usage:
+  //
+  //    auto pk = Private{...};
+  //
+  class Private;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.key.Asymmetric
+class hyperledger::crypto::key::Private : public Asymmetric {
+  using Ancestor = Asymmetric;
+public:
+  Private() = default;
+  using Ancestor::Asymmetric;
+  explicit Private(Private const &) = default; // want that explicit sense.
+  auto operator=(Private const &) -> Private & = delete;
+  Private(Private &&) = default;
+  auto operator=(Private &&) -> Private & = default;
+#ifdef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+  auto is_private() const -> bool override final;
+  auto get_public_key() const -> Public override final;
+#endif
+};
+#endiv
+#divert <ipp>
+#import hyperledger.crypto.key.Public
+#endiv
+#divert <cpp>
+#import hyperledger.pki.assemble
+namespace hyperledger::crypto::key {
+#ifdef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+  auto Private::is_private() const -> bool { return true; }
+  auto Private::get_public_key() const -> Public {
+    //
+    // Well now, this breaks the nice layered abstraction now doesn't it?
+    // ... that "hyperledger::crypto is lower level than hyperledger::pki"
+    // Is there a better way to do this?
+    return pki::assemble<pki::Secret>(Span{this->data(), this->size()});
+  }
+#endif
+}
+#endiv

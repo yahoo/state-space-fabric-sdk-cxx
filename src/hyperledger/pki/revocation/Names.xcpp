@@ -1,0 +1,53 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::revocation {
+  //
+  // A (certificate) revocation list (of certificates by their name, which is the SKI)
+  //
+  // Usage:
+  //
+  //   come on, it's a set (an unordered container)
+  //
+  class Names;
+}
+#endiv
+#divert <hpp>
+#import std.set
+#import std.string
+class hyperledger::pki::revocation::Names : protected std::set</*FIXTHIS*/ std::string> {
+  using Ancestor = std::set<std::string>;
+public:
+  Names() = default;
+  Names(Names const &) = delete;
+  auto operator=(Names const &) -> Names & = delete;
+  Names(Names &&) = default;
+  auto operator=(Names &&) -> Names & = default;
+  using Ancestor::empty;
+  using Ancestor::size;
+  using Iterator = Ancestor::iterator;
+  using Const_Iterator = Ancestor::const_iterator;
+  using Ancestor::begin;
+  using Ancestor::end;
+  // [[FIXTHIS]] there needs to be a 'find' and a 'contains' operation
+  // [[FIXTHIS]] there needs to be an 'insert' and a 'erase'
+};
+#endiv
+#divert <cpp>
+#warning WRITETHIS ... and whatever a Subject Key Indicator turns out to be
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+#import nonstd.required.Outcomable
+  namespace hyperledger::pki::revocation {
+  static_assert(std::is_default_constructible_v<Names>);
+  static_assert(!std::is_copy_constructible_v<Names>);
+  static_assert(std::is_move_constructible_v<Names>);
+  static_assert(!std::is_copy_assignable_v<Names>);
+  static_assert(std::is_move_assignable_v<Names>);
+  static_assert(nonstd::required::Outcomable<Names>);
+}
+#endiv

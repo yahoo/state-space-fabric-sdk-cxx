@@ -1,0 +1,53 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // The aspect of a Hyperledger Fabric CA Protocol exception.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   The usual pattern in these things.
+  //   This is a mixin which must be completed by pairing it with a standard exception.
+  //   Reminder, exceptions provide a nothrow guarantee upon copy construction or assignment.
+  //
+  // Usage: (scenario)
+  //
+  //   class my::Project : public hyperledger::exception::Aspect,
+  //                       public fabric::exception::Aspect,
+  //                       public ca::exception::Aspect,
+  //                       public protocol::exception::Aspect,
+  //                       public std::runtime_error {
+  //   public:
+  //     Project(...reasons-and-excuses...);
+  //     auto what() const noexcept -> char const * override final;
+  //   };
+  //
+  //   try {
+  //      ...
+  //      throw my::Projects{...reasons-and-excuses...};
+  //      ...
+  //   } catch (exception::Aspect const &e) {
+  //      ...complain... (this is us)
+  //   } catch (std::exception const &e) {
+  //      ...complain... (this is them, some other subsystem)
+  //   }
+  //
+  class Aspect;
+}
+#endiv
+#divert <hpp>
+class hyperledger::fabric::ca::protocol::exception::Aspect {
+protected:
+  [[key_method]] virtual ~Aspect();
+public:
+  virtual auto what() const noexcept -> char const * = 0;
+};
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  Aspect::~Aspect() = default;
+}
+#endiv

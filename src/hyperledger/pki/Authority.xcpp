@@ -1,0 +1,17 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.pki.Certificates
+namespace hyperledger::pki {
+  //
+  // It's as simple as that, an "authority" is a pile of certificates.
+  // These are certificates that you will trust implicitly.
+  //
+  // Usage:
+  //
+  //   Oh come on. It's just a struct.
+  //
+  using Authority [[notyet_deprecated("instead prefer hyperledger::pki::Certificates")]] = Certificates;
+}
+#endiv

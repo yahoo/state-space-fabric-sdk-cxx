@@ -1,0 +1,17 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::authorization {
+  //
+  // The authorization schemes are all idiosyncratic.
+  // Specializations only.
+  //
+  // Usage:
+  //
+  //   auto pass = Authorization<PASS>{...somehow...};
+  //   auto toke = Authorization<TOKEN>{...somehow...};
+  //
+  template<typename> struct Authorization;
+}
+#endiv

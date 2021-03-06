@@ -1,0 +1,46 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-utility-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_fabric_utility_la = lib/libhyperledger-fabric-utility.la
+lib_libhyperledger_fabric_utility_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+$(warning NOT YET lib_libhyperledger_fabric_utility_la_LIBADD = lib/libhyperledger-fabric-utility-goblob.so)
+# find the subsystem declarations in configure.ac driving the -l and -l*-module mentions
+lib_libhyperledger_fabric_utility_la_LIBADD = \
+  $(lib_libwant_la) \
+  -ltunitas \
+  -lnonstd-module \
+  $(end)
+lib_libhyperledger_fabric_utility_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_utility_la_SOURCES))
+lib_libhyperledger_fabric_utility_la_SOURCES = \
+  obj/src/hyperledger/fabric/utility/namespace.cpp \
+  obj/src/hyperledger/fabric/utility/build_cc_proposal.cpp \
+  obj/src/hyperledger/fabric/utility/build_header.cpp \
+  obj/src/hyperledger/fabric/utility/build_tx_req.cpp \
+  obj/src/hyperledger/fabric/utility/create_grpc_channel.cpp \
+  obj/src/hyperledger/fabric/utility/create_serialized_identity.cpp \
+  obj/src/hyperledger/fabric/utility/current_timestamp.cpp \
+  obj/src/hyperledger/fabric/utility/extract_channel_config.cpp \
+  obj/src/hyperledger/fabric/utility/keyvaluestore.file_key_value_store.cpp \
+  obj/src/hyperledger/fabric/utility/keyvaluestore.FileKeyValueStore.cpp \
+  obj/src/hyperledger/fabric/utility/keyvaluestore.KeyValueStore.cpp \
+  obj/src/hyperledger/fabric/utility/package_chaincode.cpp \
+  obj/src/hyperledger/fabric/utility/send_install_proposal.cpp \
+  obj/src/hyperledger/fabric/utility/send_transaction_proposal.cpp \
+  obj/src/hyperledger/fabric/utility/send_transaction.cpp \
+  obj/src/hyperledger/fabric/utility/sign_proposal.cpp \
+  obj/src/hyperledger/fabric/utility/sign_transaction_payload.cpp \
+  obj/src/hyperledger/fabric/utility/string_to_signature.cpp \
+  obj/src/hyperledger/fabric/utility/TXRequest.cpp \
+  $(end)
+utility-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_fabric_utility_la_SOURCES))
+$(lib_libhyperledger_fabric_utility_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/fabric/utility/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_fabric_utility_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/fabric/utility/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/fabric/utility/dependencies.mk

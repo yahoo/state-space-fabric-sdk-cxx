@@ -1,0 +1,40 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+//
+// The Endpoints format(...) and formatter
+//
+// Concept:
+//
+//   Supplies format(...)
+//   Supplies format(Endpoints const &)
+//
+// Design:
+//
+//   By virtue of the ancestry of Endpoints in Series
+//   format(Series const &) is sufficient
+//
+// Usage:
+//
+//   #import hyperledger.tls.endpoints.Formatter
+//   auto endpoints = Endpoints{...something...};
+//   cout << format(endpoints)
+//
+#import hyperledger.tls.endpoints.series.Formatter
+#endiv
+#divert <cpp>
+#import hyperledger.tls.endpoints.Endpoints
+namespace {
+  namespace tests {
+    using namespace hyperledger::tls::endpoints;
+    using hyperledger::tls::endpoints::series::format; // [[FIXTHIS]] remember that namespace ::format occludes ADL for this name; [[REMOVEWHEN]] namespace ::format is subsumed into namespace form::at or such.
+    template<typename ENDPOINT> concept Usage = requires(Endpoints endpoints, std::basic_ostream<char> &outbound) {
+      { outbound << hyperledger::tls::endpoints::series::format(endpoints) };
+      { outbound << format(endpoints) };
+    };
+    static_assert(Usage<Endpoints>);
+  }
+}
+#endiv

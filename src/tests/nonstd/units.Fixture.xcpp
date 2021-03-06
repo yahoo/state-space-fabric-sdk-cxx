@@ -1,0 +1,53 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import nonstd.units.Count // in lieu of nonstd.units
+namespace tests::nonstd::units {
+  namespace [[eponymous]] fixture {
+    namespace library = ::nonstd::units;
+    class Fixture;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::nonstd::units::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_usage_Count() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import nonstd.units.Count
+namespace tests::nonstd::units::fixture {
+  auto Fixture::test_usage_Count() -> void {
+    auto zero = library::Count{0};
+    auto one = library::Count{1};
+    auto subject = library::Count{};
+    CPPUNIT_ASSERT(zero != one);
+    CPPUNIT_ASSERT(zero == subject);
+    ++subject;
+    CPPUNIT_ASSERT(one == subject);
+    --subject;
+    CPPUNIT_ASSERT(zero == subject);
+  }
+}
+#import tests.nonstd.units.Count
+#import rigging.suite.io
+auto tests::nonstd::units::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"units"};
+  series << []() {
+              auto use = Stream{"usage"};
+              use << call("Count", &Fixture::test_usage_Count)
+                  << END;
+              return move(use);
+            }()
+         << add<Count>()
+         << END;
+  return finalize(series);
+}
+#endiv

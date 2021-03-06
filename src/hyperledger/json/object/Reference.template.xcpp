@@ -1,0 +1,40 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.runtime.Management
+namespace hyperledger::json::object {
+  //
+  // The reference to an JSON Object
+  // Because the C++ language facilities of rvalue and lvalue don't quite capture the necessary conversions
+  //
+  // Concept:
+  //
+  //   Like std::reference_wrapper<...> but tuned to hyperledger::json::Object
+  //   And suitable for optional reference signalling
+  //
+  // Design:
+  //
+  //   Optional<Reference<CONSTIE>
+  //   Optional<Reference<MUTABLE>
+  //
+  //   Reference<MUTABLE> is convertable to Reference<CONSTIE> but not vice versa.
+  //
+  //   https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper
+  //   [[since C++20]] the wrapped type T may be an incomplete type
+  //
+  // Usage:
+  //
+  //   auto object = Object{...somehow...};
+  //
+  //   auto lvalue = Reference<CONSTIE>{object};
+  //   auto rvalue = Reference<MUTABLE>{object};
+  //
+  template<runtime::Mutability> struct Reference;
+}
+// All the specializations will want the constants
+#import hyperledger.runtime.constants
+#endiv
+#divert <hpp>
+#import json.Value // references capture the ancestor, NOT hyperledger::json::Object
+#endiv

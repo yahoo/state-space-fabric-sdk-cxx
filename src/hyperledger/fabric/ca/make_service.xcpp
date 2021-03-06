@@ -1,0 +1,52 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.fabric.ca.Service
+#forward hyperledger.fabric.ca.Configuration
+#import hyperledger.crypto.Primitives
+#import hyperledger.crypto.ecies
+#import hyperledger.file.Path
+#import hyperledger.http.url.String
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca {
+  //
+  // Create a CA Service (Certificate Authority Service)
+  // Was caservice.py
+  //
+  // Concept:
+  //
+  //   Was in the original implementation in Python (always Python, piles and piles and piles fo Python; yet more Python).
+  //
+  //   You shold prefer to call the construct rodirectly
+  //
+  // Design:
+  //
+  //   Here the transport is always FILES
+  //
+  //   [[FIXTHIS]] why does this exist?  It is just the ca::Service constructor call
+  //
+  // Args:
+  //   target: url
+  //   ca_certs_path: certs path
+  //   ca_name: CA name
+  //   crypto: crypto
+  //
+  //  Returns: ca service instance
+  //
+  [[deprecated("prefer to use the constructor directly")]] auto make_service(http::url::String const &, file::Path const &, Optional<string::Storage> ca_name = Optional<string::Storage>{}, crypto::Primitives = crypto::ecies()) -> Service<MAIN>;
+  [[deprecated("prefer to use the constructor directly")]] auto make_service(Configuration<MAIN> &&, Configuration<DRIVER> &&, Configuration<FILES> &&) -> Service<MAIN>;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.Configuration
+namespace hyperledger::fabric {
+#warning BLICK ... who u ses these?  Can we just get rid of them?
+#if 0
+  auto ca::make_service(http::url::String const &target, file::Path const &ca_certs_path, Optional<string::Storage> ca_name, crypto::Primitives cryptop) -> Service<MAIN> { return {Configuration<TOKEN>{}, Configuration<MAIN>{target, ca_certs_path, ca_name, cryptop)}; }
+  auto ca::make_service(Configuration<MAIN> &&main_cfg, Configuration<DRIVER> &&driver_cfg, Configuration<FILES> &&files_cfg) -> Service<MAIN> { return {Configuration<TOKEN>{}, forward<Configuration<MAIN>(main_cfg), forward<Configuration<DRIVER>(driver_cfg), forward<Configuration<FILES>(files_cfg)}; }
+#endif
+}
+#endiv

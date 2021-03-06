@@ -1,16 +1,23 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-namespace tests::unit::run { class Loader; }
+#import hyperledger.fabric.v0
+namespace tests::unit::run {
+  namespace loader {
+    namespace library = ::hyperledger::fabric::v0;
+    class Loader;
+  }
+  using loader::Loader;
+}
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-#import hyperledger.fabric.run.Arguments
-class tests::unit::run::Loader : public cppunit::test::Fixture {
-public:
-  using Arguments = ::hyperledger::fabric::run::Arguments;
+#import hyperledger.fabric.v0.run.Arguments
+struct tests::unit::run::loader::Loader : public cppunit::test::Fixture {
+  using Arguments = library::run::Arguments;
   auto test_fabric() -> void;
   auto test_peer() -> void;
   auto test_chaincode() -> void;
@@ -28,75 +35,66 @@ protected:
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.peer.chaincode.Call // this one is a complete type (the others are fragments)
-#import hyperledger.fabric.run.Loader.fabric.Context
-#import hyperledger.fabric.Context
-auto tests::unit::run::Loader::test_fabric() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::Context>> subject;
+#import hyperledger.fabric.v0.peer.chaincode.Call // this one is a complete type (the others are fragments)
+#import hyperledger.fabric.v0.run.Loader.fabric.Context
+#import hyperledger.fabric.v0.Context
+auto tests::unit::run::loader::Loader::test_fabric() -> void {
+  Reloader<library::run::Loader<library::Context>> subject;
   Arguments args;
-  hf::peer::chaincode::Call context;
+  library::peer::chaincode::Call context;
   subject.load(args, context); // <-------------- test this (does it construct?)
 }
-#import hyperledger.fabric.run.Loader.peer.Context
-#import hyperledger.fabric.peer.Context
-auto tests::unit::run::Loader::test_peer() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::peer::Context>> subject;
+#import hyperledger.fabric.v0.run.Loader.peer.Context
+#import hyperledger.fabric.v0.peer.Context
+auto tests::unit::run::loader::Loader::test_peer() -> void {
+  Reloader<library::run::Loader<library::peer::Context>> subject;
   Arguments args;
-  hf::peer::chaincode::Call context;
+  library::peer::chaincode::Call context;
   subject.load(args, context);
 }
-#import hyperledger.fabric.run.Loader.chaincode.Context
-#import hyperledger.fabric.peer.chaincode.Context
-auto tests::unit::run::Loader::test_chaincode() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::peer::chaincode::Context>> subject;
+#import hyperledger.fabric.v0.run.Loader.chaincode.Context
+#import hyperledger.fabric.v0.peer.chaincode.Context
+auto tests::unit::run::loader::Loader::test_chaincode() -> void {
+  Reloader<library::run::Loader<library::peer::chaincode::Context>> subject;
   Arguments args;
-  hf::peer::chaincode::Call context;
+  library::peer::chaincode::Call context;
   subject.load(args, context);
 }
-#import hyperledger.fabric.run.Loader.Call
-auto tests::unit::run::Loader::test_call() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::peer::chaincode::Call>> subject;
+#import hyperledger.fabric.v0.run.Loader.Call
+auto tests::unit::run::loader::Loader::test_call() -> void {
+  Reloader<library::run::Loader<library::peer::chaincode::Call>> subject;
   Arguments args;
-  hf::peer::chaincode::Call context;
+  library::peer::chaincode::Call context;
   subject.load(args, context);
 }
-#import hyperledger.fabric.run.Loader.Orderer
-#import hyperledger.fabric.orderer.Contact
-auto tests::unit::run::Loader::test_orderer() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::orderer::Contact>> subject;
+#import hyperledger.fabric.v0.run.Loader.Orderer
+#import hyperledger.fabric.v0.orderer.Contact
+auto tests::unit::run::loader::Loader::test_orderer() -> void {
+  Reloader<library::run::Loader<library::orderer::Contact>> subject;
   Arguments args;
-  hf::orderer::Contact contact;
+  library::orderer::Contact contact;
   subject.load(args, contact.endpoint);
 }
-#import hyperledger.fabric.run.Loader.Peers
-#import hyperledger.fabric.peers.Contact
-auto tests::unit::run::Loader::test_peers() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::peers::Contact>> subject;
+#import hyperledger.fabric.v0.run.Loader.Peers
+#import hyperledger.fabric.v0.peers.Contact
+auto tests::unit::run::loader::Loader::test_peers() -> void {
+  Reloader<library::run::Loader<library::peers::Contact>> subject;
   Arguments args;
-  hf::peers::Contact contact;
+  library::peers::Contact contact;
   subject.load(args, contact.endpoints);
 }
-#import hyperledger.fabric.run.Loader.Client
-#import hyperledger.fabric.tls.Client
-auto tests::unit::run::Loader::test_client() -> void {
-  namespace hf = ::hyperledger::fabric;
-  Reloader<hf::run::Loader<hf::tls::Client>> subject;
+#import hyperledger.fabric.v0.run.Loader.Client
+#import hyperledger.tls.Client
+auto tests::unit::run::loader::Loader::test_client() -> void {
+  Reloader<library::run::Loader<::hyperledger::tls::Client>> subject;
   Arguments args;
-  hf::tls::Client contact;
+  ::hyperledger::tls::Client contact;
   subject.load(args, contact);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
-auto tests::unit::run::Loader::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("Loader<TYPE>");
+#import rigging.suite.io
+auto tests::unit::run::loader::Loader::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Loader<TYPE>"};
   series << call("fabric", &Loader::test_fabric)
          << call("peer", &Loader::test_peer)
          << call("chaincode", &Loader::test_chaincode)
@@ -104,7 +102,7 @@ auto tests::unit::run::Loader::suite() -> cppunit::Test * {
          << call("orderer", &Loader::test_orderer)
          << call("peers", &Loader::test_peers)
          << call("client", &Loader::test_client)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

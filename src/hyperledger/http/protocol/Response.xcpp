@@ -1,0 +1,87 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.status.literals
+namespace hyperledger::http::protocol {
+  //
+  // The core of an HTTP response.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   This is just the status code.
+  //   The body is supplied by the descendants and is idiosyncratic.
+  //
+  // Usage:
+  //
+  //   by inheritance
+  //   see hyperledger.http.text.Response
+  //   see hyperledger.http.json.Response
+  //   see hyperledger.http.dictionary.Response
+  //
+  namespace response {
+    class Response;
+    using namespace status::literals;
+  }
+  using response::Response;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.status.Code
+#import std.swap
+#import std.error_code
+namespace hyperledger::http::protocol {
+  namespace response {
+    using std::move;
+    using std::swap;
+    inline auto swap(Response &, Response &) noexcept -> void;
+    inline auto status(Response const &r) -> http::status::Code;
+    inline auto ok(Response const &r) -> bool;
+    inline auto good(Response const &r) -> bool;
+    inline auto fail(Response const &r) -> bool;
+    inline auto error_code(Response const &r) -> std::error_code;
+  }
+  class response::Response {
+    friend auto swap(Response &, Response &) noexcept -> void;
+  protected:
+    ~Response() = default;
+    Response(Response const &) = delete;
+    auto operator=(Response const &) -> Response & = delete;
+    Response(Response &&) = default;
+    auto operator=(Response &&) -> Response & = default;
+  public:
+    inline explicit Response();
+    inline explicit Response(http::status::Code);
+  protected:
+    http::status::Code the_code;
+    friend auto response::status(Response const &r) -> http::status::Code;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.error.Code
+#import hyperledger.http.status.literals
+namespace hyperledger::http::protocol {
+  auto response::status(Response const &r) -> http::status::Code  { return r.the_code; }
+  auto response::swap(Response &a, Response &b) noexcept -> void  { swap(a.the_code, b.the_code); }
+  auto response::ok(Response const &r) -> bool                    { return ok(status(r)); }
+  auto response::good(Response const &r) -> bool                  { return good(status(r)); }
+  auto response::fail(Response const &r) -> bool                  { return fail(status(r)); }
+  auto response::error_code(Response const &r) -> std::error_code { return error_code(status(r)); }
+  namespace response {
+    Response::Response() : Response{200_http} { }
+    Response::Response(status::Code code) : the_code{code} { }
+  }
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.http.protocol.response.Accessors
+namespace {
+  namespace local {
+    namespace subject = hyperledger::http::protocol;
+    namespace assertion = tests::concepts::hyperledger::http::protocol::response;
+    static_assert(assertion::Accessors<subject::Response>);
+  }
+}
+#endiv

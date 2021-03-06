@@ -1,0 +1,59 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.error.condition.Enumeration
+namespace hyperledger::fabric::error::code {
+  enum class Enumeration {
+    SUCCESS = (int) hyperledger::error::condition::Enumeration::SUCCESS,
+    FAILURE = (int) hyperledger::error::condition::Enumeration::FAILURE,
+    //
+    // Configuration failures, things are declaratively wrong
+    //
+    CONFIGURATION_TLS_SERVER,
+    CONFIGURATION_TLS_CLIENT,
+    CONFIGURATION_ORDERER_CONTACT,
+    CONFIGURATION_PEERS_CONTACT,
+    CONFIGURATION_PEER_CONTACT [[deprecated("instead use error::Code::CONFIGURATION_PEERS_CONTACT (plural)")]] = CONFIGURATION_PEERS_CONTACT,
+    CONFIGURATION_CHAINCODE,
+    //
+    // Operational failures, something bad happened in a transaction, during a call
+    //
+    TLS_CLIENT,
+    TLS_SERVER,
+    CONTACT_ORDERER,
+    CONTACT_PEERS,
+    CONTACT_PEER [[deprecated("instead use error::Code::CONTACT_PEERS (plural)")]] = CONTACT_PEERS,
+    RUN_CONFIGTXGEN,
+    RUN_CONFIGTXLATOR,
+    RUN_CRYPTOGEN,
+    RUN_ORDERER,
+    RUN_PEER,
+    RUN_PEERS [[deprecated("instead use error::Code::RUN_PEER (singular)")]] = RUN_PEER,
+    //
+    // Problems with the transmission
+    TRANSMISSION_INCOMPLETE,
+    TRANSMISSION_GARBLED,
+    //
+    // Having received the data, something is wrong with it.
+    //
+    PAYLOAD_TOO_SHORT,
+    PAYLOAD_TOO_LONG,
+    PAYLOAD_ENCODE,
+    PAYLOAD_DECODE,
+    // [[WATCHOUT]] until 'using enum' of GCC 10 in C++20, these must be duplicated in code::Package<Enumeration>
+  };
+}
+#endiv
+#divert <hpp>
+#import std.is_error_code_enum.hyperledger.fabric.error.code.Enumeration
+#forward hyperledger.fabric.error.Code
+namespace hyperledger::fabric::error::code {
+  inline auto make_error_code(Enumeration) noexcept -> Code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Code
+#import hyperledger.fabric.error.category
+auto hyperledger::fabric::error::code::make_error_code(Enumeration tion) noexcept -> Code { return {(int) tion, category()}; }
+#endiv

@@ -1,0 +1,133 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.ca.enrollment
+namespace tests::unit::enrollment {
+  namespace [[eponymous]] service {
+    class Service;
+    namespace library = ::hyperledger::fabric::ca::enrollment;
+    namespace ca = ::hyperledger::fabric::ca;
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.ca.Service.ENROLLMENT
+struct tests::unit::enrollment::Service : public cppunit::test::Fixture {
+  using Subject = ca::Service<ca::ENROLLMENT>;
+  auto test_constructor_default() -> void;
+  auto test_constructor_copy() -> void;
+  auto test_constructor_move() -> void;
+  auto test_assignment_copy() -> void;
+  auto test_assignment_move() -> void;
+  auto test_enroll_request() -> void;
+  auto test_enroll_secret_and_more() -> void;
+  auto test_enroll_storage_and_more() -> void;
+  auto test_enroll_many_arguments() -> void;
+  auto test_reenroll() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Anchor;
+};
+#endiv
+#divert <cpp>
+#import tests.unit.enrollment.Service.Anchor
+namespace tests::unit::enrollment::service {
+  auto Service::test_constructor_default() -> void {
+    static_assert(not std::is_default_constructible_v<Subject>);
+#if 0
+    auto subject = Subject{}; // <------------------------------ test this
+    CPPUNIT_ASSERT(sizeof (subject));
+#endif
+  }
+  auto Service::test_constructor_copy() -> void {
+    static_assert(not std::is_copy_constructible_v<Subject>);
+#if 0
+    auto specimen = ???
+    Subject subject{specimen}; // <------------------------------ test this
+    CPPUNIT_ASSERT(sizeof (subject));
+#endif
+  }
+  auto Service::test_constructor_move() -> void {
+    auto main = Anchor{};
+    auto specimen = main.generate();
+    CPPUNIT_ASSERT(sizeof (specimen));
+    static_assert(not std::is_move_constructible_v<Subject>);
+#if 0
+    Subject subject{std::move(specimen)}; // <------------------------------ test this
+    CPPUNIT_ASSERT(sizeof (subject));
+#endif
+  }
+  auto Service::test_assignment_copy() -> void {
+    static_assert(not std::is_copy_assignable_v<Subject>);
+#if 0
+    auto specimen = ???
+    Subject subject;
+    subject = specimen; // <------------------------------ test this
+    CPPUNIT_ASSERT(sizeof (subject));
+#endif
+  }
+  auto Service::test_assignment_move() -> void {
+    auto main = Anchor{};
+    auto specimen = main.generate();
+    CPPUNIT_ASSERT(sizeof (specimen));
+    static_assert(not std::is_move_assignable_v<Subject>);
+#if 0
+    auto subject = main.generate();
+    subject = std::move(specimen);
+    CPPUNIT_ASSERT(sizeof (subject));
+#endif
+  }
+  auto Service::test_enroll_request() -> void {
+#warning WRITETHIS auto Service::test_enroll_request() -> void
+  }
+  auto Service::test_enroll_secret_and_more() -> void {
+#warning WRITETHIS auto Service::test_enroll_secret_and_more() -> void
+  }
+  auto Service::test_enroll_storage_and_more() -> void {
+#warning WRITETHIS auto Service::test_enroll_storage_and_more() -> void
+  }
+  auto Service::test_enroll_many_arguments() -> void {
+#warning WRITETHIS auto Service::test_enroll_many_arguments() -> void
+  }
+  auto Service::test_reenroll() -> void {
+#warning WRITETHIS auto Service::test_reenroll() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::unit::enrollment::service::Service::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream("Service");
+  series << []() {
+              auto con = Stream{"constructor"};
+              con << call("default", &Service::test_constructor_default)
+                  << call("copy", &Service::test_constructor_copy)
+                  << call("move", &Service::test_constructor_move)
+                  << END;
+              return move(con);
+            }()
+         << []() {
+              auto ass = Stream{"assignment"};
+              ass << call("copy", &Service::test_constructor_copy)
+                  << call("move", &Service::test_constructor_move)
+                  << END;
+              return  move(ass);
+            }()
+         << []() {
+              auto enro = Stream{"enroll"};
+              enro << call("Request...", &Service::test_enroll_request)
+                   << call("secret...", &Service::test_enroll_secret_and_more)
+                   << call("storage...", &Service::test_enroll_storage_and_more)
+                   << call("many...", &Service::test_enroll_many_arguments)
+                   << END;
+              return move(enro);
+            }()
+         << call("reenroll", &Service::test_reenroll)
+         << END;
+  return finalize(series);
+}
+#endiv

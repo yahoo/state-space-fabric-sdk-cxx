@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.error.condition.Enumeration
+namespace hyperledger::net::error::code {
+  enum class Enumeration {
+    SUCCESS = (int) hyperledger::error::condition::Enumeration::SUCCESS,
+    FAILURE = (int) hyperledger::error::condition::Enumeration::FAILURE,
+    //
+    // Syntax errors in well known syntaxes
+    //
+    SYNTAX_HOST,      // domain name or numeric address
+    SYNTAX_PORT,      // 1.. 65535 decimal numbers
+    SYNTAX_ENDPOINT,  // host | host : port
+    SYNTAX_ENDPOINTS, // commalist of endpoint
+    BOUNDS_PORT,      // out of bounds 1.. 65535; e.g. zero or greater than 65535
+  };
+}
+#endiv
+#divert <hpp>
+#import std.is_error_code_enum.hyperledger.net.error.code.Enumeration
+#forward hyperledger.net.error.Code
+namespace hyperledger::net::error::code {
+  inline auto make_error_code(Enumeration) noexcept -> Code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.net.error.Code
+#import hyperledger.net.error.category
+auto hyperledger::net::error::code::make_error_code(Enumeration tion) noexcept -> Code { return {(int) tion, category()}; }
+#endiv

@@ -1,0 +1,80 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::dictionary {
+  //
+  // A request, framed around a dictionary.
+  //
+  // Concept:
+  //
+  //   A "dictionary" of arbitrary key-value-pairs.
+  //   There is some way to serialize this and transport it up to the server (c.f. JSON).
+  //
+  // Usage:
+  //
+  //   auto request = Request{};
+  //   request.insert({"name", "value"});
+  //   ...etc...
+  //
+  //   auto client = tls;:Client{...somehow...};
+  //   auto url = http::url::String{...somehow...};
+  //
+  //   auto sent = call<POST>(client, url, request);
+  //
+  struct Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Dictionary
+#import std.initializer_list
+#import std.swap
+#import hyperledger.dictionary.to_json
+#import hyperledger.dictionary.to_string
+namespace hyperledger::http {
+  namespace dictionary {
+    using std::move;
+    using std::swap;
+    inline auto swap(Request &, Request &) noexcept -> void;
+  }
+  class dictionary::Request : public hyperledger::Dictionary {
+    using Ancestor = hyperledger::Dictionary;
+    friend auto swap(Request &, Request &) noexcept -> void;
+  protected:
+    // If you want to initialize a Request with exotic data types, then do it post-construction
+    using Initializer = std::initializer_list<std::pair<std::string, std::string>>; // WATCHOUT - the Dictionary uses std::any
+  public:
+    Request() = default;
+    inline explicit Request(Initializer);
+    Request(Request const &) = delete;
+    auto operator=(Request const &) -> Request & = delete;
+    Request(Request &&) = default;
+    auto operator=(Request &&) -> Request & = default;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http {
+  auto dictionary::swap(dictionary::Request &a, Request &b) noexcept -> void {
+    Request::Ancestor &aa{a}, &bb{b};
+    dictionary::swap(aa, bb);
+  }
+  namespace dictionary {
+    Request::Request(Initializer il) {
+      for (auto &pp : il) {
+        Ancestor::insert(Ancestor::Value{move(pp.first), move(pp.second)});
+      }
+    }
+  }
+}
+#endiv
+#divert <cpp>
+#import std.declval
+namespace {
+  namespace tests {
+    using namespace hyperledger::http::dictionary;
+    static_assert(sizeof (to_string(std::declval<Request>())));
+    static_assert(sizeof (to_json(std::declval<Request>())));
+  }
+}
+#endiv

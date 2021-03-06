@@ -1,0 +1,58 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::exception {
+  //
+  // There is a problem with one of th primitive operations.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   Whereas the primitive operations do not signal an error in-band, errors are signalled by exceptions.
+  //   There will be one a descendant for each of the major operations.
+  //
+  // Design:
+  //
+  //   The Operation provides a a partial completion of the exception.
+  //   There's a (terse) reason explanation.
+  //
+  // Usage:
+  //
+  //   throw Encrypt{};
+  //   throw Decrypt{};
+  //   throw Sign{};
+  //   throw Validate{};
+  //
+  class Operation;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.exception.Aspects
+#import hyperledger.string.View
+#import std.runtime_error
+class hyperledger::crypto::exception::Operation : public Aspects,
+                                                  public std::runtime_error {
+  struct Ancestors {
+    using Aspects = hyperledger::crypto::exception::Aspects;
+    using Exception = std::runtime_error;
+  };
+protected:
+  ~Operation() = default;
+public:
+  inline explicit Operation(string::View);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.string.Storage
+namespace hyperledger::crypto::exception {
+  // [[YUCK!]] we have to create an intermediate string::Storage copy just so that std::runtime_error can then further copy that string
+  Operation::Operation(string::View reason) : Ancestors::Exception{string::Storage{reason.begin(), reason.end()}} { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::exception {
+  auto Operation::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

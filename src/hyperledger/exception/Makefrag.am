@@ -1,0 +1,21 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_exception_SUBSOURCES = \
+  obj/src/hyperledger/exception/namespace.cpp \
+  obj/src/hyperledger/exception/Aspect.cpp \
+  obj/src/hyperledger/exception/Certificate.cpp \
+  obj/src/hyperledger/exception/Decode.cpp \
+  obj/src/hyperledger/exception/Encode.cpp \
+  obj/src/hyperledger/exception/Filepath.cpp \
+  obj/src/hyperledger/exception/Invalid.cpp \
+  obj/src/hyperledger/exception/IOError.cpp \
+  obj/src/hyperledger/exception/feature.Random.cpp \
+  obj/src/hyperledger/exception/Random.cpp \
+  obj/src/hyperledger/exception/Serialization.cpp \
+  obj/src/hyperledger/exception/System.cpp \
+  obj/src/hyperledger/exception/Unimplemented.cpp \
+  obj/src/hyperledger/exception/Unreachable.cpp \
+  $(end)
+exception-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_exception_SUBSOURCES))

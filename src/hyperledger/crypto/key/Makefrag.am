@@ -1,0 +1,16 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-user-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_crypto_key_SUBSOURCES = \
+  obj/src/hyperledger/crypto/Key.cpp \
+  obj/src/hyperledger/crypto/key/namespace.cpp \
+  obj/src/hyperledger/crypto/key/Prototype.cpp \
+  obj/src/hyperledger/crypto/key/Asymmetric.cpp \
+  obj/src/hyperledger/crypto/key/Public.cpp \
+  obj/src/hyperledger/crypto/key/Private.cpp \
+  obj/src/hyperledger/crypto/key/from.template.cpp \
+  obj/src/hyperledger/crypto/key/from.Private.cpp \
+  obj/src/hyperledger/crypto/key/from.Public.cpp \
+  obj/src/hyperledger/crypto/key/from.cpp \
+  $(end)

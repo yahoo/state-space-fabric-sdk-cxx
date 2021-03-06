@@ -1,0 +1,182 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::enrollment {
+  //
+  // This is the completed (packaged) enrollment object.
+  // Descendants only.
+  // Use hyperledger::fabric:: ca::Package<ENROLLMENT>
+  //
+  // Concept
+  //
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  // 
+  // Origin & Evolution:
+  //
+  //   was: caservice.py
+  //   was: enrollment::Enrollment
+  //
+  // Lifetime:
+  //
+  //   [[WHY?]] The lifetime of the Enrollment must be longer than that of the Service whence it came
+  //
+  // Usage:
+  //
+  //   yes, it gets a lot of usage
+  //   see Package<ENROLLMENT>
+  //
+  class Package;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Secret
+#if 0 // REMOVETHIS
+#import hyperledger.Count
+#import hyperledger.fabric.ca.Service
+#import hyperledger.pki.revocation.Names
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.reason.Code
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#endif
+class hyperledger::fabric::ca::enrollment::Package {
+protected:
+  ~Package() = default;
+public:
+  inline explicit Package(pki::Secret, pki::Certificate, pki::Certificates);
+  // [[REMOVE-WHENEVER]] [[deprecated("remove")]] inline explicit Package(pki::Secret private_key, pki::Certificate certificate, pki::Certificates authority_certificate_chain, Pointer service);
+  Package(Package const &) = delete;
+  auto operator=(Package const &) -> Package & = delete;
+  Package(Package &&) = default;
+  auto operator=(Package &&) -> Package & = default;
+  // Getters and setters.
+  // [[FIXTHIS]] rip this out and just use fields in the struct. No need for all this machinery
+#if 0 // Just use the fields of the struct ... no need for all this accessor & setter machinery
+  inline auto private_key() const -> pki::Secret const &;
+  inline auto private_key(pki::Secret) -> void;
+  inline auto certificate() const -> pki::Certificate const &;
+  inline auto certificate(pki::Certificate) -> void;
+  inline auto authority() const -> pki::Certificates const &; // REMINDER: was caCertChain, _caCert
+  inline auto authority(pki::Certificates) -> void;
+  //
+  [[deprecated("instead prefer Package<ENROLLMENT>::certificate()")]] inline auto cert() const -> pki::Certificate const &;
+  [[deprecated("instead prefer Package<ENROLLMENT>::certificate(pki::Certificate)")]] inline auto cert(pki::Certificate noobie) -> void;
+  [[deprecated("instead prefer Package<ENROLLMENT>::authority()")]] inline auto caCert() const -> pki::Certificates const &;
+  [[deprecated("instead prefer Package<ENROLLMENT>::authority(pki::Certificates)")]] inline auto caCert(pki::Certificates noobie) -> void;
+#if 0 // FIXTHIS ... this is wholly redundant in the Service interface
+private:
+  using Pointer = Service *;
+public:
+  //
+  // [[FIXTHIS]] all this optional stuff is from Python where everything is nullable.  How much of it is real?
+  //
+  // [[FIXTHIS]] the python had a comment that uttered "TODO, default should be equal to registrar"
+  //
+  // See https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  auto enregister(string::Storage enrollmentID,
+                  Optional<string::Storage> enrollmentSecret = {},
+                  Optional<string::Storage> role = {},
+                  Optional<string::Storage> affiliation = {},
+                  Count max_enrollmentackages = Count{1},
+                  Dictionary const &attrs = Dictionary{}) -> pki::Secret;
+  using OReason = Optional<pki::revocation::reason::Code>;
+  // https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#revoking-a-certificate-or-identity
+  inline auto revoke(string::Storage enrollmentID, OReason = Reason>{}) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names>;
+  inline auto revoke(string::Storage const &aki, string::Storage const &serial, OReason = Reason{}) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::List>;
+  //
+  // Generate a CRL, selecting the revoked and/or expired certificates in the indicated range.
+  //
+  // time ---------+-------------------------------+-------------------------->
+  //               ^                               ^
+  //               |                               |
+  //               |     <------------------------ Before
+  //               |                         revokeBefore (same with expireBefore)
+  //               |
+  //               After ------------------------>
+  //         revokeAfter
+  //
+  // Frequently revoked and expire are the same time point.
+  auto generateCRL(Optional<Point> revokedBefore, Optional<Point> revokedAfter, Optional<Point> expireBefore, Optional<Point> expireAfter) -> pki::revocation::Names;
+protected:
+  Pointer service;
+  pki::Secret _private_key;
+  pki::Certificate _certificate;
+  pki::Certificates _caCertChain;
+#endif
+#endif
+  pki::Secret secret;
+  pki::Certificate certificate;
+  pki::Certificates certificates;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::enrollment {
+#if 1
+  Package::Package(pki::Secret sec, pki::Certificate crt, pki::Certificates ca)
+    : secret{move(sec)}
+    , certificate{move(crt)}
+    , certificates{move(ca)}
+  { }
+#else
+  Package::Package(pki::Secret key, pki::Certificate crt, pki::Certificates ca)
+    : _private_key{move(key)}
+    , _certificate{move(crt)}
+    , _caCertChain{move(ca)}
+  { }
+  auto Package::private_key() const -> pki::Secret const & { return _private_key; }
+  auto Package::private_key(pki::Secret noobie) -> void { _private_key = std::move(noobie); }
+  auto Package::certificate() const -> pki::Certificate const & { return _certificate; }
+  auto Package::certificate(pki::Certificate noobie) -> void { _certificate = move(noobie); }
+  auto Package::authority() const -> pki::Certificates const & { return _caCertChain; }
+  auto Package::authority(pki::Certificates noobie) -> void { _caCertChain = move(noobie); }
+  //
+  auto Package::cert() const -> pki::Certificate const & { return certificate(); }
+  auto Package::cert(pki::Certificate noobie) -> void { certificate(move(noobie)); }
+  auto Package::caCert() const -> pki::Certificates const & { return authority(); }
+  auto Package::caCert(pki::Certificates noobie) -> void { authority(move(noobie)); }
+#endif
+}
+#if 0
+#import hyperledger.fabric.ca.exception.Value
+#import hyperledger.fabric.ca.exception.Empty
+#import hyperledger.fabric.ca.exception.Service
+namespace hyperledger::fabric::ca::enrollment::Package {
+  Package::Package(pki::Secret key, pki::Certificate crt, pki::Certificates ca, Pointer service)
+    : private_key{move(key)}
+    , certificate{move(crt)}
+    , caCertChain{move(ca)}
+    , service{move(service)}
+  { }
+  auto Package::enregister(string::Storage enrollmentID, Optional<string::Storage> enrollmentSecret, Optional<string::Storage> role, OSstring affiliation, unsigned max_enrollment, Dictionary const &attrs) -> pki::Secret {
+    if (empty(enrollmentID)) { throw exception::Empty{"enrollmentID"}; }
+    if (nullptr == service.get()) { throw exception::Service{}; }
+    return service->enregister(move(enrollmentID), move(enrollmentSecret), move(role), move(affiliation), max_enrollment, attrs, *this);
+  }
+  auto Package::revoke(string::Storage enrollmentID, Optional<pki::revocation::Reason> reason) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names> {
+    if (nullptr == service.get()) { throw exception::Service{}; }
+    return service->revoke(move(enrollmentID), reason, *this);
+  }
+  auto Package::revoke(string::Storage aki, string::Storage serial, OReason reason) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::List> {
+    if (nullptr == service.get()) { throw exception::Service{}; }
+    return service->revoke(aki, serial, reason, *this);
+  }
+  auto Package::generateCRL(Optional<Point> revokedBefore, Optional<Point> revokedAfter, Optional<Point> expireBefore, Optional<Point> expireAfter) -> pki::revocation::Names {
+    if (revokedAfter && revokedBefore) {
+      if (*revokedAfter > *revokedBefore) {
+        throw exception::Value{"revokedAfter > revokedBefore"};
+      }
+    }
+    if (expireAfter && expireBefore) {
+      if (*expireAfter > *expireBefore) {
+        throw exception::Value{"expireAfter > expireBefore"};
+      }
+    }
+    if (nullptr == service.get()) { throw exception::Service{}; }
+    return service->generateCRL(revokedBefore, revokedAfter, expireBefore, expireAfter, *this);
+  }
+}
+#endif
+#endiv

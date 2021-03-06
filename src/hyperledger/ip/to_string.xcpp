@@ -1,0 +1,15 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.ip.port.Port
+#import hyperledger.ip.host.Host
+#import hyperledger.ip.endpoint.Endpoint
+#import hyperledger.ip.Endpoints // NOT hyperledger.ip.endpoint.Endpoints because there is no such
+namespace hyperledger::ip {
+  using port::to_string;
+  using host::to_string;
+  using endpoint::to_string;
+  using net::endpoint::to_string; // in lieu of ip::endpoints::to_string;
+}
+#endiv

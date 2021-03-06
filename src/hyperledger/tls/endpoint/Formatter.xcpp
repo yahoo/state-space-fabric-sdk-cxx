@@ -1,0 +1,83 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls::endpoint {
+  //
+  // The field-level formatter
+  //
+  // Usage:
+  //
+  //   auto endpoint = tls::Endpoint{...somehow...};
+  //   cerr << format(endpoint, Field::ENDPOINT);
+  //   cerr << format(endpoint, Field::HOST);
+  //   cerr << format(endpoint, Field::PORT);
+  //   cerr << format(endpoint, Field::CA);
+  //
+  struct Formatter;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.required.Character
+#import hyperledger.required.Character_Traits
+#import hyperledger.string.Storage
+#forward hyperledger.tls.endpoint.Basis
+#import hyperledger.tls.Field
+#import std.basic_ostream
+namespace hyperledger::tls {
+  namespace endpoint {
+    inline auto format(Basis const &, Field = Field::ENDPOINT) -> endpoint::Formatter;
+    inline auto to_string(Formatter const &) -> string::Storage;
+    template<required::Character CHAR, required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+  }
+  struct endpoint::Formatter {
+    using Value = Basis;
+    inline explicit Formatter(Value const &, Field);
+    Value const &value;
+    Field field;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.tls.endpoint.Basis
+#import langu.age.dq
+#import hyperledger.ip.format
+#import hyperledger.detail.reformat
+namespace hyperledger::tls {
+  auto endpoint::format(Basis const &basis, Field field) -> Formatter { return Formatter{basis, field}; }
+  auto endpoint::to_string(Formatter const &ff) -> string::Storage { return detail::reformat::to_string(ff); }
+  template<required::Character CHAR, required::Character_Traits TRAITS> auto endpoint::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+    // REMINDER - the descendants in Endpoint will not exhibit Endpoint::dotls;
+    // we came all this way for the switch statement
+    switch (f.field) {
+    case Field::CA:
+    return o << langu::age::dq(f.value.ca.value()); // can throw bad_optional_access
+    case Field::PORT:
+    return o << f.value.port.value(); // ibidem. (and you asked for it explicitly but it is not there you get an exception)
+    case Field::HOST:
+      return o << ip::host::format(f.value.host);
+    case Field::ENDPOINT:
+    default:
+      return o << ip::format(static_cast<ip::Endpoint const &>(f.value));
+    }
+  }
+  namespace endpoint {
+    Formatter::Formatter(Value const &value, Field field) : value{value}, field{field} { }
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.tls.endpoint.Endpoint
+#import std.cerr
+namespace {
+  namespace tests {
+    using namespace hyperledger::tls::endpoint;
+    using hyperledger::tls::endpoint::format; // [[FIXTHIS]] the visible namespace ::format ambiguates the ADL here ... [[REMOVEWHEN]] namespace format -> form::at or such
+    template<typename ENDPOINT> concept Usage = requires(ENDPOINT endpoint, std::basic_ostream<char> &outbound) {
+      { outbound << format(endpoint) };
+    };
+    static_assert(Usage<Endpoint>);
+  }
+}
+#endiv

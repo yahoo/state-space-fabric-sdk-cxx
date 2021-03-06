@@ -1,0 +1,66 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto.number
+namespace tests::crypto::number {
+  namespace comparison {
+    class Comparison;
+    namespace library = ::hyperledger::crypto::number;
+  }
+  using comparison::Comparison;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.crypto.Number
+struct tests::crypto::number::comparison::Comparison : public cppunit::test::Fixture {
+  using Subject = library::Number;
+  auto test_eq() -> void;
+  auto test_ne() -> void;
+  auto test_le() -> void;
+  auto test_lt() -> void;
+  auto test_ge() -> void;
+  auto test_gt() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+namespace tests::crypto::number::comparison {
+#warning WRITETHIS auto Comparison::test_eq() -> void
+  auto Comparison::test_eq() -> void {
+  }
+#warning WRITETHIS auto Comparison::test_ne() -> void
+  auto Comparison::test_ne() -> void {
+  }
+#warning WRITETHIS auto Comparison::test_le() -> void
+  auto Comparison::test_le() -> void {
+  }
+#warning WRITETHIS auto Comparison::test_lt() -> void
+  auto Comparison::test_lt() -> void {
+  }
+#warning WRITETHIS auto Comparison::test_ge() -> void
+  auto Comparison::test_ge() -> void {
+  }
+#warning WRITETHIS auto Comparison::test_gt() -> void
+  auto Comparison::test_gt() -> void {
+  }
+}
+#import tests.crypto.number.Number
+#import tests.crypto.number.Comparison
+#import rigging.suite.io
+auto tests::crypto::number::comparison::Comparison::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"comparisons"};
+  series << call("operator==", &Comparison::test_eq)
+         << call("operator!=", &Comparison::test_ne)
+         << call("operator<=", &Comparison::test_le)
+         << call("operator<", &Comparison::test_lt)
+         << call("operator>=", &Comparison::test_ge)
+         << call("operator>", &Comparison::test_gt)
+         << END;
+  return finalize(series);
+}
+#endiv

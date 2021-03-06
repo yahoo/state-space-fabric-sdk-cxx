@@ -1,0 +1,90 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::primitives {
+  //
+  // An abstract base class for the crypto primitives
+  // Descendants only.
+  // Was: among class Crypto, Primitives adn so on
+  //
+  // Concept:
+  //
+  //   Complete abstraction of the crypto primitives and implementations.
+  //   One level higher than the actual cryptosystem.
+  //
+  // Usage:
+  //
+  //   see Primitives
+  //   see curve::Prototype, curve;:Elliptic
+  //
+  class Interface;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.crypto.Message
+#forward hyperledger.crypto.Signature
+#forward hyperledger.crypto.key.Public
+#forward hyperledger.crypto.key.Private
+#import hyperledger.crypto.hash.Algorithm
+#import hyperledger.crypto.hash.Function
+#import std.size_t
+class hyperledger::crypto::primitives::Interface {
+protected:
+  [[key_method]] virtual ~Interface();
+  Interface() = default;
+public:
+  Interface(Interface const &) = delete;
+  auto operator=(Interface const &) -> Interface & = delete;
+  Interface(Interface &&) = default;
+  auto operator=(Interface &&) -> Interface & = default;
+  //
+  // Generate asymmetric key pair.
+  // :Returns: An private key object which includes the public key object.
+  virtual auto generate_private_key() const -> key::Private = 0;
+  //
+  // Encrypt the message with the public key.
+  //
+  // :param public_key: Encryption public key
+  // :param message: message to encrypt
+  // :Returns: the message. An object including secure context
+  virtual auto encrypt(key::Public const &, Message const &plain_text) const -> Message = 0;
+  //
+  // Decrypt the cipher text using encryption private key.
+  //
+  // :param private_key: Encryption private key
+  // :param cipher_text: Cipher text received
+  // :Returns: An object which includes the secure context
+  // :Returns: the signature (some bytes) [[FIXTHIS]] was: An object including secure context
+  virtual auto decrypt(key::Private const &, Message const &cipher_text) const -> Message = 0;
+  //
+  // Sign the origin message by signing private key.
+  //
+  // :param private_key: Signing private key
+  // :param message: Origin message
+  // :Returns: the signature (some bytes) [[FIXTHIS]] was: An object including secure context
+  virtual auto sign(key::Private const &, Message const &) const -> Signature = 0;
+  //
+  // Verify the signature by signing public key.
+  //
+  // :param public_key: Signing public key
+  // :param message: Origin message
+  // :param signature: Signature of message
+  // :Returns: A boolean True if the message is valid
+  virtual auto verify(key::Public const &, Message const &, Signature const &) const -> bool = 0;
+  //
+  // Reminder: generate_nonce is a facility of the operating system.
+  // It is not entailed in the crypto primitives
+};
+#endiv
+#divert <ipp>
+#import hyperledger.crypto.Message
+#import hyperledger.crypto.Signature
+#import hyperledger.crypto.key.Public
+#import hyperledger.crypto.key.Private
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::primitives {
+  Interface::~Interface()  = default;
+}
+#endiv

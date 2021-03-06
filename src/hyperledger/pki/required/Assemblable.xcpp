@@ -1,0 +1,48 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_same
+#forward hyperledger.pki.Secret
+namespace hyperledger::pki::required {
+  //
+  // What are the pki (x509) objects that can be assembled
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto some_bytes_somehow = ...somehow...
+  //     ...
+  //     auto thing = pki::assemble<THING>(some_bytes_somehow);
+  //     ... use the thing directly ...
+  //   } catch (exception::Aspect const &) {
+  //     ... that was bad ...
+  //     ... cannot assemble the bytes to a THING
+  //   }
+  //
+  template<typename OBJECT> concept Assemblable = (std::is_same_v<OBJECT, Secret>);
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.Secret
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Request
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::pki;
+    using namespace hyperledger::pki::required;
+    static_assert(Assemblable<Secret>);
+    static_assert(not Assemblable<Certificate>);
+    static_assert(not Assemblable<Certificates>);
+    static_assert(not Assemblable<Request>);
+    static_assert(not Assemblable<revocation::Certificates>);
+    static_assert(not Assemblable<revocation::Names>);
+    static_assert(not Assemblable<int>);
+  }
+}
+#endiv

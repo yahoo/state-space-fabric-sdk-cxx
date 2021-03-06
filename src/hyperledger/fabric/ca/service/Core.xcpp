@@ -1,0 +1,355 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.literals
+#import hyperledger.fabric.ca.protocol.exception
+namespace hyperledger::fabric::ca::service {
+  //
+  // The heavyweight service core
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   Captures some core interface functions
+  //   Not cogent and complete enough to be a complete service.
+  //   One epsilon above the Driver, one epsilon below a full subservice as ca::Service<NAME>
+  //
+  //   The API herein adds-mediates-manages the authorization token as a shim in between the API and the transport.
+  //   [[ick]] The authorization concept breaks through the abstraction layers to  insert those tokens into the HTTP headers of the underlying RESTie call.
+  //
+  //   For example in the case of the Transport<HTTP> the authorization must be presented
+  //   (a) as mTLS in the HTTP call setup
+  //   (b) as HTTP headers because mTLS is only for the transport to/from the server.
+  //
+  //   Whereas these servers are so heavyweight that multi-tenant containers need to be defined within them at the appliaction level,
+  //
+  // Design:
+  //
+  //   This "core" is a mini-service within the Heavyweight ancestor.
+  //
+  //   The API accepts generalist ca::Request<NAME>, and ca::Package<ENROLLMENT>
+  //   The API here returns pki objects directly..
+  //   Exceptions are thrown on failure to return such objects.
+  //
+  // Exceptions & Error Signalling
+  //
+  //   These all throw exceptions on failure to make the call up to the server.
+  //
+  // API Argument Ordering:
+  //
+  //   The argument ordering is arbitrary but strongly typed, so you can't get it wrong.
+  //   The request appears first ...... the current supplication to the server.
+  //   The registrar appears second ... a previous enrollment.
+  //
+  // History, Grand Notice of Renaming:
+  //
+  //   But since renaming creates confusion, some amount of ceremony must be made out of the activity.
+  //   ca_name -> tenant_name.  This is the multi-tenant "virtual service" that lives with in the remove server.
+  //
+  //   The API of the protocol has an affordance to name the subspace, the namespace, the subservice, within the remote service.
+  //   And since everything can't be called "name" or "ca_name", we choose a new name for this thingie.
+  //
+  // STALE ---> Arguments:
+  // STALE --->   target (str): CA server address including protocol,hostname,port
+  // STALE --->   ca_certs_path (str): Local ca certs path
+  // STALE --->   ca_name (str): The optional name of the CA. Fabric-ca servers support multiple Certificate Authorities from a single server
+  // STALE ---> If omitted or null or an empty string, then the default CA is the target of requests.
+  //
+  // Usage:
+  //
+  //   Of course.
+  //
+  namespace core {
+    namespace exception {
+      // Announcing this here means that other denizens of hyperledger::fabric::ca::affiliation do NOT get it.
+      using namespace ca::protocol::exception;
+    }
+    class Core;
+  }
+  using core::Core;
+}
+#endiv
+#divert <hpp>
+// interface results
+#forward hyperledger.pki.Bundle
+#forward hyperledger.pki.Certificates
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Secret
+#forward hyperledger.pki.revocation.Certificates
+#forward hyperledger.pki.revocation.Names
+// interface arguments
+#forward hyperledger.fabric.ca.Request
+#forward hyperledger.fabric.ca.Package
+#forward hyperledger.fabric.ca.Driver
+// implementation:
+#import hyperledger.fabric.ca.service.Lightweight
+#forward hyperledger.fabric.ca.service.Heavyweight
+// private:
+#forward hyperledger.json.Object
+#if 0
+// private:
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.protocol.Response
+#forward hyperledger.http.url.String
+#import hyperledger.Optional
+#import std.function
+#import std.unique_ptr
+#endif
+struct hyperledger::fabric::ca::service::core::Core : public Lightweight {
+  using Ancestor = Lightweight;
+protected:
+  ~Core() = default;
+  friend class service::Heavyweight;
+public:
+  using Ancestor::Lightweight;
+  auto get_cainfo() -> pki::Certificates;
+  [[deprecated("AVOID")]] auto enregister(ca::Request<REGISTRATION> &&) -> pki::Secret;
+  auto enregister(ca::Request<REGISTRATION> &&, ca::Package<ENROLLMENT> const &) -> pki::Secret;
+  auto enroll(ca::Request<ENROLLMENT> &&) -> pki::Bundle<pki::Certificate, pki::Certificates>;
+  auto reenroll(ca::Request<ENROLLMENT> &&, ca::Package<ENROLLMENT> const &) -> pki::Bundle<pki::Certificate, pki::Certificates>;
+  auto revoke(ca::Request<REVOCATION> &&, ca::Package<ENROLLMENT> const &) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names>;
+  // revocations(...) was generateCRL(...)
+  auto revocations(ca::Request<REVOCATIONS> &&, ca::Package<ENROLLMENT> const &) -> pki::revocation::Names;
+  // Backwards is deprecated ... who does this?
+  [[deprecated("the Request>ENROLLMENT> should appear second")]] inline auto enregister(Package<ENROLLMENT> const &, ca::Request<REGISTRATION> &&) -> pki::Secret;
+  [[deprecated("the Request>ENROLLMENT> should appear second")]] inline auto reenroll(Package<ENROLLMENT> const &, ca::Request<ENROLLMENT> &&) -> pki::Bundle<pki::Certificate, pki::Certificates>;
+  [[deprecated("the Request>ENROLLMENT> should appear second")]] inline auto revoke(Package<ENROLLMENT> const &, ca::Request<REVOCATION> &&) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names>;
+  [[deprecated("the Request>ENROLLMENT> should appear second")]] inline auto revocations(Package<ENROLLMENT> const &, ca::Request<REVOCATIONS> &&) -> pki::revocation::Names;
+#if 0 // [[REMOVETHIS]] because it already exists in the Service<MAIN> and is referenced through the ancestry as Lightweight::tenant
+public:
+  // [[FIXTHIS] find a way to pull this out of the containing Service<MAIN> whence it came.
+  // Public because ... why not, and because the outlying services need access to it.  So either lotsa friends or it is public.
+  // was: ca_name (and maybe name?)
+  Optional<string::Storage> tenant_name;
+#endif
+private:
+  //
+  // Avoid cut & paste in and among the enregister(...), reenroll(..), revoke(...), generateCRL(..)
+  // [[neat!]] the RESULT type can be deduced from the recovery parameter!
+  //
+  template<typename RESULT, typename REQUEST> auto standard_post_and_response(REQUEST &&, ca::Package<ENROLLMENT> const &, http::url::String const &path, std::function<RESULT (json::Object const &)> recovery) -> RESULT;
+};
+#endiv
+#divert <ipp>
+// The complete types of the arguments and the return values
+#import hyperledger.json.object.to_string
+#import hyperledger.pki.Bundle
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Secret
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+#import hyperledger.fabric.ca.Request
+#import hyperledger.fabric.ca.Package
+#import hyperledger.fabric.ca.protocol.Headers
+#import hyperledger.fabric.ca.protocol.exception.constants
+#import hyperledger.json.Object
+#import hyperledger.literals
+namespace hyperledger::fabric::ca::service::core {
+  using namespace ca::protocol::exception::constants;
+  using ca::protocol::exception::constants::HTTP; // WATCHOUT - is a constant whereas hyperledger::fabric::ca::HTTP is a type
+  using namespace hyperledger::literals;
+  //
+  // Elegantly handle the argument order deprecations
+  auto Core::enregister(Package<ENROLLMENT> const &registrar, ca::Request<REGISTRATION> &&request) -> pki::Secret                                                  { return enregister(forward<ca::Request<REGISTRATION>>(request), registrar); }
+  auto Core::reenroll(Package<ENROLLMENT> const &registrar, ca::Request<ENROLLMENT> &&request) -> pki::Bundle<pki::Certificate, pki::Certificates>                 { return reenroll(forward<ca::Request<ENROLLMENT>>(request), registrar); }
+  auto Core::revoke(Package<ENROLLMENT> const &registrar, ca::Request<REVOCATION> &&request) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names> { return revoke(forward<ca::Request<REVOCATION>>(request), registrar); }
+  auto Core::revocations(Package<ENROLLMENT> const &registrar, ca::Request<REVOCATIONS> &&request) -> pki::revocation::Names                                       { return revocations(forward<ca::Request<REVOCATIONS>>(request), registrar); }
+}
+#endiv
+#divert <tpp>
+#import hyperledger.Dictionary
+#import hyperledger.http.exception.Call
+#import std.any
+#import std.make_shared
+#import hyperledger.Dictionary
+namespace hyperledger::fabric::ca::service::core {
+  template<typename RESULT, typename REQUEST> auto Core::standard_post_and_response(REQUEST &&request, ca::Package<ENROLLMENT> const &registrar, http::url::String const &path, std::function<RESULT (json::Object const &)> recovery) -> RESULT {
+    auto document = [tenant=this->tenant](REQUEST &&request) -> protocol::Request {
+                      auto ret = protocol::Request{tenant};
+                      //
+                      // WATCHOUT -- what we're about to do is (1) take the non-JSON request
+                      //                                       (2) wrap it in a std::any, um, what exactly is that?
+                      //                                       (3) add it to the dictionary
+                      //
+                      // Later, the serialize(...) procedures wil serialize the subobject underneath "json"
+                      //
+                      auto magic = std::any(std::make_shared<REQUEST>(forward<REQUEST>(request)));
+                      //
+                      //                                                       dictionary::to_json(...)
+                      // WATCHOUT -- much magic happens right here wherein the dictionary serializer knows how to transform all possible REQUEST objects into protocol-valid JSON.
+                      //                                         |
+                      //            ////////////-----------------/
+                      //            |||||||||||
+                      //            vvvvvvvvvvv
+                      ret["json"] = move(magic);
+                      // [[REMOTETHIS]] WAS ---> return {{"json",move(magic)},{"headers",move(headers)},{"verify", this->ca_certs_path}}; // <---- FIXTHIS <-------------------- this cannot be correct
+                      return ret;
+                    }(forward<REQUEST>(request));
+    auto headers = [&authorizer=this->authorizer, &registrar, &document]() -> protocol::Headers {
+                     auto generated = authorizer.generate(registrar, document);
+                     if (!generated) {
+                       return {};
+                     } else {
+                       return authorizer.standard_headers(move(*generated));
+                     }
+                   }();
+    auto posted = driver.call(path, headers, document);
+    if (!ok(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), error_code(posted).message()};
+    } else {
+      auto &blob = value(posted);
+      //
+      // success
+      // errors
+      // result.something <--\ (an object)
+      // result.something <--+-------------------- the result object is processed in the recover(...) thunk
+      // result.dark_side <--/
+      //
+      if (blob.contains("success")) {
+        auto const result = json::Object{move(blob.find("result").value())}; // [[FIXTHIS]] this was supposed to be easier to read and eaier to work with.  Tt is not.
+        return RESULT{recovery(result)};
+      } else {
+        throw exception::Call<REST>{path, "POST"_method, 400_status, to_string(blob.at("errors"))};
+      }
+    }
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.base64.decode
+#import hyperledger.dictionary.to_json
+#import hyperledger.fabric.ca.protocol.exception.Empty
+#import hyperledger.http.exception.Call
+#import hyperledger.Dictionary
+#import hyperledger.pki.from
+namespace hyperledger::fabric::ca::service::core {
+  auto Core::get_cainfo() -> pki::Certificates {
+    auto const path = "cainfo"_url; // [[FIXTHIS]] why is this "get_cainfo" when the the REST call was /cainfo
+    auto document = protocol::Request{this->tenant};
+    auto posted = driver.call(path, {}, move(document));
+    if (!good(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), error_code(posted).message()};
+    }
+    auto &blob = value(posted);
+    //
+    // success
+    // errors
+    // result.secret .......... shhhhhh.  This is Secret.
+    // result.CAChain ......... the bundle of certificates that you asked for
+    // result.CAName  ......... the name of the Certificate Authority that responded to the query
+    //
+    if (blob.contains("success")) {
+      auto const result = json::Object{move(blob.find("result").value())}; // [[FIXTHIS]] this was supposed to be easier to read and eaier to work with.  Tt is not.
+      if (!tenant || to_string(result.find("CAName").value()) == *tenant) {
+        // Either we don't care what tenant certificate authority (subservice) answered, or we do care.
+        // We got the CA we were asking for.
+        // ... aand any of these can throw something if they can't do their job.
+        return pki::from<pki::Certificates>(base64::decode<string::Storage>(to_string(result.at("CAChain"))));
+      }
+    }
+    throw exception::Call<REST>{path, "POST"_method, 400_status, to_string(blob.at("errors"))};
+  }
+  auto Core::enregister(ca::Request<REGISTRATION> &&request, Package<ENROLLMENT> const &registrar) -> pki::Secret {
+    auto recovery = [](json::Object const &result) -> pki::Secret {
+                       auto secret = [&]() {
+                                       auto bytes = base64::decode<std::vector<std::byte>>(to_string(result.at("secret")));
+                                       return pki::from<pki::Secret>(bytes);
+                                     };
+                       return secret();
+                     };
+    return standard_post_and_response<pki::Secret>(forward<ca::Request<REGISTRATION>>(request), registrar, "register"_url, recovery);
+  }
+  auto Core::enroll(ca::Request<ENROLLMENT> &&request) -> pki::Bundle<pki::Certificate, pki::Certificates> {
+#warning FIXTHIS auto Core::enroll(ca::Request<ENROLLMENT> &&request) -> pki::Bundle<pki::Certificate, pki::Certificates> // ... is there really no possible way to put this into the standard_post_and_response call cycle?
+    auto const path = "enroll"_url;
+    auto document = [&request, this]() -> protocol::Request {
+                      if (empty(request.name))   { throw exception::Empty{"name"}; }
+                      if (empty(request.secret)) { throw exception::Empty{"secret"}; }
+                      auto ret = protocol::Request{this->tenant};
+                      ret["name"] = move(request.name);
+                      ret["secret"] = move(request.name);
+                      ret["certificate_request"] = std::any(std::make_shared<pki::Request>(move(request.request)));
+                      if (request.profile) { ret["profile"] = move(request.profile); };
+                      ret["attr_reqs"] = std::any(std::make_shared<Dictionary>(move(request.attr_reqs)));
+                      return ret;
+                    }();
+#if 1
+    // The name and the secret are going to be enough to get this approved.  RLY? WHY?
+    auto headers = protocol::Headers{};
+#else
+    auto headers = [&]() -> protocol::Headers {
+                     auto generated = authorizer.generate(registrar, document);
+                     if (!generated) {
+                       return {};
+                     } else {
+                       return authorizer.standard_headers(move(*generated));
+                     }
+                   }();
+#endif
+    // [[OBSERVE]] why are we sending the (enrollment) secret of the (enrollment) name up to the server, out on the wire.
+    // [[FIXTHIS]] is is NOT the secret used to sign the CSR.
+    // [[FIXME][ why is the request payload called "json" when it is base64 of JSON of a Certificate Signing Request (CSR) 
+    // WHAT ---------> auto document = Dictionary{{"json", to_json(selfcoded)},{"auth",dictionary::Pair{request.name, request.secret}},{"verify",this->ca_certs_path}}; <----------- WHAT?
+    auto posted = driver.call(path, headers, document);
+    if (!ok(posted)) {
+      throw exception::Call<HTTP>{path, status(posted), "could not enroll"};
+    }
+    auto &blob = value(posted);
+    //
+    // success
+    // errors
+    // result.CAChain
+    // result.CAName
+    //
+    if (blob.contains("success")) {
+      auto const result = json::Object{move(blob.find("result").value())}; // [[FIXTHIS]] this was supposed to be a simplistic idiom, and look at the complexity therein!
+      auto certificate_bytes = base64::decode<string::Storage>(to_string(result.at("Cert")));
+      auto certificates_chain_bytes = base64::decode<string::Storage>(to_string(result.at("ServerInfo")));
+      auto certificate = pki::from<pki::Certificate>(certificate_bytes);
+      auto certificates_chain = pki::from<pki::Certificates>(certificates_chain_bytes);
+      return {move(certificate), move(certificates_chain)};
+    }
+    throw exception::Call<REST>{path, http::method::Name::POST, status(posted), to_string(blob.at("errors"))};
+  }
+  auto Core::reenroll(ca::Request<ENROLLMENT> &&request, ca::Package<ENROLLMENT> const &registrar) -> pki::Bundle<pki::Certificate, pki::Certificates> {
+    using Bundle = pki::Bundle<pki::Certificate, pki::Certificates>;
+    auto recovery = [](json::Object const &result) -> Bundle {
+                       auto certificate = [&]() {
+                                            auto bytes = base64::decode<std::vector<std::byte>>(to_string(result.at("Cert")));
+                                            return pki::from<pki::Certificate>(bytes);
+                                          };
+                       auto chain = [&]() {
+                                      auto bytes = base64::decode<string::Storage>(to_string(result.at("ServerInfo", "CAChain")));
+                                      return pki::from<pki::Certificates>(bytes);
+                                    };
+                       return {certificate(), chain()};
+                     };
+    return standard_post_and_response<Bundle>(forward<ca::Request<ENROLLMENT>>(request), registrar, "reenroll"_url, recovery);
+  }
+  auto Core::revoke(ca::Request<REVOCATION> &&request, ca::Package<ENROLLMENT> const &registrar) -> pki::Bundle<pki::revocation::Certificates, pki::revocation::Names> {
+    using Bundle = pki::Bundle<pki::revocation::Certificates, pki::revocation::Names>;
+    auto recovery = [](json::Object const &result) -> Bundle {
+                       auto certificates = [&]() {
+                                             auto bytes = base64::decode<string::Storage>(to_string(result.at("RevokedCerts")));
+                                             return pki::from<pki::revocation::Certificates>(bytes);
+                                           };
+                       auto list = [&]() {
+                                     auto bytes = base64::decode<string::Storage>(to_string(result.at("CRL")));
+                                     return pki::from<pki::revocation::Names>(bytes);
+                                   };
+                       return {certificates(), list()};
+                     };
+    return standard_post_and_response<Bundle>(forward<ca::Request<REVOCATION>>(request), registrar, "revoke"_url, recovery);
+  }
+  auto Core::revocations(ca::Request<REVOCATIONS> &&request, ca::Package<ENROLLMENT> const &registrar) -> pki::revocation::Names {
+    using Names = pki::revocation::Names;
+    auto recovery = [](json::Object const &result) -> Names {
+                      auto bytes = base64::decode<string::Storage>(to_string(result.at("CRL")));
+                      return pki::from<pki::revocation::Names>(bytes);
+                    };
+    return standard_post_and_response<Names>(forward<ca::Request<REVOCATIONS>>(request), registrar, "gencrl"_url, recovery);
+  }
+}
+#endiv

@@ -1,0 +1,31 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Request.template
+namespace hyperledger::fabric::ca {
+  template<> struct Request<REVOCATIONS>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.revocations.Request
+namespace hyperledger::fabric::ca {
+  template<> class Request<REVOCATIONS> : public revocations::Request {
+    using Ancestor = revocations::Request;
+  public:
+    Request() = default;
+    using Ancestor::Request;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.request.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::request;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Request<REVOCATIONS>>);
+  }
+}
+#endiv

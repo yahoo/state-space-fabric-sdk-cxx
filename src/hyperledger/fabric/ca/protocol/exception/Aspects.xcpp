@@ -1,0 +1,59 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.fabric.exception.Aspect
+#import hyperledger.fabric.ca.exception.Aspect
+#import hyperledger.fabric.ca.protocol.exception.Aspect
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // The blending of all the aspects.
+  // Descendants only (of course)
+  //
+  // Concept:
+  //
+  //   This is a convenience class.
+  //   It doesn't do anything.
+  //
+  // Usage:
+  //
+  //   By inheritance; see the documentariat in Aspect (singular)
+  //
+  namespace aspects {
+    // [[ICK!]] there does not seem to be any way to shut this up
+    // [[!ICK]] src/hyperledger/http/exception/call.Prototype.xcpp:28:43: warning: direct base ‘hyperledger::exception::Aspect’ inaccessible in ‘hyperledger::http::exception::call::Prototype’ due to ambiguity
+    struct Protocol;
+    struct CA;
+    struct Fabric;
+    struct Hyperledger;
+    class Aspects;
+  }
+  using aspects::Aspects;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.fabric.exception.Aspect
+#import hyperledger.fabric.ca.exception.Aspect
+#import hyperledger.fabric.ca.protocol.exception.Aspect
+namespace hyperledger::fabric::ca::protocol::exception {
+  struct aspects::Hyperledger : public hyperledger::exception::Aspect { };
+  struct aspects::Fabric : public fabric::exception::Aspect { };
+  struct aspects::CA : public ca::exception::Aspect { };
+  struct aspects::Protocol : public protocol::exception::Aspect { };
+  class aspects::Aspects : public Hyperledger,
+                           public Fabric,
+                           public CA,
+                           public Protocol {
+    struct Ancestors {
+      using Protocol = aspects::Protocol;
+      using CA = aspects::CA;
+      using Fabric = aspects::Fabric;
+      using Hyperledger = aspects::Hyperledger;
+    };
+  protected:
+    ~Aspects() = default;
+  };
+}
+#endiv

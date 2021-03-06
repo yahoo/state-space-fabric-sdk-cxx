@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::method::literals { }
+#endiv
+#divert <hpp>
+#import hyperledger.http.method.Name
+namespace hyperledger::http::method::literals {
+  //
+  // The (user-defined) literals of HTTP
+  // Just HTTP 1.0, because that is what Hyperledger has standardized upon for its RPC.
+  //
+  // Usage:
+  //
+  //   #import hyperledger.http.method.literals
+  //   using namespace hyperledger::http::method::literals
+  //
+  template<typename CHAR, CHAR...> inline constexpr auto operator""_method() -> Name = delete;
+
+  template<> inline constexpr auto operator""_method<char, 'O','P','T','I','O','N','S'>() -> Name { return Name::OPTIONS; }
+  template<> inline constexpr auto operator""_method<char, 'D','E','L','E','T','E'>() -> Name { return Name::DELETE; }
+  template<> inline constexpr auto operator""_method<char, 'G','E','T'>() -> Name { return Name::GET; }
+  template<> inline constexpr auto operator""_method<char, 'P','O','S','T'>() -> Name { return Name::POST; }
+  template<> inline constexpr auto operator""_method<char, 'P','U','T'>() -> Name { return Name::PUT; }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::http::method::literals {
+  static_assert(Name::PUT == "PUT"_method);
+}
+#endiv

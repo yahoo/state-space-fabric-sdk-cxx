@@ -1,0 +1,50 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::fabric::southside {
+  //
+  // Codes of the Hyperledger Fabric Soutside API
+  //
+  // Whereas Hyperledger Fabric is always on the South Side, facing North.
+  // Here is a picture in ascii to motivate.
+  //
+  //   +---------------+
+  //   |  application  |
+  //   |     api       |
+  //   |   service     |    (upstream, their code)
+  //   +---------------+
+  //          ^
+  //          |
+  //      southside
+  //       protocol
+  //          |
+  //          v
+  //   +---------------+
+  //   |  hyperledger  |    (peer, we, us our code)
+  //   |    fabric     |
+  //   |   database    |
+  //   +---------------+
+  //
+  // The codes (they) have chosen are similar to HTTP codes
+  //
+  enum class Code
+    { FAIL = 0,
+      OK = 200 };
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::southside {
+  inline auto ok(Code) -> bool;
+  inline auto good(Code) -> bool;
+  inline auto fail(Code) -> bool;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric {
+  auto southside::ok(Code code) -> bool   { return good(code); }
+  auto southside::good(Code code) -> bool { return Code::OK == code; }
+  auto southside::fail(Code code) -> bool { return Code::OK != code; }
+}
+#endiv

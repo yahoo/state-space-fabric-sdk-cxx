@@ -1,0 +1,32 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_fabric_v0_la = lib/libhyperledger-fabric-v0.la
+lib_libhyperledger_fabric_v0_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_fabric_v0_la_LIBADD = 
+lib_libhyperledger_fabric_v0_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_v0_la_SOURCES))
+lib_libhyperledger_fabric_v0_la_SOURCES = \
+  obj/src/hyperledger/fabric/v0/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/Context.cpp \
+  obj/src/hyperledger/fabric/v0/Contact.cpp \
+  $(obj_src_hyperledger_fabric_v0_orderer_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_v0_peer_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_v0_peers_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_v0_run_SUBSOURCES) \
+  $(end)
+include src/hyperledger/fabric/v0/orderer/Makefrag.am
+include src/hyperledger/fabric/v0/peer/Makefrag.am
+include src/hyperledger/fabric/v0/peers/Makefrag.am
+include src/hyperledger/fabric/v0/run/Makefrag.am
+v0-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_fabric_v0_la_SOURCES))
+$(lib_libhyperledger_fabric_v0_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/fabric/v0/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_fabric_v0_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/fabric/v0/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/fabric/v0/dependencies.mk

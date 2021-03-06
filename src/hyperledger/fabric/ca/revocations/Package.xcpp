@@ -1,0 +1,34 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::revocations {
+  //
+  // The packaging of a revocations result (a list)
+  // Descendants only.
+  //
+  // Usage:
+  //
+  //   auto revocations = Service<REVOCATIONS>{...somehow...};
+  //
+  //   Package<REVOCATINOS> list = revocations.generate(...query...);
+  //
+  struct Package;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.Bundle
+#import hyperledger.pki.revocation.Names // n.b. the elision namespace pki = pki::revocation
+class hyperledger::fabric::ca::revocations::Package : public pki::Bundle<pki::Names> {
+  using Ancestor = pki::Bundle<pki::Names>;
+protected:
+  ~Package() = default;
+public:
+  [[implicit]] Package(pki::Names &&n) : Ancestor{forward<pki::Names>(n)} { }
+  [[implicit]] Package(Ancestor &&a) : Ancestor{forward<Ancestor>(a)} { }
+  Package(Package const &) = delete;
+  auto operator=(Package const &) -> Package & = delete;
+  Package(Package &&) = default;
+  auto operator=(Package &&) -> Package & = delete;
+};
+#endiv

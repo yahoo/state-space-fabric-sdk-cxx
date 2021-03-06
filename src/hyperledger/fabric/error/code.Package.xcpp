@@ -1,0 +1,124 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::fabric::error::code {
+  //
+  // like std::error_code, but bundles in the companion enumeration.
+  // [[presumably]] with inlining and optimization in place, it has zero cost.
+  // [[FIXTHIS]] this is stock boilerplate code (once 'using enum Companion' works).
+  //
+  // Concept:
+  //
+  //   What you would naturally consider is going on here.
+  //   namespace something::something_else::dark_side {
+  //     namespace error {
+  //       enum class Enumeration { GOOD, CUTE, BETTER };
+  //       struct Package : public std::error_code; {
+  //          using error_code::error_code;
+  //          using enum Enumeration;
+  //       };
+  //     }
+  //   }
+  //
+  // Design:
+  //
+  // Can't use inheritance here because pass-by-value doesn't work.
+  // Want pass-by-value and pass-by-lvalue-reference to work equally.
+  // AND we know that std::error_code is substantially pass-by-value in the deterministic exception usage anyway
+  //
+  // Thus, disgorge the std::error_code by lvalue reference will handle it.
+  // e.g.
+  //
+  //     auto function(std::error_code) -> Something;
+  //     auto ec = Package<Something>{...somehow...};
+  //     function(ec);
+  //
+  // Usage:
+  //
+  //   auto code = error::Code{error::Code::GOOD};
+  //   auto code = std::error_code{error::Code::GOOD};
+  //
+  template<required::Enumeration COMPANION> struct Package;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.fabric.error.Condition // condition::Package
+#import std.error_category
+#import std.error_code
+#import std.enable_if
+#import std.is_error_code_enum.hyperledger.fabric.error.code.Enumeration
+namespace hyperledger::fabric::error {
+  namespace code {
+    template<required::Enumeration COMPANION> inline auto operator==(Package<COMPANION> const &, Package<COMPANION> const &) -> bool;
+    template<required::Enumeration COMPANION> inline auto operator!=(Package<COMPANION> const &, Package<COMPANION> const &) -> bool;
+    //
+    template<required::Enumeration COMPANION> inline auto operator==(Package<COMPANION> const &, condition::Package<COMPANION> const &) -> bool;
+    template<required::Enumeration COMPANION> inline auto operator!=(Package<COMPANION> const &, condition::Package<COMPANION> const &) -> bool;
+    //
+    template<required::Enumeration COMPANION> inline auto operator==(condition::Package<COMPANION> const &, Package<COMPANION> const &) -> bool;
+    template<required::Enumeration COMPANION> inline auto operator!=(condition::Package<COMPANION> const &, Package<COMPANION> const &) -> bool;
+  }
+  template<required::Enumeration COMPANION> class code::Package {
+    using Category = std::error_category;
+    using Contained = std::error_code;
+    using Companion = COMPANION;
+  public:
+#if 10 <= __GNUC__
+    using enum Companion; // one day C++20 will allow implicit construction by ...... {Code::FAILURE}
+#else
+    using E = Companion; // in the meanwhile, some implicit construction by ......... {error::Code::E::FAILURE}
+    inline static constexpr auto SUCCESS = Companion::SUCCESS;
+    inline static constexpr auto FAILURE = Companion::FAILURE;
+    inline static constexpr auto CONFIGURATION_TLS_SERVER = Companion::CONFIGURATION_TLS_SERVER;
+    inline static constexpr auto CONFIGURATION_TLS_CLIENT = Companion::CONFIGURATION_TLS_CLIENT;
+    inline static constexpr auto CONFIGURATION_ORDERER_CONTACT = Companion::CONFIGURATION_ORDERER_CONTACT;
+    inline static constexpr auto CONFIGURATION_PEERS_CONTACT = Companion::CONFIGURATION_PEERS_CONTACT;
+    inline static constexpr auto CONFIGURATION_PEER_CONTACT = Companion::CONFIGURATION_PEERS_CONTACT;
+    inline static constexpr auto CONFIGURATION_CHAINCODE = Companion::CONFIGURATION_CHAINCODE;
+    inline static constexpr auto TLS_CLIENT = Companion::TLS_CLIENT;
+    inline static constexpr auto TLS_SERVER = Companion::TLS_SERVER;
+    inline static constexpr auto CONTACT_ORDERER = Companion::CONTACT_ORDERER;
+    inline static constexpr auto CONTACT_PEERS = Companion::CONTACT_PEERS;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    [[deprecated("prefer the plural Code::CONTACT_PEERS")]] inline static constexpr auto CONTACT_PEER = Companion::CONTACT_PEER;
+#pragma GCC diagnostic pop
+    inline static constexpr auto RUN_CONFIGTXGEN = Companion::RUN_CONFIGTXGEN;
+    inline static constexpr auto RUN_CONFIGTXLATOR = Companion::RUN_CONFIGTXLATOR;
+    inline static constexpr auto RUN_CRYPTOGEN = Companion::RUN_CRYPTOGEN;
+    inline static constexpr auto RUN_ORDERER = Companion::RUN_ORDERER;
+    inline static constexpr auto RUN_PEER = Companion::RUN_PEER;
+    inline static constexpr auto RUN_PEERS = Companion::RUN_PEER;
+    inline static constexpr auto TRANSMISSION_INCOMPLETE = Companion::TRANSMISSION_INCOMPLETE;
+    inline static constexpr auto TRANSMISSION_GARBLED = Companion::TRANSMISSION_GARBLED;
+    inline static constexpr auto PAYLOAD_TOO_SHORT = Companion::PAYLOAD_TOO_SHORT;
+    inline static constexpr auto PAYLOAD_TOO_LONG = Companion::PAYLOAD_TOO_LONG;
+    inline static constexpr auto PAYLOAD_ENCODE = Companion::PAYLOAD_ENCODE;
+    inline static constexpr auto PAYLOAD_DECODE = Companion::PAYLOAD_DECODE;
+#endif
+    // Follow the constructor signature for error_code
+    Package() = default;
+    Package(int i, Category const &c) noexcept : contained{i, c} { }
+    template<required::Enumeration CODE, typename = typename std::enable_if<std::is_error_code_enum<CODE>::value>::type> Package(CODE c) noexcept { contained = make_error_code(c); }
+    Package(Contained d) noexcept : contained{d} { }
+    operator Contained const &() const noexcept { return contained; }
+  private:
+    Contained contained;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Condition
+namespace hyperledger::fabric::error {
+  template<required::Enumeration COMPANION> auto code::operator==(Package<COMPANION> const &a, Package<COMPANION> const &b) -> bool { return (std::error_code) a == (std::error_code) b; }
+  template<required::Enumeration COMPANION> auto code::operator!=(Package<COMPANION> const &a, Package<COMPANION> const &b) -> bool { return (std::error_code) a != (std::error_code) b; }
+  //
+  template<required::Enumeration COMPANION> auto code::operator==(Package<COMPANION> const &a, condition::Package<COMPANION> const &b) -> bool { return (std::error_code) a == (std::error_condition) b; }
+  template<required::Enumeration COMPANION> auto code::operator!=(Package<COMPANION> const &a, condition::Package<COMPANION> const &b) -> bool { return (std::error_code) a != (std::error_condition) b; }
+  //
+  template<required::Enumeration COMPANION> auto code::operator==(condition::Package<COMPANION> const &a, Package<COMPANION> const &b) -> bool { return (std::error_condition) a == (std::error_code) b; }
+  template<required::Enumeration COMPANION> auto code::operator!=(condition::Package<COMPANION> const &a, Package<COMPANION> const &b) -> bool { return (std::error_condition) a != (std::error_code) b; }
+}
+#endiv

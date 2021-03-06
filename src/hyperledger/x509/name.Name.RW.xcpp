@@ -1,0 +1,46 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.name.Name.template
+namespace hyperledger::x509::name {
+  //
+  // An X.509 Certificate Name
+  // Readwrite
+  //
+  // Usage:
+  //
+  //   auto req = Request{...somehow...}
+  //   Name<RW> nm = req.subject_name();
+  //
+  //   auto cn = nm.CN(); .................... get the name
+  //   cn.CN("something"); ................... and set the name
+  //   
+  template<> class Name<RW>;
+}
+#endiv
+#divert <hpp>
+#import openssl.x509.Name
+namespace hyperledger::x509::name {
+  template<> class Name<RW> : public Prototype<openssl::x509::Name> {
+    using Ancestor = Prototype<openssl::x509::Name>;
+    friend class pki::Certificate;
+    friend class pki::Request;
+    inline explicit Name(Held);
+  public:
+    Name() = default;
+    using Ancestor::CN;
+    inline auto CN(string::Storage const &) -> void;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::x509::name {
+  Name<RW>::Name(Held fer) : Ancestor{move(held)} { }
+  auto Name<RW>::CN(string::Storage const &value) -> void try {
+    held.add_entry_by_txt(field::Common_Name{value});
+  } catch (openssl::exception::Aspect const &) {
+    throw exception::Certificate{"can not set common name"};
+  }
+}
+#endiv

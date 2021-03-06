@@ -1,0 +1,17 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_pki_slurp_SUBSOURCES = \
+  obj/src/hyperledger/pki/slurp.template.cpp \
+  obj/src/hyperledger/pki/slurp.Certificate.cpp \
+  obj/src/hyperledger/pki/slurp.Request.cpp \
+  obj/src/hyperledger/pki/slurp.Secret.cpp \
+  obj/src/hyperledger/pki/slurp.cpp \
+  obj/src/hyperledger/pki/packaging/slurp/namespace.cpp \
+  obj/src/hyperledger/pki/packaging/slurp/load.template.cpp \
+  obj/src/hyperledger/pki/packaging/slurp/load.Secret.cpp \
+  obj/src/hyperledger/pki/packaging/slurp/load.cpp \
+  obj/src/hyperledger/pki/packaging/slurp/Loaded.cpp \
+  $(end)
+slurp-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_pki_slurp_SUBSOURCES))

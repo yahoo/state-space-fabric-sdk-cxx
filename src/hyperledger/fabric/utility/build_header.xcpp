@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#include "hyperledger/protos/common/common.pb.h" // SignatureHeader
+#include "hyperledger/protos/common/common.pb.h" // ChannelHeader
+#include "hyperledger/protos/common/common.pb.h" // Header
+#include "hyperledger/protos/msp/identities.pb.h" // SerializedIdentity
+#import std.string
+namespace hyperledger::fabric::utility {
+  //
+  // This function will build the common header.
+  //
+  // Args:
+  //   creator (protobuf SerializedIdentity): Serialized identity of the creator.
+  //   channel_header (protobuf ChannelHeader): ChannelHeader
+  //   nonce (str): Nonce that has been used for the tx_id.
+  //
+  // Returns:
+  //   header: Returns created protobuf common header.
+  //
+  namespace packaging::build_header::function {
+    using ::msp::SerializedIdentity;
+    using ::common::ChannelHeader;
+    using ::common::Header;
+    using ::common::SignatureHeader;
+    using Result = Header;
+    inline auto build_header(SerializedIdentity, ChannelHeader, std::string nonce) -> Result;
+  }
+  using packaging::build_header::function::build_header;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::utility::packaging::build_header {
+  auto function::build_header(SerializedIdentity creator, ChannelHeader channel_header, std::string nonce) -> Result {
+    auto signature_header = SignatureHeader();
+    signature_header.set_creator(std::move(*creator.mutable_id_bytes())); // [[FIXTHIS]] is this really really what is supposed to be happening here?
+    signature_header.set_nonce(std::move(nonce));
+    auto header = Header();
+    { std::string tmp;
+     signature_header.SerializeToString(&tmp);
+     header.set_signature_header(std::move(tmp)); }
+    { std::string tmp;
+      channel_header.SerializeToString(&tmp);
+      header.set_channel_header(std::move(tmp)); }
+    return header;
+  }
+}
+#endiv
+

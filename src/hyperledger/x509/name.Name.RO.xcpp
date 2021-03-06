@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.name.Name.template
+namespace hyperledger::x509::name {
+  //
+  // An X.509 Certificate Name
+  // Readonly
+  //
+  // Usage:
+  //
+  //   auto const req = Request{...somehow...};
+  //   Name<RO> nm = req.subject_name();
+  //
+  //   auto cn = nm.CN(); .................... get the name (no setter)
+  //   
+  template<> class Name<RO>;
+}
+#endiv
+#divert <hpp>
+#import openssl.x509.Name0
+#import hyperledger.x509.name.Prototype
+namespace hyperledger::x509::name {
+  template<> class Name<RO> : public Prototype<openssl::x509::Name0> {
+    using Ancestor = Prototype<openssl::x509::Name0>;
+    friend class pki::Certificate;
+    friend class pki::Request;
+    inline explicit Name(Held);
+  public:
+    Name() = default;
+    inline Name(Name<RW> const &);
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.x509.name.Name.RW
+namespace hyperledger::x509::name {
+  Name<RO>::Name(Held arg) : Ancestor{move(arg)}  { }
+  Name<RO>::Name(Name<RW> const &other) : Ancestor{other.held}  { }
+}
+#endiv

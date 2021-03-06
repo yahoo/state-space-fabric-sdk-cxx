@@ -1,0 +1,44 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.json.Object
+#import hyperledger.fabric.ca.protocol.Response
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // The deserialize scheme.
+  //
+  // Concept:
+  //
+  //   Whereas the json::Object is hard to work with.
+  //   Whereas the Dictionary object is easier to work with.
+  //
+  // Lifetimes:
+  //
+  //   The Hyperledger JSON Object must last last for the lifetime of teh deserialize(...)
+  //
+  // Design:
+  //
+  //   A (synthetic) reference to the underlying JSON Object is taken for convenience
+  //   and to allow for the elision of the distinction between hyperledger::json::Object and its ancestor
+  //   which is thought of as an implementation detail yet is public because it's interface is convenient.
+  //
+  // Usage:
+  //
+  //   auto blog = json::Object{...somehow...};
+  //
+  //   auto dictionary = protocol::deserialize(blob["result"]);
+  //
+  auto deserialize(json::Object::Reference<CONSTIE>) -> Response;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.json.Object
+#warning WRITETHIS
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::fabric::ca {
+  auto protocol::deserialize(json::Object::Reference<CONSTIE> source) -> Response {
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+  }
+}
+#endiv

@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_same
+#import hyperledger.required.Enumeration
+namespace hyperledger::fabric::ca::required::name {
+  //
+  // Is this enumeration in the universe of Transport names?
+  //
+  namespace [[eponymous]] transport {
+    using std::is_same_v;
+    template<typename MATCH, typename... UNIVERSE> concept bool Fold = (is_same_v<MATCH, UNIVERSE> || ... );
+    //                                                                                  the universe of available Transport<NAME>
+    //                                                                                  <------------------------->
+    template<typename MATCH> concept bool Transport = Enumeration<MATCH> && Fold<MATCH, FILES, HTTP, SOCKET, SQLITE>;
+  }
+  using transport::Transport;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    static_assert(required::name::Transport<FILES>);
+    static_assert(required::name::Transport<HTTP>);
+    static_assert(required::name::Transport<SOCKET>);
+    static_assert(required::name::Transport<SQLITE>);
+  }
+}
+#endiv

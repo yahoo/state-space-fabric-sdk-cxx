@@ -1,0 +1,83 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required
+#import nonstd.required.iterator.Forward
+#import nonstd.required.Octet
+#import nonstd.same_as
+#import std.iterator_traits
+#import std.byte
+namespace hyperledger::crypto {
+  //
+  // An abstraction of a buffer.
+  // Descendants only. 
+  // The buffer is either a message or a signature.
+  // The conversion constructors copy octet sources into the byte storage of the Buffer
+  //
+  // Usage:
+  //
+  //   You know, like a vector<byte> (a byte buffer)
+  //   See descendants Message, Signature
+  //
+  namespace buffer {
+    using Element = std::byte;
+    using nonstd::same_as;
+    namespace required {
+      using namespace hyperledger::required;
+      namespace iterator {
+        // [[FIXTHIS]] move this out to a proper required location
+        using namespace nonstd::required::iterator; // cascade this namespace too
+        // the BYTE will always be std::byte from Ancestor::value_type
+        template<typename ITERATOR, typename BYTE> concept bool Byte = requires(ITERATOR) {
+          typename std::iterator_traits<ITERATOR>::value_type;
+          requires same_as<BYTE, Element>; // a self-check
+          requires Forward<ITERATOR>; // c.f. nonstd::required;:iterator::forward which is available by the cascaded namespace system
+          requires same_as<BYTE, typename std::iterator_traits<ITERATOR>::value_type>;
+        };
+        template<typename ITERATOR, typename BYTE> concept bool Other = requires(ITERATOR) {
+          typename std::iterator_traits<ITERATOR>::value_type;
+          requires same_as<BYTE, Element>; // a self-check
+          requires Forward<ITERATOR>;
+          requires ! same_as<BYTE, typename std::iterator_traits<ITERATOR>::value_type>; // why we came ... not a BYTE
+          requires required::Octet<typename std::iterator_traits<ITERATOR>::value_type>; // yet it is an Octet
+        };
+      }
+    }
+    class Buffer;
+  }
+  using buffer::Buffer;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.View
+#import hyperledger.json.String
+#import std.vector
+class hyperledger::crypto::buffer::Buffer : public std::vector<Element> {
+  using Ancestor = std::vector<Element>;
+protected:
+  ~Buffer() = default;
+public:
+  // [[FIXTHIS]] Actually we don't want the allocator-based constructors; but we are sloppy this point.
+  Buffer() = default;
+  using Ancestor::vector;
+  // The conversion constructors, converting from octet sources (these always copy)
+  inline explicit Buffer(string::View);
+  inline explicit Buffer(json::String const &);
+  template<required::iterator::Byte<typename Ancestor::value_type> ITERATOR> Buffer(ITERATOR start, ITERATOR finish);
+  template<required::iterator::Other<typename Ancestor::value_type> ITERATOR> Buffer(ITERATOR start, ITERATOR finish);
+};
+#endiv
+#divert <ipp>
+#import std.transform
+#import std.back_inserter
+namespace hyperledger::crypto::buffer {
+  Buffer::Buffer(string::View source) : Buffer{source.begin(), source.end()} { }
+  Buffer::Buffer(json::String const &source) : Buffer{source.begin(), source.end()} { }
+  template<required::iterator::Byte<typename Buffer::Ancestor::value_type> ITERATOR> Buffer::Buffer(ITERATOR start, ITERATOR finish) : Ancestor{start, finish} { }
+  template<required::iterator::Other<typename Buffer::Ancestor::value_type> ITERATOR> Buffer::Buffer(ITERATOR start, ITERATOR finish) : Ancestor{} {
+    // [[FIXTHIS]] gotta be a more efficient way to do the conversion to bytes than by nidividual character copying.  Blik. [[FIXTHIS]]
+    std::transform(start, finish, std::back_inserter(*this), [](auto c) { return typename Ancestor::value_type(c); });
+  }
+}
+#endiv

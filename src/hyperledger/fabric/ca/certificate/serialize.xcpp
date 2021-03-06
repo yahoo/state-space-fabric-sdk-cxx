@@ -1,0 +1,39 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.serialize
+#forward hyperledger.fabric.ca.certificate.Query
+#forward hyperledger.string.Storage
+namespace hyperledger::fabric::ca::certificate {
+  //
+  // Just what it says on the label (serialize some stuff).
+  //
+  using ca::protocol::serialize;
+  auto serialize(Query const &) -> string::Storage;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.certificate.Query
+#import hyperledger.string.Storage
+#import hyperledger.dictionary.to_json
+#import hyperledger.json.Object
+#import hyperledger.json.to_string
+#import hyperledger.base64.encode
+namespace hyperledger::fabric::ca {
+  auto certificate::serialize(Query const &que) -> string::Storage {
+    auto son = json::Object{};
+    if (que.id)            { son["id"]            = base64::encode(que.id.value()); }
+    if (que.aki)           { son["aki"]           = base64::encode(que.aki.value()); }
+    if (que.serial)        { son["serial"]        = base64::encode(que.serial.value()); }
+    if (que.revoked_start) { son["revoked_start"] = base64::encode(que.revoked_start.value()); }
+    if (que.revoked_end)   { son["revoked_end"]   = base64::encode(que.revoked_end.value()); }
+    if (que.expired_start) { son["expired_start"] = base64::encode(que.expired_start.value()); }
+    if (que.expired_end)   { son["expired_end"]   = base64::encode(que.expired_end.value()); }
+    if (que.not_revoked)   { son["not-revoked"]   = base64::encode(que.not_revoked.value()); }
+    if (que.not_expired)   { son["not-expired"]   = base64::encode(que.not_expired.value()); }
+    if (que.ca)            { son["ca"]            = base64::encode(que.ca.value()); }
+    return to_string(son) ;
+  }
+}
+#endiv

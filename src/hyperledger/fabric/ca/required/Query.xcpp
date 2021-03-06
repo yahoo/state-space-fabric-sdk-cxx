@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Query
+#forward hyperledger.fabric.ca.Query
+#import hyperledger.fabric.ca.traits.Query
+#include <hpp/hyperledger.fabric.ca.traits.Query>
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this Query<NAME> in the universe of Querys, as named??
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Query<NAME>
+  //   The concept condition MUST align if-and-only-if with name::Query<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Query<QUERY> ....................... required::Query<ca::Query<CERTIFICATE>>;
+  //   required::name::Query<NAME> .................. required::name::Query<CERTIFICATE>;
+  //
+  // Usage:
+  //
+  //   template<required::Query QUERY> auto get_by_object() -> QUERY;
+  //   template<required::name::Query NAME> auto get_by_name() -> ca::Query<NAME>;
+  //
+  namespace [[eponymous]] configuration {
+    template<typename QUERY> concept bool Query = requires(QUERY) {
+      typename traits::template Query<QUERY>::Name;
+      requires traits::template Query<QUERY>::value;
+      requires required::name::Query<typename traits::template Query<QUERY>::Name>;
+    };
+  }
+  using configuration::Query;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Query
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    namespace required = hyperledger::fabric::ca::required;
+    static_assert(required::Query<Query<AFFILIATION>>);
+    static_assert(required::Query<Query<CERTIFICATE>>);
+    // NO these are Request<IDENTITY> -----> static_assert(required::Query<Query<IDENTITY>>);
+  }
+}
+#endiv

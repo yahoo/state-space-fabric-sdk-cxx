@@ -1,0 +1,24 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_required_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/required/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Authorization.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Configuration.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Query.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Service.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Subservice.cpp \
+  obj/src/hyperledger/fabric/ca/required/name.Transport.cpp \
+  obj/src/hyperledger/fabric/ca/required/Authorization.cpp \
+  obj/src/hyperledger/fabric/ca/required/Configuration.cpp \
+  obj/src/hyperledger/fabric/ca/required/configuration.Authorization.cpp \
+  obj/src/hyperledger/fabric/ca/required/configuration.Service.cpp \
+  obj/src/hyperledger/fabric/ca/required/configuration.Driver.cpp \
+  obj/src/hyperledger/fabric/ca/required/configuration.Transport.cpp \
+  obj/src/hyperledger/fabric/ca/required/Query.cpp \
+  obj/src/hyperledger/fabric/ca/required/Service.cpp \
+  obj/src/hyperledger/fabric/ca/required/Subservice.cpp \
+  obj/src/hyperledger/fabric/ca/required/Transport.cpp \
+  $(end)
+required-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_required_SUBSOURCES))

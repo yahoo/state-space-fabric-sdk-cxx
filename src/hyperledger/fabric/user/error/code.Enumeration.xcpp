@@ -1,0 +1,31 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.error.condition.Enumeration
+namespace hyperledger::fabric::user::error::code {
+  enum class Enumeration {
+    SUCCESS = (int) hyperledger::error::condition::Enumeration::SUCCESS,
+    FAILURE = (int) hyperledger::error::condition::Enumeration::FAILURE,
+    //
+    // User Errors
+    //
+    CREATE, // .... could not create the user; for wahatever reason.
+    LOAD, // ...... could not load the user from its database; i.e. a database error or such.
+    INVALID, // ... an invalid user somehow; fields missing, fields are inappropriate, whatever.
+    // [[WATCHOUT]] until 'using enum' of GCC 10 in C++20, these must be duplicated in code::Package<Enumeration>
+  };
+}
+#endiv
+#divert <hpp>
+#import std.is_error_code_enum.hyperledger.fabric.user.error.code.Enumeration
+#forward hyperledger.fabric.user.error.Code
+namespace hyperledger::fabric::user::error::code {
+  inline auto make_error_code(Enumeration) noexcept -> Code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.user.error.Code
+#import hyperledger.fabric.user.error.category
+auto hyperledger::fabric::user::error::code::make_error_code(Enumeration tion) noexcept -> Code { return {(int) tion, category()}; }
+#endiv

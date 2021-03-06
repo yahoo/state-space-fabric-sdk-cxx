@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.serialize
+#forward hyperledger.fabric.ca.enrollment.Request
+#forward hyperledger.string.Storage
+namespace hyperledger::fabric::ca::enrollment {
+  //
+  // Just what it says on the label (serialize some stuff).
+  //
+  using ca::protocol::serialize;
+  inline auto serialize(Request const &) -> string::Storage;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.enrollment.Request
+#import hyperledger.string.Storage
+#import hyperledger.dictionary.to_json
+#import hyperledger.json.to_string
+namespace hyperledger::fabric::ca {
+  auto enrollment::serialize(Request const &req) -> string::Storage {
+    //
+    // From the original Python in caservice.py
+    //
+    //   if req:
+    //     reqJson = json.dumps(req, ensure_ascii=False) // <----------- just this part (the json dump)
+    //     b64Body = base64.b64encode(reqJson.encode())
+    //
+    return to_string(to_json(req.attr_reqs));
+  }
+}
+#endiv

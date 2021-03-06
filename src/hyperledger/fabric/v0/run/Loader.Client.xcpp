@@ -1,0 +1,36 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.v0.run.Loader
+#import hyperledger.tls.Client
+namespace hyperledger::fabric::v0::run {
+  //
+  // Loader for the client-auth tls options.
+  //
+  template<> class Loader<tls::Client>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.loader.Basis
+template<> struct hyperledger::fabric::v0::run::Loader<hyperledger::tls::Client> : public loader::Basis {
+  using Source = tls::Client;
+protected:
+  ~Loader() = default;
+  Loader() = default;
+  inline auto load(Arguments &lhs, Source const &rhs) -> void;
+};
+#endiv
+#divert <ipp>
+auto hyperledger::fabric::v0::run::Loader<hyperledger::tls::Client>::load(Arguments &lhs, Source const &rhs) -> void {
+  if (rhs.auth) {
+    if (!rhs.tls) {
+      throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
+    }
+    push_back<2>(lhs) << "--certfile" << rhs.tls->crt;
+    push_back<2>(lhs) << "--keyfile" << rhs.tls->key;
+    // client.tls.ca has no purpose in this context; it is ignored
+  }
+}
+#endiv

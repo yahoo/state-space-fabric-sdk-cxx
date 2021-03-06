@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.Configuration
+namespace hyperledger::fabric::ca::traits {
+  template<typename CONFIGURATION> struct Configuration;
+  template<> struct Configuration<ca::Configuration<PASS>>;
+  template<> struct Configuration<ca::Configuration<TOKEN>>;
+  template<> struct Configuration<ca::Configuration<DRIVER>>;
+  template<> struct Configuration<ca::Configuration<FILES>>;
+  template<> struct Configuration<ca::Configuration<HTTP>>;
+  template<> struct Configuration<ca::Configuration<MAIN>>;
+  template<> struct Configuration<ca::Configuration<SOCKET>>;
+  template<> struct Configuration<ca::Configuration<SQLITE>>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.traits.name.Configuration
+namespace hyperledger::fabric::ca {
+  template<typename CONFIGURATION> struct traits::Configuration : public False { };
+  namespace traits {
+    template<> struct Configuration<ca::Configuration<PASS>>   : public name::Configuration<PASS> { };
+    template<> struct Configuration<ca::Configuration<TOKEN>>  : public name::Configuration<TOKEN> { };
+    template<> struct Configuration<ca::Configuration<DRIVER>> : public name::Configuration<DRIVER> { };
+    template<> struct Configuration<ca::Configuration<FILES>>  : public name::Configuration<FILES> { };
+    template<> struct Configuration<ca::Configuration<HTTP>>   : public name::Configuration<HTTP> { };
+    template<> struct Configuration<ca::Configuration<MAIN>>   : public name::Configuration<MAIN> { };
+    template<> struct Configuration<ca::Configuration<SOCKET>> : public name::Configuration<SOCKET> { };
+    template<> struct Configuration<ca::Configuration<SQLITE>> : public name::Configuration<SQLITE> { };
+  }
+}
+#endiv

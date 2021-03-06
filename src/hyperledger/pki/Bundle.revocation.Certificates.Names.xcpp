@@ -1,0 +1,26 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.pki.Bundle.template
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+namespace hyperledger::pki {
+  //
+  // It isn't so important which order the Certificates (a set) and the Names (a set) appear.
+  //
+  // Usage:
+  //
+  //   Oh come on: it's a struct.  It comes with its own initializer
+  //
+  template<> struct Bundle<revocation::Certificates, revocation::Names>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::pki {
+  template<> struct Bundle<revocation::Certificates, revocation::Names> {
+    revocation::Certificates certificates; // the revoked certificates, directly and in toto
+    revocation::Names names; //               the names (SKI) of the revoked certificates
+  };
+}
+#endiv

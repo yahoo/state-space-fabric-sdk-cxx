@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.required.Configuration
+#import nonstd.same_as
+namespace hyperledger::fabric::ca::required::configuration {
+  //
+  // Is this Configuration<NAME> in the Configuration<DRIVER>?
+  //
+  // Usage:
+  //
+  //   Hack The Spew.
+  //
+  template<typename CONFIGURATION> concept bool Driver = nonstd::same_as<CONFIGURATION, ca::Configuration<DRIVER>>;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Configuration
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    static_assert(not required::configuration::Driver<Configuration<MAIN>>);
+    static_assert(required::configuration::Driver<Configuration<DRIVER>>);
+    //
+    static_assert(not required::configuration::Driver<Configuration<FILES>>);
+    static_assert(not required::configuration::Driver<Configuration<HTTP>>);
+    static_assert(not required::configuration::Driver<Configuration<SOCKET>>);
+    static_assert(not required::configuration::Driver<Configuration<SQLITE>>);
+  }
+}
+#endiv

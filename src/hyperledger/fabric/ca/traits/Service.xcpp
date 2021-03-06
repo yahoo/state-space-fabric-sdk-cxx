@@ -1,0 +1,35 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.Service
+namespace hyperledger::fabric::ca::traits {
+  template<typename SERVICE> struct Service;
+  template<> struct Service<ca::Service<AFFILIATION>>;
+  template<> struct Service<ca::Service<CERTIFICATE>>;
+  template<> struct Service<ca::Service<ENROLLMENT>>;
+  template<> struct Service<ca::Service<IDENTITY>>;
+  template<> struct Service<ca::Service<INFORMATION>>;
+  template<> struct Service<ca::Service<MAIN>>;
+  template<> struct Service<ca::Service<REGISTRATION>>;
+  template<> struct Service<ca::Service<REVOCATION>>;
+  template<> struct Service<ca::Service<REVOCATIONS>>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.traits.name.Service
+namespace hyperledger::fabric::ca {
+  template<typename SERVICE> struct traits::Service : public False { };
+  namespace traits {
+    template<> struct Service<ca::Service<AFFILIATION>>  : public name::Service<AFFILIATION> { };
+    template<> struct Service<ca::Service<CERTIFICATE>>  : public name::Service<CERTIFICATE> { };
+    template<> struct Service<ca::Service<ENROLLMENT>>   : public name::Service<ENROLLMENT> { };
+    template<> struct Service<ca::Service<IDENTITY>>     : public name::Service<IDENTITY> { };
+    template<> struct Service<ca::Service<INFORMATION>>  : public name::Service<INFORMATION> { };
+    template<> struct Service<ca::Service<MAIN>>         : public name::Service<MAIN> { };
+    template<> struct Service<ca::Service<REGISTRATION>> : public name::Service<REGISTRATION> { };
+    template<> struct Service<ca::Service<REVOCATION>>   : public name::Service<REVOCATION> { };
+    template<> struct Service<ca::Service<REVOCATIONS>>  : public name::Service<REVOCATIONS> { };
+  }
+}
+#endiv

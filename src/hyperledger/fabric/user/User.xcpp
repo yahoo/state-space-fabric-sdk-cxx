@@ -1,0 +1,218 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::user {
+  //
+  // The default implementation of a user.
+  //
+  // The user model is documented at
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  //
+  // Design
+  //
+  //   The constructor loads something from the filesystem.
+  //   And so does load(...), a.k.a. create(...)
+  //   [[FIXTHIS]] separate out the load-from-the-database from the store-the-values aspect
+  //
+  // Usage:
+  //
+  //   use load(...)
+  //
+  class User;
+}
+#endiv
+#divert <hpp>
+#import std.list
+#import hyperledger.string.Storage
+#import hyperledger.file.Path
+#import hyperledger.Optional
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+struct hyperledger::fabric::user::User {
+  using Name = user::Name;
+  using Org = user::Organization;
+  using State_Store = user::State_Store;
+  // name: name
+  // org: org
+  // state_store: persistent state store as a cache
+  inline User(Name, Org, State_Store);
+#if 0 // There. Fixed it for you.
+  inline auto name() const -> Name const &;
+  inline auto org() const -> Org const &;
+  using Roles = std::list<string::Storage>;
+  //
+  // [[FIXTHIS]] these are noobie C++-isms to wrap every field in setters and accessors.  No Need.  Never was a need.
+  //
+  // The setter functions throw on failure to assign and persist the attribute
+  inline auto roles() const -> Roles const &;
+  inline auto roles(Roles) -> void;
+  inline auto account() const -> string::Storage const &;
+  inline auto account(string::Storage) -> void;
+  inline auto affiliation() const -> string::Storage const &;
+  inline auto affiliation(string::Storage) -> void;
+  using Enrollment = ca::Package<ca::ENROLLMENT>;
+  inline auto enrollment() const -> Enrollment const &;
+  inline auto enrollment(Enrollment const &) -> void;
+  inline auto enrollment_secret() const -> string::Storage const &;
+  inline auto enrollment_secret(string::Storage) -> void;
+  inline auto msp_id() const -> string::Storage const &;
+  inline auto msp_id(string::Storage) -> void;
+  inline auto cryptoSuite() const -> string::Storage const &;
+  inline auto cryptoSuite(string::Storage) -> void;
+#endif
+  inline auto is_registered() const -> bool;
+  inline auto is_enrolled() const -> bool;
+private:
+  // These throw on failure to perform.
+  inline auto _save_state() -> void;
+  inline auto _restore_state() -> void;
+public:
+  Name name;
+  Org org;
+  file::Path state_store;
+  std::list<string::Storage> roles;
+  Optional<string::Storage> account, affiliation, msp_id, crypto_suite;
+  Optional<ca::Package<ca::ENROLLMENT>> enrollment; // already contains a slot for the enrollment secret
+#if 0
+protected:
+  Name _name;
+  Org _org;
+  file::Path state_store;
+  string::Storage state_store_key;
+  std::list<string::Storage> _roles;
+  Optional<string::Storage> _account, _affiliation, _enrollment_secret, _msp_id, _cryptoSuite;
+  Optional<Enrollment> _enrollment;
+#endif
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::user {
+  User::User(Name name, Org org, State_Store state_store)
+    : name{move(name)}
+    , org{move(org)}
+    , state_store{move(state_store)}
+#if 1
+  { }
+#else
+    , state_store_key{"user."s + name + "."s + org} {
+      // This has the effect of creating the user's database entry if it doesn't already exist.
+      auto user_state = state_store.get_value(self._state_store_key);
+      if (!ok(user_state)) {
+        _save_state();
+      } else {
+        _restore_state(); 
+      }
+    }
+  auto User::name() const -> Name const & { return _name; }
+  auto User::org() const -> Org const & { return _org; }
+  auto User::roles() const -> Roles const & { return _roles; }
+  auto User::roles(Roles value) -> void {
+    _roles = move(value);
+    _save_state();
+  }
+  auto User::account() const -> string::Storage const & { return _account; }
+  auto User::account(string::Storage value) -> void {
+    _account = move(value);
+    _save_state();
+  }
+  auto User::affiliation() const -> string::Storage const & { return _affiliation; }
+  auto User::affiliation(string::Storage value) -> void {
+    _affiliation = move(value);
+    _save_state();
+  }
+  auto User::enrollment() const -> Enrollment const & { return _enrollment; }
+  auto User::enrollment(string::Storage value) -> void {
+    _enrollment = move(value);
+    _save_state();
+  }
+  auto User::enrollment_secret() const -> string::Storage const & { return _enrollment_secret; }
+  auto User::enrollment_secret(string::Storage value) -> void {
+    _enrollment_secret = move(value);
+    _save_state();
+  }
+  auto User::msp_id() const -> string::Storage const & { return _msp_id; }
+  auto User::msp_id(string::Storage value) -> void {
+    _msp_id = move_(value);
+    _save_state();
+  }
+  auto User::cryptoSuite() const -> string::Storage const & { return _cryptoSuite; }
+  auto User::cryptoSuite(string::Storage value) -> void {
+    _cryptoSuite = (value);
+    _save_state();
+  }
+  auto User::is_registered() const -> bool { return _enrollment_secret; }
+  auto User::is_enrolled() const -> bool   { return _enrollment; }
+#endif
+}
+#endiv
+#divert <cpp>
+#import std.exception
+#import hyperledger.exception.IOError
+#import hyperledger.Dictionary
+// NOT HERE ---> #import langu.ish.python.binascii.hexlify
+// NOT HERE ---> #import langu.ish.python.pickle.dumps
+// NOT HERE ---> #import langu.ish.python.binascii.unhexlify
+// NOT HERE ---> #import langu.ish.python.pickle.loads
+namespace hyperledger::fabric::user {
+#warning [[FINISHTHIS]] the User::save(...) and User::restore(...) capabilities don't belong here in any case.
+#if 0
+  auto User::_save_state() -> void try {
+    using namespace langu::ish::python;
+    Dictionary state{{"name", this->name},
+                     {"org", this->org},
+                     {"roles", this->roles},
+                     {"affiliation", this->affiliation},
+                     {"account", this->account},
+                     {"enrollment_secret", this->enrollment_secret},
+                     {"msp_id": this->msp_id}};
+    if (this->enrollment) {
+      auto private_bytes = enrollment.private_key.private_bytes(encoding=serialization.Encoding.PEM,
+                                                                format=serialization.PrivateFormat.PKCS8,
+                                                                encryption_algorithm=serialization.NoEncryption());
+      Dictionary substate{{"private_key", private_bytes},
+                          {"cert", this->enrollment.cert}};
+      state["enrollment"] = (substate);
+    }
+    _state_store.set_value(_state_store_key, binascii::hexlify(pickle::dumps(state)).decode("utf-8"));
+  } catch (std::exception const &e) {
+    std::ostringstream buf;
+    buf << "Cannot serialize the user " << this->name << " because " << e.what();
+    throw exception::IOError{buf.str()};
+  }
+  auto User::_restore_state() -> void try {
+    using namespace langu::ish::python;
+    user::State state = pickle::loads(binascii::unhexlify(_state_store.get_value(_state_store_key)).encode("utf-8"));
+    this->_name = state["name"];
+    this->_org = state["org"];
+    this->enrollment_secret = state["enrollment_secret"];
+    auto enrollment = state["enrollment"];
+    if (enrollment) {
+      this->enrollment = [&enrollment]() -> Enrollment {
+                           auto private_key = serialization::load_pem_private_key(enrollment["private_key"],
+                                                                                  password=None,
+                                                                                  backend=default_backend());
+                           auto cert = enrollment["cert"];
+                           return Enrollment(private_key, cert);
+                         }();
+    }
+    this->affiliation = state["affiliation"];
+    this->account = state["account"];
+    this->roles = state["roles";]
+    this->msp_id = state["msp_id"];
+  } catch (std::exception const &e) {
+    std::ostringstream buf;
+    buf << "Cannot deserialize the user " << this->name << " because " << e.what();
+    throw exception::IOError{buf.str()};
+  }
+#if 0
+    def get_attrs(self):
+        return ",".join("{}={}"
+                        .format(k, getattr(self, k))
+                        for k in self.__dict__.keys())
+
+    def __str__(self):
+        return "[{}:{}]".format(self.__class__.__name__, self.get_attrs())
+#endif
+#endif
+}
+#endiv

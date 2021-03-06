@@ -1,14 +1,23 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-namespace tests::unit::ip::host { class Fixture; }
+#import hyperledger.ip.host
+namespace tests::unit::ip::host {
+  namespace [[eponymous]] fixture {
+    namespace library = ::hyperledger::ip::host;
+    class Fixture;
+  }
+  using fixture::Fixture;
+}
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::ip::host::Fixture : public cppunit::test::Fixture {
-public:
+#import hyperledger.ip.Host
+struct tests::unit::ip::host::fixture::Fixture : public cppunit::test::Fixture {
+  using Subject = library::Host;
   auto test_Uninterpreted() -> void;
   auto test_Name() -> void;
   auto test_Address4() -> void;
@@ -17,38 +26,33 @@ public:
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.ip.Host
-auto tests::unit::ip::host::Fixture::test_Uninterpreted() -> void {
-  using namespace ::hyperledger::fabric::ip::host;
-  Uninterpreted subject{"localhost"};
-  CPPUNIT_ASSERT(!subject.empty());
+namespace tests::unit::ip::host::fixture {
+  auto Fixture::test_Uninterpreted() -> void {
+    library::Uninterpreted subject{"localhost"};
+    CPPUNIT_ASSERT(!subject.empty());
+  }
+  auto Fixture::test_Name() -> void {
+    library::Name subject{"localhost"};
+    CPPUNIT_ASSERT(!subject.empty());
+  }
+  auto Fixture::test_Address4() -> void {
+    library::Address4 subject{"127.0.0.1"};
+    CPPUNIT_ASSERT(!subject.empty());
+  }
+  auto Fixture::test_Address6() -> void {
+    library::Address6 subject{"::1"};
+    CPPUNIT_ASSERT(!subject.empty());
+  }
 }
-auto tests::unit::ip::host::Fixture::test_Name() -> void {
-  using namespace ::hyperledger::fabric::ip::host;
-  Name subject{"localhost"};
-  CPPUNIT_ASSERT(!subject.empty());
-}
-auto tests::unit::ip::host::Fixture::test_Address4() -> void {
-  using namespace ::hyperledger::fabric::ip::host;
-  Address4 subject{"127.0.0.1"};
-  CPPUNIT_ASSERT(!subject.empty());
-}
-auto tests::unit::ip::host::Fixture::test_Address6() -> void {
-  using namespace ::hyperledger::fabric::ip::host;
-  Address6 subject{"::1"};
-  CPPUNIT_ASSERT(!subject.empty());
-}
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
-auto tests::unit::ip::host::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("host");
+#import rigging.suite.io
+auto tests::unit::ip::host::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"host"};
   series << call("Uninterpreted", &Fixture::test_Uninterpreted)
          << call("Name", &Fixture::test_Name)
          << call("Address4", &Fixture::test_Address4)
          << call("Address6", &Fixture::test_Address6)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

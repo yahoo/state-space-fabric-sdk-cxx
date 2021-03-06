@@ -1,0 +1,87 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.ca
+namespace tests::unit::ca {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::fabric::ca;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::ca::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Configuration() -> void;
+  auto test_Request() -> void;
+  auto test_Package() -> void;
+  // These are dubious and deprecating.  Who cares.
+  auto test_IdentityService() -> void;
+  auto test_make_service() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.Package
+#import hyperledger.fabric.ca.Request
+namespace tests::unit::ca::fixture {
+  auto Fixture::test_Configuration() -> void {
+    using namespace library;
+    // Just show that they can be constructed.
+    Configuration<PASS>{};
+    Configuration<TOKEN>{};
+    Configuration<DRIVER>{};
+    Configuration<MAIN>{};
+    Configuration<FILES>{};
+    Configuration<HTTP>{};
+    Configuration<SOCKET>{};
+    Configuration<SQLITE>{};
+  }
+  auto Fixture::test_Package() -> void {
+#warning WRITETHIS auto tests::unit::ca::Fixture::test_Service() -> void
+  }
+  auto Fixture::test_Request() -> void {
+#warning WRITETHIS auto tests::unit::ca::Fixture::test_Service() -> void
+  }
+  auto Fixture::test_IdentityService() -> void {
+#warning WRITETHIS auto tests::unit::ca::Fixture::test_IdentityService() -> void
+  }
+  auto Fixture::test_make_service() -> void {
+#warning WRITETHIS auto tests::unit::ca::Fixture::test_make_service() -> void
+  }
+}
+#import hyperledger.fabric.ca.Service
+#import tests.unit.ca.Service
+#import rigging.suite.io
+auto tests::unit::ca::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"ca"};
+  series << call("Configuration", &Fixture::test_Configuration)
+         << call("Package", &Fixture::test_Package)
+         << call("Request", &Fixture::test_Request)
+         << []() {
+              using namespace library;
+              auto srv = Stream{"Service"};
+              srv << add<Service<library::Service<library::AFFILIATION>>>()
+                  << add<Service<library::Service<library::CERTIFICATE>>>()
+                  << add<Service<library::Service<library::ENROLLMENT>>>()
+                  << add<Service<library::Service<library::IDENTITY>>>()
+                  << add<Service<library::Service<library::INFORMATION>>>()
+                  << add<Service<library::Service<library::MAIN>>>()
+                  << add<Service<library::Service<library::REGISTRATION>>>()
+                  << add<Service<library::Service<library::REVOCATION>>>()
+                  << add<Service<library::Service<library::REVOCATIONS>>>()
+                  << END;
+              return move(srv);
+            }()
+         << call("IdentityService", &Fixture::test_IdentityService)
+         << call("make_service", &Fixture::test_make_service)
+         << END;
+  return finalize(series);
+}
+#endiv

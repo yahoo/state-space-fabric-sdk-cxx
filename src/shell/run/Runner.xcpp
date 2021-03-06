@@ -1,0 +1,178 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace shell::run {
+  //
+  // The prototype of a program runner
+  // Descendants only
+  //
+  // Usage:
+  //
+  //   class my::Program : public Runner {
+  //   public:
+  //     Program(...); ....    must choose 'exec' or 'execp' and establish argv[0]
+  //   };
+  //
+  //   Program prog{...};
+  //   auto f = prog.start();
+  //   auto w = prog.wait();
+  //
+  //   Program prog{...};
+  //   auto w = prog.run();
+  //
+  class Runner;
+}
+#endiv
+#divert <hpp>
+#import std.string_view
+#import std.filesystem.path
+#import sys.call.Result
+#import sys.exits.Code
+#import sys.posix.wait // for the wait result type, whatever that thing is: decltype(wait(...))
+#import sys.posix.fork // for the fork result type, whatever that thing is: decltype(fork(...))
+#import id_t  // like a pid, but has other overloaded semantic values when negative or zero
+#import pid_t
+class shell::run::Runner {
+public:
+  inline explicit Runner(std::filesystem::path);
+  enum Exec { EXEC, EXECP }; // scoped by the class
+  inline Runner(Exec, std::filesystem::path);
+  virtual ~Runner() = default;
+  inline auto name() const -> std::string;
+  using Pid = ::pid_t;
+  struct Results {
+    using Start = sys::call::Result;
+    // and as such, the whole of the wait(...) result API is available to us as if by sys.posix.wait
+    using Wait = decltype(sys::posix::wait(::id_t{}, sys::posix::W::Options{}));
+    using Fork = decltype(sys::posix::fork());
+    using Run = Wait;
+  };
+  inline auto is_running() const -> bool;
+  virtual auto run() -> Results::Run;
+  virtual auto start() -> Results::Start;
+  virtual auto wait() -> Results::Wait;
+  using Arguments = std::vector<std::string>; // descendants will need this
+protected:
+  Pid running; // nonzero signals that there are processes in flight
+  Exec exec;
+  std::filesystem::path arg0;
+  std::vector<std::string> args;
+  inline static constexpr auto DEBUGGING = true;
+  auto dying_utterance(std::string_view fragment) const noexcept -> void;
+  auto do_exec() const -> sys::call::Result;
+  auto fork_invariance_check(Results::Fork const &forked) const -> void;
+  // Descendants may overide to dup2(...) differently
+  virtual auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code;
+};
+#endiv
+#divert <ipp>
+#import std.move
+shell::run::Runner::Runner(std::filesystem::path filepath)
+  : Runner{EXECP, std::move(filepath)}
+{ }
+shell::run::Runner::Runner(Exec exec, std::filesystem::path path)
+  : running{0}
+  , exec{exec}
+  , arg0{std::move(path)}
+  , args{} {
+    args.push_back(arg0);
+}
+auto shell::run::Runner::name() const -> std::string {
+  return arg0.filename();
+}
+auto shell::run::Runner::is_running() const -> bool {
+  return 0 != running;
+}
+#endiv
+#divert <cpp>
+#import sys.posix.W.Options
+auto shell::run::Runner::run() -> Results::Run {
+  if (!is_running()) {
+    auto started = start();
+    if (!ok(started)) {
+      // convert the forked-shaped result int o a waited-shaped result.
+      return Results::Run{ok(started), error_num(started), sys::posix::detail::wait::Status{}, Pid{}};
+    }
+  }
+  return wait();
+}
+#import sys.posix.fork
+#import exit
+#import std.runtime_error
+auto shell::run::Runner::start() -> Results::Start {
+  if (is_running()) {
+    // This is a logic error really, because it means the programmer was operating the API sloppily
+    // Use: start() ... run() ... wait()
+    throw std::runtime_error{"already running"};
+  }
+  auto forked = sys::posix::fork();
+  if (is_parent(forked)) {
+    running = pid(forked);
+  } else if (is_child(forked)) {
+    exit(grow_child(-1, -1));
+  }
+  fork_invariance_check(forked);
+  return Results::Start{ok(forked), error_num(forked), value(forked)};
+}
+auto shell::run::Runner::wait() -> Results::Wait {
+  // DO NOT use W::EXITED here with waitpid(...), you will get EINVAL
+  auto waited = sys::posix::wait(this->running, sys::posix::W::NONE);
+  if (ok(waited)) {
+    this->running = 0;
+  }
+  return waited;
+}
+#import sys.exits.constants
+#import sys.exits.constants
+#import std.exception
+auto shell::run::Runner::grow_child(int, int) const noexcept -> sys::exits::Code {
+  // We're in the child now, NOTHING ESCAPES
+  try {
+    auto execed = do_exec();
+    dying_utterance(error_code(execed).message());
+  } catch (std::exception const &e) {
+    dying_utterance(e.what());
+  } catch (...) {
+    dying_utterance("unknown");
+  }
+  return sys::exits::OSERR;
+}
+#import sys.posix.exec
+#import sys.posix.execp
+#import c.str
+auto shell::run::Runner::do_exec() const -> sys::call::Result {
+  // Returning from exec is an error on its face;
+  // e.g. arg0 is not valid, No such file or directory.
+  // e.g. SELinux prevents such
+  // e.g. Sunspots.
+  if (EXEC == exec) {
+    return sys::posix::exec(arg0, args);
+  } else {
+    return sys::posix::execp(/*blik blik blik - FIXTHIS*/c::str((std::string)arg0), args);
+  }
+}
+#import nonstd.exception.Unexpected
+auto shell::run::Runner::fork_invariance_check(Results::Fork const &forked) const -> void {
+  if constexpr (DEBUGGING) {
+    auto expected = true;
+    expected &= !ok(forked) || (ok(forked) && is_parent(forked));
+    expected &= is_error(forked) || is_parent(forked);
+    if (!expected) {
+      throw nonstd::exception::Unexpected{"fork"};
+    }
+  }
+}
+#import std.cerr
+auto shell::run::Runner::dying_utterance(std::string_view frag) const noexcept -> void try {
+  auto const pack = std::string_view{"hyperledger::fabric(shell)"}; // [[FIXTHIS]] using ac = autotools::autoconf::Config<CONFIG>; ac::package_name()
+  // We're in the child, beyond an exec(...) that failed to take.
+  // above us in the call stack, grow_child(...) returns into exit.
+  // but cerr still works, or maybe dup2 has redirected it into the pipe
+  // let's use it if we can.
+  std::cerr << pack << " failed to exec " << arg0 << " because " << frag << '\n';
+} catch (...) {
+  // Not much we can do here (process exit is imminent anyway)
+}
+#endiv

@@ -1,0 +1,43 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::packaging::slurp {
+  //
+  // The outcome of a load operation.
+  //
+  // Design:
+  //
+  //   The class definition must be revealed in two formal steps
+  //   so that the load(...) returining a descendant of Outcome<HYPERLEDGER> can be frends with HYPERLEDGER.
+  //   This breaks the cyclic dependency
+  //
+  //   Because Outcome<TYPE> requires the definition of class TYPE
+  //   Whereas Loaded<TYPE> has no such constraint, but later becomes the descendant of Outcome<TYPE>
+  //
+  // Usage:
+  //
+  //   namespace xyazy {
+  //     class Certificate;
+  //     template<typename HYPERLEDGER> struct Loaded;
+  //     template<typename HYPERLEDGER> auto load(...somehow...) -> Loaded<HYPERLEDGER>;
+  //   }
+  //
+  //   class xyzzy::Certificate {
+  //     template<typename HYPERLEDGER> auto xyzzy::load(...somehow...) -> Loaded<HYPERLEDGER>;
+  //     ...and more...
+  //   };
+  //
+  template<typename HYPERLEDGER> struct Loaded;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::pki::packaging {
+  template<typename HYPERLEDGER> struct slurp::Loaded : public Outcome<HYPERLEDGER> {
+    using Ancestor = Outcome<HYPERLEDGER>;
+  public:
+    Loaded() = default;
+    using Ancestor::Variant; // c.f. tunitas::outcome::Variant
+  };
+}
+#endiv

@@ -1,0 +1,30 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.error.condition.Enumeration
+namespace hyperledger::pki::error::code {
+  enum class Enumeration {
+    SUCCESS = (int) hyperledger::error::condition::Enumeration::SUCCESS,
+    FAILURE = (int) hyperledger::error::condition::Enumeration::FAILURE,
+    DECODE,
+    ENCODE,
+    NOT_EC_KEY, // the private key was not the EC record type (EVP_PKEY_EC_KEY
+    // ... NOT implemented (or relevant): HMAC POLY1305 SIPHASH X25519 ED25519 X448 ED448
+    // ... we just need the Elliptic Curve type
+    // [[WATCHOUT]] until 'using enum' of GCC 10 in C++20, these must be duplicated in code::Package<Enumeration>
+  };
+}
+#endiv
+#divert <hpp>
+#import std.is_error_code_enum.hyperledger.pki.error.code.Enumeration
+#forward hyperledger.pki.error.Code
+namespace hyperledger::pki::error::code {
+  inline auto make_error_code(Enumeration) noexcept -> Code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.error.Code
+#import hyperledger.pki.error.category
+auto hyperledger::pki::error::code::make_error_code(Enumeration tion) noexcept -> Code { return {(int) tion, category()}; }
+#endiv

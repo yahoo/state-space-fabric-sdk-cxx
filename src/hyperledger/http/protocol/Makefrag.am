@@ -1,0 +1,13 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#
+# There is no hyperledger::http::protocol::Request at all
+# There is a hyperledger::http::text::Request which is a string::View (it is listed in ../text/Makefrag.am)
+obj_src_hyperledger_http_protocol_SUBSOURCES = \
+  obj/src/hyperledger/http/protocol/namespace.cpp \
+  obj/src/hyperledger/http/protocol/Header.cpp \
+  obj/src/hyperledger/http/protocol/Headers.cpp \
+  obj/src/hyperledger/http/protocol/Response.cpp \
+  $(end)

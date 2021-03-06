@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.function
+#import hyperledger.crypto.Number
+#import hyperledger.crypto.Buffer
+namespace hyperledger::crypto::hash {
+  //
+  // Just that, a hash function object (a functor)
+  //
+  // Usage:
+  //
+  //   oh come on
+  //
+  using Function = std::function<Number (Buffer const &)>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::crypto::hash::function {
+  extern Function const SHA2_256;
+  extern Function const SHA3_256;
+  extern Function const SHA3_384;
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::hash {
+  Function const function::SHA2_256; // FIXTHIS ... these need initializers
+  Function const function::SHA3_256; // FIXTHIS ... these need initializers
+  Function const function::SHA3_384; // FIXTHIS ... these need initializers
+}
+#endiv

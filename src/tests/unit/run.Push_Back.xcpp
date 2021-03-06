@@ -1,16 +1,23 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-namespace tests::unit::run { class Push_Back; }
+#import hyperledger.fabric.v0.run
+namespace tests::unit::run {
+  namespace push_back {
+    class Push_Back;
+    namespace library = ::hyperledger::fabric::v0::run;
+  }
+  using push_back::Push_Back;
+}
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-#import hyperledger.fabric.run.Arguments
-class tests::unit::run::Push_Back : public cppunit::test::Fixture {
-public:
-  using Subject = hyperledger::fabric::run::Arguments;
+#import hyperledger.fabric.v0.run.Arguments
+struct tests::unit::run::push_back::Push_Back : public cppunit::test::Fixture {
+  using Subject = library::Arguments;
   template<typename TYPE> auto test_receive_copy() -> void;
   template<typename TYPE> auto test_receive_move() -> void;
   static auto suite() -> cppunit::Test *;
@@ -18,7 +25,7 @@ public:
 #import std.string
 #import std.string_view
 #import std.filesystem.path
-namespace tests::unit::run {
+namespace tests::unit::run::push_back {
   template<> auto Push_Back::test_receive_copy<char>() -> void;
   template<> auto Push_Back::test_receive_copy<int>() -> void;
   template<> auto Push_Back::test_receive_copy<double>() -> void;
@@ -33,100 +40,94 @@ namespace tests::unit::run {
 }
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.run.push_back
-template<> auto tests::unit::run::Push_Back::test_receive_copy<char>() -> void {
-  // ADL won't find templates so we have to make the name visible
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = '.';
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<int>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = 99;
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<double>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = 99.88;
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<char const *>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = "99.88";
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<char const (&)[5]>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  char specimen[] = "9988";
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<std::string>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = "99.88.77.66"s;
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-#import std.move
-template<> auto tests::unit::run::Push_Back::test_receive_move<std::string>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = "99.88.77.66"s;
-  push_back<3>(lhs) << '{' << std::move(specimen) << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<std::string_view>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = "99.88.77.66"sv;
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-template<> auto tests::unit::run::Push_Back::test_receive_copy<std::filesystem::path>() -> void {
-  using hyperledger::fabric::run::push_back;
-  Subject lhs;
-  auto specimen = std::filesystem::path{"/dev"};
-  push_back<3>(lhs) << '{' << specimen << '}';
-  CPPUNIT_ASSERT(3 == lhs.size());
-}
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
-auto tests::unit::run::Push_Back::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("push_back");
-  {
-    Stream rec("receive_copy");
-    {
-      Stream cop("copy");
-      cop << call("char", &Push_Back::test_receive_copy<char>)
-          << call("int", &Push_Back::test_receive_copy<int>)
-          << call("double", &Push_Back::test_receive_copy<double>)
-          << call("char const *", &Push_Back::test_receive_copy<char const *>)
-          << call("char const [5]", &Push_Back::test_receive_copy<char const (&)[5]>)
-          << call("string", &Push_Back::test_receive_copy<std::string>)
-          << call("string_view", &Push_Back::test_receive_copy<std::string_view>)
-          << call("filesystem::path", &Push_Back::test_receive_copy<std::filesystem::path>)
-        ;
-      rec << add(cop.release());
-    } {
-      Stream mov("move");
-      mov << call("string", &Push_Back::test_receive_move<std::string>)
-        ;
-      rec << add(mov.release());
-    }
-    series << add(rec.release());
+#import hyperledger.fabric.v0.run.push_back
+namespace tests::unit::run::push_back {
+  template<> auto Push_Back::test_receive_copy<char>() -> void {
+    // ADL won't find templates so we have to make the name visible
+    auto lhs = Subject{};
+    auto specimen = '.';
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
   }
-  return series.release();
+  template<> auto Push_Back::test_receive_copy<int>() -> void {
+    auto lhs = Subject{};
+    auto specimen = 99;
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<double>() -> void {
+    auto lhs = Subject{};
+    auto specimen = 99.88;
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<char const *>() -> void {
+    auto lhs = Subject{};
+    auto specimen = "99.88";
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<char const (&)[5]>() -> void {
+    auto lhs = Subject{};
+    char specimen[] = "9988";
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<std::string>() -> void {
+    auto lhs = Subject{};
+    auto specimen = "99.88.77.66"s;
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+#import std.move
+  template<> auto Push_Back::test_receive_move<std::string>() -> void {
+    auto lhs = Subject{};
+    auto specimen = "99.88.77.66"s;
+    library::push_back<3>(lhs) << '{' << std::move(specimen) << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<std::string_view>() -> void {
+    auto lhs = Subject{};
+    auto specimen = "99.88.77.66"sv;
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+  template<> auto Push_Back::test_receive_copy<std::filesystem::path>() -> void {
+    auto lhs = Subject{};
+    auto specimen = std::filesystem::path{"/dev"};
+    library::push_back<3>(lhs) << '{' << specimen << '}';
+    CPPUNIT_ASSERT(3 == lhs.size());
+  }
+}
+#import rigging.suite.io
+auto tests::unit::run::push_back::Push_Back::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"push_back"};
+  series << []() {
+              auto rec = Stream{"receive_copy"};
+              rec << []() {
+                       auto cop = Stream{"copy"};
+                       cop << call("char", &Push_Back::test_receive_copy<char>)
+                           << call("int", &Push_Back::test_receive_copy<int>)
+                           << call("double", &Push_Back::test_receive_copy<double>)
+                           << call("char const *", &Push_Back::test_receive_copy<char const *>)
+                           << call("char const [5]", &Push_Back::test_receive_copy<char const (&)[5]>)
+                           << call("string", &Push_Back::test_receive_copy<std::string>)
+                           << call("string_view", &Push_Back::test_receive_copy<std::string_view>)
+                           << call("filesystem::path", &Push_Back::test_receive_copy<std::filesystem::path>)
+                           << END;
+                       return move(cop);
+                     }()
+                  << []() {
+                       auto mov = Stream{"move"};
+                       mov << call("string", &Push_Back::test_receive_move<std::string>)
+                           << END;
+                       return move(mov);
+                     }()
+                  << END;
+              return move(rec);
+            }()
+         << END;
+  return finalize(series);
 }
 #endiv

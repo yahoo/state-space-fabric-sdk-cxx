@@ -1,0 +1,78 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Configuration.template
+namespace hyperledger::fabric::ca {
+  //
+  // Configuration for the creation of the Transport<HTTP>
+  //
+  // With all the defaults codified.
+  // From caservice.py
+  //
+  // The 'target' becomes 'endpoint' to make the inheritance work.
+  //
+  // Originally (from the constructor in caservice.py)
+  //
+  //   target (str): CA server address as the authority section of { protocol, host, port }
+  //   base_url_path (str); e.g. "/v1/api/something/something" ... just the path fragment, NOT authority { protocol, host, port }
+  //   ca_certs_path (str): Local ca certs path
+  //   <moved>ca_name (str): The optional name of the CA.</moved>
+  //
+  // Decisions:
+  //
+  //   the 'ca_name' field is configured at the Driver level.
+  //                       is not a feature of the transport, but rather of the multi-tenant capabilites of the service.
+  //
+  //   [[Apparently]] the server (service) doesn't care who the client is (client-to-server)
+  //   [[Apparently]] the server (service) does not authenticat the client in any meaningful way
+  //
+  // <moved>
+  //   ca_name (str): The optional name of the CA.
+  //                  The fabric-ca support servers multiple Certificate Authorities from a single server
+  //                  If omitted or null or an empty string, then the default CA is the target of requests.
+  // </moved>
+  //
+  template<> struct Configuration<HTTP>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.url.String
+#import hyperledger.file.Path
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#import hyperledger.tls.Client
+namespace hyperledger::fabric::ca {
+  template<> struct Configuration<HTTP> {
+    inline Configuration();  
+    inline Configuration(http::url::String authority_part);
+    inline Configuration(http::url::String authority_part, tls::Client client_part);
+    http::url::String endpoint; // ................. was: target
+    Optional<string::Storage> base_url_path; // .... defaults to "/"
+    tls::Client client; // ......................... now: captures the "mTLS" sense subsuming the ca_certificates_path; was: ca_certs_path
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.defaults
+namespace hyperledger::fabric::ca {
+  Configuration<HTTP>::Configuration()
+    : endpoint{defaults::service::ENDPOINT}
+      { }
+  Configuration<HTTP>::Configuration(http::url::String authority_part, tls::Client client_part)
+    : endpoint{move(authority_part)}
+    , client{move(client_part)}
+  { }
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.configuration.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::configuration;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Configuration<HTTP>>);
+  }
+}
+#endiv

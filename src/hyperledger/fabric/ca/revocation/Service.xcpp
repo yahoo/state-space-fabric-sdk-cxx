@@ -1,0 +1,149 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::revocation {
+  //
+  // The revocation subapi
+  // Descendants only; see the final in Service<REVOCATION>
+  // Descendants only.
+  //
+  // Lifetimes:
+  //
+  //   The lifetime of the transport::Driver must be longer than that of the Revocation sub-api.
+  //
+  // Usage:
+  //
+  //   auto revoker = Service<REVOCATION>{...somehow...};
+  
+  //   auto gone = revoker.revoke(...arguments...);
+  //
+  namespace [[eponymous]] service {
+    class Service;
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.service.Heavyweight
+#forward hyperledger.fabric.ca.Package.ENROLLMENT
+#forward hyperledger.fabric.ca.Request.REVOCATION
+#forward hyperledger.fabric.ca.Package.REVOCATION
+#import hyperledger.x509.query.Query // n.b. elided as x509::Query
+#import hyperledger.pki.revocation.reason.Code
+class hyperledger::fabric::ca::revocation::service::Service : public ca::service::Heavyweight {
+  using Ancestor = ca::service::Heavyweight;
+protected:
+  using Ancestor::Heavyweight;
+public:
+  //
+  // Revoke an enrollment.
+  //
+  // Unclear how this can actually be enforced.
+  // The revocation list gets bigger and bigger and it is really only advisory (i.e some other system must affect the revocation).
+  //
+  // Revoke an existing certificate (enrollment certificate or transaction certificate), or revoke all certificates issued to an enrollment id.
+  // If revoking a particular certificate, then both the Authority Key Identifier and serial number are required.
+  // If revoking by enrollment id, then all future requests to enroll this id will be rejected.
+  // Generate a CRL, selecting the revoked and/or expired certificates in the indicated range.
+  //
+  // time ---------+-------------------------------+-------------------------->
+  //               ^                               ^
+  //               |                               |
+  //               |     <------------------------ Before
+  //               |                         revokeBefore (same with expireBefore)
+  //               |
+  //               After ------------------------>
+  //         revokeAfter
+  //
+  // Frequently revoked and expire are the same time point.
+  //
+  /*
+    Args:
+      enrollmentID (str): enrollmentID ID to revoke
+      aki (str): Authority Key Identifier string, hex encoded, for the specific certificate to revoke
+      serial (str): Serial number string, hex encoded, for the specific certificate to revoke
+      reason (str): The reason for revocation.
+                    See the [[FIXTHIS]] cite standard OSCP reasons
+                   See https://godoc.org/golang.org/x/crypto/ocsp for valid values
+      registrar (Enrollment): The registrar
+    Returns: results (str): The revocation results
+    Raises:
+      RequestException: errors in requests.exceptions
+      ValueError: Failed response, json parse error, args missing
+  */
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, ca::Request<REVOCATION> const &) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::COMMON_NAME> enrollmentID) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> authority) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::SERIAL> serial) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> , x509::Query<x509::SERIAL> ) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::COMMON_NAME> , x509::Query<x509::SERIAL> ) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::COMMON_NAME> , x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> ) -> ca::Package<REVOCATION>;
+  auto revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code, x509::Query<x509::COMMON_NAME> , x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> , x509::Query<x509::SERIAL> ) -> ca::Package<REVOCATION>;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.Request.REVOCATION
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.Package.REVOCATION
+#import hyperledger.fabric.ca.revocation.serialize
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::revocation::service {
+  using revocation::serialize;
+  using protocol::serialize;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.http.json.Request
+#import hyperledger.http.dictionary.Request
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::revocation::service {
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::COMMON_NAME> enrollmentID) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.common_name = move(enrollmentID);
+    return {core.revoke(move(request), registrar)};
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> authority) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.authority_key_identifier = move(authority);
+    return core.revoke(move(request), registrar);
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::SERIAL> serial) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.serial = move(serial);
+    return core.revoke(move(request), registrar);
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> authority, x509::Query<x509::SERIAL> serial) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.authority_key_identifier = move(authority);
+    request.serial = move(serial);
+    return core.revoke(move(request), registrar);
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::COMMON_NAME> enrollmentID, x509::Query<x509::SERIAL> serial) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.common_name = move(enrollmentID);
+    request.serial = move(serial);
+    return core.revoke(move(request), registrar);
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::COMMON_NAME> enrollmentID, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> authority) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.common_name = move(enrollmentID);
+    request.authority_key_identifier = move(authority);
+    return core.revoke(move(request), registrar);
+  }
+  auto Service::revoke(ca::Package<ENROLLMENT> const &registrar, pki::reason::Code reason, x509::Query<x509::COMMON_NAME> enrollmentID, x509::Query<x509::AUTHORITY_KEY_IDENTIFIER> authority, x509::Query<x509::SERIAL> serial) -> ca::Package<REVOCATION> {
+    auto request = ca::Request<REVOCATION>{};
+    request.reason = move(reason);
+    request.common_name = move(enrollmentID);
+    request.authority_key_identifier = move(authority);
+    request.serial = move(serial);
+    return core.revoke(move(request), registrar);
+  }
+}
+#endiv

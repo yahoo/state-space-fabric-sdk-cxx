@@ -1,0 +1,85 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::main {
+  //
+  // The Main Service of the Hyperledger Fabric Certificate Authority.
+  // You will start one of these to contact the service and then use the subservices
+  //
+  // from caservice.py
+  //    This is a "ca server delegate" (whatever that means).
+  //
+  // Design:
+  //
+  //   This is the anchor of the client-side view of the Certificate Authority Service.
+  //   It constructs by RAII so you get what you construct.
+  //   Then you create subservices and perform operations
+  //
+  // Usage:
+  //
+  //   auto auth = ca::Configuration<TOKEN>{...somehow...};
+  //   auto mcfg = ca::Configuration<MAIN>{...somehow...};
+  //   auto dcfg = ca::Configuration<DRIVER>{...somehow...};
+  //   auto tcfg = ca::Configuration<HTTP>{...somehow...};
+  //   auto srv = ca::Service<MAIN>{move(acfg), move(mcfg), move(dcfg), move(tcfg)};
+  //
+  //   Well Developed & Well Understood
+  //
+  //       auto r = srv.api<REGISTRATION>(); ................... Perform <register>
+  //       auto e = srv.api<ENROLLMENT>(); ..................... Perform <enroll>, <reenroll>
+  //
+  //   Less Well Developed
+  //
+  //       auto i = srv.api<IDENTITY>(); ....................... CRUD the identity system itself. 
+  //       auto a = srv.api<AFFILIATION>(); .................... CRUD the affiliations (roles) imbued into onto an identity)
+  //       auto c = srv.api<CERTIFICATE>(); ................ CRUD the certificate store
+  //
+  class Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Authorizer
+#forward hyperledger.fabric.ca.Configuration
+#forward hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.Driver
+#import hyperledger.fabric.ca.Tenant
+#import hyperledger.fabric.ca.required.name.Subservice
+#import hyperledger.fabric.ca.required.configuration.Authorization
+#import hyperledger.fabric.ca.required.configuration.Transport
+struct hyperledger::fabric::ca::main::Service {
+  template<required::configuration::Authorization AUTHORIZATION, required::configuration::Transport TRANSPORT> inline explicit Service(AUTHORIZATION &&, ca::Configuration<MAIN> &&, ca::Configuration<DRIVER> &&, TRANSPORT &&);
+  Service(Service const &) = delete;
+  auto operator=(Service const &) -> Service & = delete;
+  [[deprecated("instead use Service<MAIN>::api<IDENTITY>()")]]    auto newIdentityService() -> ca::Service<IDENTITY>;
+  [[deprecated("instead use Service<MAIN>::api<AFFILIATION>()")]] auto newAffiliationService() -> ca::Service<AFFILIATION>;
+  [[deprecated("instead use Service<MAIN>::api<CERTIFICATE>()")]] auto newCertificateService() -> ca::Service<CERTIFICATE>;
+  template<required::name::Subservice API> auto api() -> ca::Service<API>;
+protected:
+  Tenant tenant;
+  Authorizer authorizer;
+  Driver driver;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.Configuration.MAIN
+namespace hyperledger::fabric::ca::main {
+  template<required::configuration::Authorization AUTHORIZATION, required::configuration::Transport TRANSPORT> Service::Service(AUTHORIZATION &&authorization_configuration, ca::Configuration<MAIN> &&service_configuration, ca::Configuration<DRIVER> &&driver_configuration, TRANSPORT &&transport_configuration)
+    : tenant{move(service_configuration.tenant)}
+    , authorizer{forward<AUTHORIZATION>(authorization_configuration)}
+    , driver{forward<ca::Configuration<DRIVER>>(driver_configuration), forward<TRANSPORT>(transport_configuration)}
+      // [[FIXTHIS]] the service_configuration is not yet used.
+  { }
+  template<required::name::Subservice API> auto Service::api() -> ca::Service<API> { return {tenant, authorizer, driver}; }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::main {
+  // These are deprecating, so they are outlined (not inlined)
+  auto Service::newIdentityService() -> ca::Service<IDENTITY>       { return {tenant, authorizer, driver}; }
+  auto Service::newAffiliationService() -> ca::Service<AFFILIATION> { return {tenant, authorizer, driver}; }
+  auto Service::newCertificateService() -> ca::Service<CERTIFICATE> { return {tenant, authorizer, driver}; }
+}
+#endiv

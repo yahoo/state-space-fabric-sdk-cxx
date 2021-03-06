@@ -1,0 +1,20 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_protocol_exception_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/protocol/exception/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/constants.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Aspect.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Aspects.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Empty.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Invariant.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Missing.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Number.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Identifier.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Syntax.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Value.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Serialize.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/exception/Deserialize.cpp \
+  $(end)
+protocol-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_protocol_SUBSOURCES))

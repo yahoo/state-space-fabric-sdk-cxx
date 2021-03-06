@@ -1,14 +1,14 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
 namespace tests::unit::peer { class Fixture; }
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::peer::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::peer::Fixture : public cppunit::test::Fixture {
   auto test_Contact() -> void;
   static auto suite() -> cppunit::Test *;
 };
@@ -21,14 +21,12 @@ auto tests::unit::peer::Fixture::test_Contact() -> void {
   //
   CPPUNIT_ASSERT(true);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::peer::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("peer");
+  using namespace rigging::suite;
+  auto series = Stream{"peer"};
   series << call("Contact", &Fixture::test_Contact)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

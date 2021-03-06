@@ -1,0 +1,138 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <hpp>
+#import hyperledger.Outcome
+#import hyperledger.Success
+#import hyperledger.fabric.v0.peer.chaincode.Call
+#import hyperledger.fabric.v0.peer.chaincode.required.Result
+#import hyperledger.required.container.Push_Back
+#import std.byte
+#import std.string
+#import std.string_literals
+#import std.vector
+namespace hyperledger::fabric::v0::peer::chaincode {
+  namespace constants {
+    using namespace std::string_literals;
+    //
+    // A constructor call requires a JSON object shaped as
+    //
+    //   constructor ::= { "Args" : [ ...items... ] }
+    //
+    inline auto const ARGS = "Args"s;
+  }
+  using constants::ARGS;
+}
+#import hyperledger.fabric.v0.peer.chaincode.Function
+namespace hyperledger::fabric::v0::peer::chaincode::packaging::call::function {
+  //
+  // call(...) is an implementation detail of the chaincode operations.
+  // invoke(...) - execute the chaincode (stored procedure) on the other side.
+  // query(...) - the same, except it can actually side effect the ledger.
+  //
+  // The constructor is a JSON-formatted string which will be
+  // interpreted by the stored procedure (chaincode) in the database.
+  // It is passed through without interpretation.
+  //
+  // Example (using invoke, query is exactly the same):
+  //
+  //   auto constructor = R"json( { "Args" : [ "set" , "chicken", "funky" ] } )json"; .... the spaces are for readability; they are not required.
+  //
+  //   auto answered = invoke(context, constructor);
+  //   auto answered = invoke<bool>(context, constructor);
+  //   auto answered = invoke<Success>(context, constructor);
+  //   auto answered = invoke<std::string>(context, constructor);
+  //   if (!ok(answered)) {
+  //     auto ec = error_code(answered);
+  //     ...report the badness...
+  //   } else {
+  //      auto const &result = value(const_cast<decltype(answered)>(answered));
+  //      auto &result = value(answered);
+  //      auto result = value(std::move(answered));
+  //      ...use the goodness...
+  //   }
+  //
+  template<required::Result RESULT> inline auto call(Function, Call &, std::string const &constructor) -> Outcome<RESULT> = delete;
+  // Only these specializations (only these make sense)
+  template<> inline auto call<literal::Success>(Function, Call &, std::string const &constructor) -> Outcome<literal::Success>;
+  template<> inline auto call<bool>(Function, Call &, std::string const &constructor) -> Outcome<bool>;
+  template<> inline auto call<std::string>(Function, Call &, std::string const &constructor) -> Outcome<std::string>;
+  template<> inline auto call<std::vector<std::byte>>(Function, Call &, std::string const &constructor) -> Outcome<std::vector<std::byte>>;
+  namespace detail {
+    template<required::container::Push_Back CONTAINER> auto heavy_lifting(Function, Call &, std::string const &constructor) -> Outcome<CONTAINER>;
+  }
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::v0::peer::chaincode::packaging::call {
+  template<> auto function::call<bool>(Function f, Call &c, std::string const &n) -> Outcome<bool> {
+    return ok(call<literal::Success>(f, c, n));
+  }
+  template<> auto function::call<std::string>(Function f, Call &c, std::string const &n) -> Outcome<std::string> {
+    return detail::heavy_lifting<std::string>(f, c, n);
+  }
+  template<> auto function::call<std::vector<std::byte>>(Function f, Call &c, std::string const &n) -> Outcome<std::vector<std::byte>> {
+    return detail::heavy_lifting<std::vector<std::byte>>(f, c, n);
+  }
+}
+#import hyperledger.fabric.error.Code
+#import std.error_code
+#import hyperledger.fabric.v0.run.Chaincode.ALL
+namespace hyperledger::fabric::v0::peer::chaincode::packaging::call {
+  template<> auto function::call<literal::Success>(Function function, Call &context, std::string const &constructor) -> Outcome<literal::Success> {
+    using Result = Success;
+    run::Chaincode<Success> prog{to_string(function), context, constructor};
+    auto ran = prog.run();
+    if (ok(ran)) {
+      return Result{SUCCESS};
+    } else {
+      // [[FIXTHIS]] we return CONTACT_PEER even though the failure may have been local; e.g. botched argument processing.
+      return Result{std::error_code{error::Code::CONTACT_PEERS}};
+    }
+  }
+}
+#endiv
+#divert <tpp>
+#import hyperledger.fabric.southside.hack_the_spew
+#import hyperledger.fabric.southside.Code
+namespace hyperledger::fabric::v0::peer::chaincode::packaging::call::function {
+  template<required::container::Push_Back CONTAINER> auto detail::heavy_lifting(Function function, Call &context, std::string const &constructor) -> Outcome<CONTAINER> {
+    using Result = Outcome<CONTAINER>;
+    auto const badness = [](error::Code c) { return Result{std::error_code{c}}; };
+    // Whatever the system-level reason, we're going to return Code::RUN_PEERS
+    auto const badrun = [badness](std::error_code) { return badness(error::Code::RUN_PEER); };
+    run::Chaincode<std::string> prog{to_string(function), context, constructor};
+    auto started = prog.start();
+    if (!ok(started)) {
+      return badrun(error_code(started));
+    }
+    char buf[1<<17];
+    auto &s = prog.stream();
+    if (!s.read(&buf[0], sizeof (buf)).eof()) {
+      // If the stream is still good but not at EOF then a short read.
+      // If the stream is bad or failed but not at EOF then there was a transmission error
+      return badness(!prog.stream() ? error::Code::TRANSMISSION_INCOMPLETE : error::Code::PAYLOAD_TOO_SHORT);
+    }
+    auto spew = std::string_view(&buf[0], s.gcount());
+    auto waited = prog.wait();
+    if (!ok(waited)) {
+      // Arguably this should not happen. We got a valid dpew of lines from teh service, but the wait(2) to clean up the process failed.
+      // We have a valid spew in hand. Why would we be best served by failling the call now?  Sure, do that.
+      return badrun(error_code(waited));
+    }
+    //
+    // Hack the spew.
+    //
+    // Specimen (eliding all the noise)
+    //
+    //    status:200 payload:"768" 
+    //
+    auto [code, payload] = southside::hack_the_spew<CONTAINER>(spew);
+    if (southside::Code{200} != code) {
+      return badness(error::Code::TRANSMISSION_GARBLED);
+    }
+    return Result{std::move(payload)};
+  }
+}
+#endiv

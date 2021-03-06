@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.byte.Span
+#import hyperledger.string.View
+namespace hyperledger::crypto::key {
+  //
+  // Convert from (a range of bytes, e.g. a string) and then producing one of the crypto::key RESULT types.
+  // An exception is thrown if the parsing cannot be accomplished.
+  // Specializations only.
+  //
+  // Specimen:
+  //
+  //   [[TODO]] get some examples ... the ones that don't have their MIME armor any more.
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto syntax = std::string{...somehow...};
+  //     ...
+  //     auto private_key = from<Private>(syntax);
+  //     auto public_key = from<Public>(syntax);
+  //     ...
+  //   } catch (exception::Aspect const &) {
+  //     ...that was bad...
+  //   }
+  //
+  template<typename RESULT> inline auto from(byte::Span) -> RESULT;
+  template<typename RESULT> inline auto from(string::View) -> RESULT;
+}
+#endiv

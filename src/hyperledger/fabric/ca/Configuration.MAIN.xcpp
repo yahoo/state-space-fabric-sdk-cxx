@@ -1,0 +1,28 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Configuration.template
+namespace hyperledger::fabric::ca {
+  //
+  // Configuration for the creation of the Service<MAIN> of the Certificate Authority (CA)
+  //
+  // The documentariat is with main::Configuration
+  //
+  template<> struct Configuration<MAIN>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.main.Configuration
+namespace hyperledger::fabric::ca {
+  template<> struct Configuration<MAIN> : public main::Configuration { };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.configuration.Constructible
+namespace {
+  using namespace tests::concepts::hyperledger::fabric::ca::configuration;
+  using namespace hyperledger::fabric::ca;
+  static_assert(Constructible<Configuration<MAIN>>);
+}
+#endiv

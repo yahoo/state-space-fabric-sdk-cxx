@@ -1,0 +1,70 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.constraints.Constraints.template
+namespace hyperledger::x509::constraints {
+  //
+  // The list of X.509 extensions
+  // Can be used in std::optional<Constraints>
+  //
+  // The OpenSSL world manages collections with a single macrotized data type "the stack"
+  // e.g. STACK_OF(X509_EXTENSION) *extlist = sk_X509_EXTENSION_new_null();
+  //
+  // Usage:
+  //
+  //   auto const req = Request{...somehow...};
+  //   Constraints<RO> const ex = req.constraints();
+  //
+  //   auto const cert = Certificate{...somehow...};
+  //   Constraints<RO> const ex = cert.constraints();
+  //
+  template<> class Constraints<RO>;
+}
+#endiv
+#divert <hpp>
+#import openssl.Stack0
+#import openssl.x509.Extension0
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Request
+namespace hyperledger::x509::constraints {
+  template<> class Constraints<RO> : public Prototype<openssl::Stack0, openssl::x509::Extension0> {
+    using Ancestor = Prototype<openssl::Stack0, openssl::x509::Extension0> ;
+    friend class pki::Certificate;
+    friend class pki::Request;
+    inline explicit Constraints(Held);
+  public:
+    Constraints() = default;
+    inline Constraints(Constraints<RW> const &);
+    // What "accessors" are supposed to happen here?
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.x509.constraints.Constraints.RW
+namespace hyperledger::x509::constraints {
+  Constraints<RO>::Constraints(Held held) : Ancestor{move(held)}  { }
+  Constraints<RO>::Constraints(Constraints<RW> const &other) : Ancestor{other.held}  { }
+}
+#divert <cpp>
+#import nonstd.required.Optionable
+#import hyperledger.runtime.constants
+namespace {
+  namespace tests {
+    using namespace hyperledger::x509::constraints;
+    static_assert(nonstd::required::Optionable<Constraints<RO>>);
+  }
+}
+//
+// STACK_OF(X509_EXTENSION) *extlist = sk_X509_EXTENSION_new_null();
+// X509_EXTENSION *ext = X509V3_EXT_conf(NULL, NULL, ext_name, ext_value);
+// if (nullptr == ext) {
+//    throw exception::PKI{"subjectAltName extension"};
+// }
+// sk_X509_EXTENSION_push(extlist, ext);
+// if (!X509_REQ_add_extensions (x509_req, extlist)){
+//    throw exception::PKI{"subjectAltName"};
+// }
+// sk_X509_EXTENSION_pop_free(extlist, X509_EXTENSION_free);
+#warning WRITETHIS ... make hyperledger::x509::Constraints<RO> do something
+#endiv

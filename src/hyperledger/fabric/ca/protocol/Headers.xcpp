@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.protocol.Headers
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // The "headers" of a request are meta-context about the request.
+  // They are typically expressed as "headers" within the HTTP transport protocol.
+  // There is no ordering sense among the headers.
+  // There may be duplicates in the header names.
+  //
+  // The std::initializer_list<Header> makes them convenient to assemble.
+  //
+  // Usage:
+  //
+  //   auto headers = Headers{{"A","apple"},{"B","banana"},{"C","cherry"}};
+  //   headers += {"D", "dog"};
+  //   headers = headers + {"E", "eagle"};
+  //   headers = {"F", "frog"} + headers;
+  //
+  using Headers = http::protocol::Headers;
+}
+#endiv

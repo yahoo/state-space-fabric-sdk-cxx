@@ -1,0 +1,205 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace shell::run {
+  //
+  // Run, with output piped to...
+  //   we write
+  //   they read (stdin)
+  //
+  // Usage:
+  //
+  //   class my::Program : public Piped_To {
+  //   public:
+  //     Program(...); ....    must choose 'exec' or 'execp' and establish argv[0]
+  //   };
+  //
+  //   Program prog{...};
+  //   auto f = prog.start();
+  //   prog.stream() << ...talk to it...
+  //   auto w = prog.wait();
+  //
+  //   auto w = prog.run(...outbound...string...);
+  //   auto w = prog.run(); ......................  possible but pointless (no input given)
+  //
+  class Piped_To;
+}
+#endiv
+#divert <hpp>
+#import shell.run.Runner
+#import nonstd.stream.Posix
+#import nonstd.stream.Posixbuf
+#import std.string
+#import std.unique_ptr
+#import sys.exits.Code
+#import sys.posix.write
+class shell::run::Piped_To : public Runner {
+  using Ancestor = Runner;
+public:
+  inline explicit Piped_To(std::filesystem::path);
+  inline Piped_To(Exec, std::filesystem::path);
+  using Ancestor::run;
+  struct Results : public Ancestor::Results {
+    using Write = decltype(sys::posix::write(0, nullptr, 0lu));
+  };
+  auto start() -> Results::Start override;
+  virtual auto stream() -> std::ostream &;
+  virtual auto write(std::string const &outbound) -> Results::Write;
+  virtual auto run(std::string const &outbound) -> Results::Run;
+  auto run() -> Results::Run override;
+  auto wait() -> Results::Wait override;
+protected:
+  using Stream = nonstd::stream::Posix;
+  using Streambuf = nonstd::stream::Posixbuf;
+  Stream streamobj; // only has a rdbuf buffer pointer after 'start' & before 'run'
+  std::unique_ptr<Streambuf> streambuf;
+  // Descendants may overide to dup2(...) differently; e.g. capture both stdout and stderr
+  auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code override;
+};
+#endiv
+#divert <ipp>
+shell::run::Piped_To::Piped_To(std::filesystem::path path)
+  : Ancestor{path}
+  , streamobj{}
+  , streambuf{}
+{ }
+shell::run::Piped_To::Piped_To(Exec exec, std::filesystem::path path)
+  : Ancestor{exec, path}
+  , streamobj{}
+  , streambuf{}
+{ }
+#endiv
+#divert <cpp>
+#import exit
+#import std.make_unique
+#import std.runtime_error
+#import sys.exits.constants
+#import sys.posix.close
+#import sys.posix.fork
+#import sys.posix.pipe
+auto shell::run::Piped_To::start() -> Results::Start {
+  if (is_running()) {
+    // This is a logic error really, because it means the programmer was operating the API sloppily
+    // Use: start() ... run() ... wait()
+    throw std::runtime_error{"already running"};
+  }
+  auto piped = sys::posix::pipe();
+  if (!ok(piped)) {
+    return Results::Start{ok(piped), error_num(piped), value(piped)}; // [[FIXTHIS]] use simplify(piped)
+  }
+  auto forked = sys::posix::fork();
+  if (is_parent(forked)) {
+    auto closed = sys::posix::close(read_side(piped));
+    if (!ok(closed)) {
+      return Results::Start{ok(closed), error_num(closed)};
+    }
+    streambuf = std::make_unique<nonstd::stream::Posixbuf>(write_side(piped), std::ios::out);
+    streamobj.rdbuf(streambuf.get());
+    running = pid(forked);
+  } else if (is_child(forked)) {
+    auto closed = sys::posix::close(write_side(piped));
+    if (!ok(closed)) {
+      exit(sys::exits::OSERR);
+    } else {
+      exit(grow_child(read_side(piped), -1));
+    }
+  }
+  fork_invariance_check(forked);
+  return Results::Start{ok(forked), error_num(forked), value(forked)};  // [[FIXTHIS]] use simplify(forked)
+}
+auto shell::run::Piped_To::stream() -> std::ostream & {
+  return streamobj;
+}
+#include <cerrno>
+auto shell::run::Piped_To::write(std::string const &outbound) -> Results::Write {
+  // Pesky ... have to convert from ostream's vague non-error indicator to POSIX precise error indicators.
+  //
+  // Icky ... https://en.cppreference.com/w/cpp/io/basic_ostream/write
+  //          defines write in terms of per-character operations
+  // <quote>so, unlike the formatted output functions, this function does not set the failbit on failure.</quote>
+  // Thus: only stream.setstate(badbit) is called on failure.
+  //
+  // [[WATCHOUT]] there is no "pcount" analog of std::basic_istream<C,T>::gcount()
+  //              c.f. https://en.cppreference.com/w/cpp/io/basic_ostream/pcount
+  // [[WATCHOUT]] we cannot detect partial writes (short writes) in the ostream api
+  //
+  // See /usr/include/c++/7/ostream (no suffix) wherein is open-coded
+  //
+  //   auto std::basic_ostream<T,C>::_M_write(const char_type* __s, streamsize __n) -> void {
+  //     const streamsize __put = this->rdbuf()->sputn(__s, __n);
+  //     if (__put != __n)
+  //        this->setstate(ios_base::badbit);
+  //     }
+  //   }
+  //
+  streamobj.write(outbound.data(), outbound.size());
+  // [[NASTY]] streambuf::xsputn(...) returns the bytes written but that becomes lost in the abstraction layer.
+  if (streamobj) {
+    return Results::Write{true, 0, (ssize_t) outbound.size()};
+  } else {
+    return Results::Write{false, errno, -1}; // [[WATCHOUT]] we cannot get fidelity on partial writes (short writes)
+  }
+}
+auto shell::run::Piped_To::run(std::string const &outbound) -> Results::Run {
+  if (!is_running()) {
+    auto started = start();
+    if (!ok(started)) {
+      return Results::Run{ok(started), error_num(started)};
+    }
+  }
+  auto written = write(outbound);
+  if (!ok(written)) {
+    return Results::Run{ok(written), error_num(written)};
+  } else {
+    return run();
+  }
+}
+auto shell::run::Piped_To::run() -> Results::Run {
+  if (!is_running()) {
+    auto started = start();
+    if (!ok(started)) {
+      return Results::Run{ok(started), error_num(started)};
+    }
+  }
+  streamobj.flush();
+  streamobj.rdbuf(nullptr);
+  streambuf.reset(); // n.b. the file descriptor will be closed upon destruction (the other side will see EOF)
+  return Ancestor::run();
+}
+auto shell::run::Piped_To::wait() -> Results::Wait {
+  if (is_running()) {
+    streamobj.flush();
+    streamobj.rdbuf(nullptr);
+    streambuf.reset(); // n.b. the file descriptor will be closed upon destruction (the other side will see EOF)
+  }
+  return Ancestor::wait();
+}
+#import std.exception
+#import sys.exits.constants
+#import sys.posix.close
+#import sys.posix.dup2
+auto shell::run::Piped_To::grow_child(int readfd, int) const noexcept -> sys::exits::Code {
+  // We're in the child now, NOTHING ESCAPES
+  try {
+    auto duped = sys::posix::dup2(readfd, 0);
+    if (!ok(duped)) {
+      dying_utterance(error_code(duped).message());
+    } else {
+      auto closed = sys::posix::close(readfd);
+      if (!ok(closed)) {
+        dying_utterance(error_code(closed).message());
+      } else {
+        auto execed = do_exec();
+        dying_utterance(error_code(execed).message());
+      }
+    }
+  } catch (std::exception const &e) {
+    dying_utterance(e.what());
+  } catch (...) {
+    dying_utterance("unknown");
+  }
+  return sys::exits::OSERR;
+}
+#endiv

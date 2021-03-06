@@ -1,0 +1,15 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import shell.run.Runner
+#include <hpp/shell.run.Runner> // need the complete type
+namespace hyperledger::fabric::v0::run {
+  //
+  // Common ancestor of all Loader<CONTEXT> specializations
+  // Descendants only.
+  //
+  using Arguments = shell::run::Runner::Arguments;
+}
+#endiv

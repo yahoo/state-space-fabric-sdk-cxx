@@ -1,0 +1,31 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric
+#import hyperledger.string.Storage
+#import hyperledger.file.Path
+#import hyperledger.Optional
+namespace hyperledger::fabric::user {
+  //
+  // A user name.  (a screen name)
+  using Name = string::Storage;
+  //
+  using Organization = string::Storage;
+  using Org [[deprecated("buy a vowel!  Instead prefer to spell it out as user::Organization")]] = Organization;
+  //
+  // a "user database"
+  // Oh come on.  It's a filepath to a pickled file containing the factoids of the user
+  using State_Store = file::Path;
+  //
+  // MSP = Membership Service Provider.
+  // Seems to be proprietary IBM thing which is surfaced herein as a directory containing a few certificates & keys.
+  // It's a "name".
+  // Frequently these things are named after the DNS name of the brand of the legal entity which operatse the service.
+  //
+  using Membership_Service_Provider_Identifier = Optional<string::Storage>;
+  using Msp_ID [[deprecated("buy a vowel! Instead use Membership_Service_Provider_Identifier")]] = Membership_Service_Provider_Identifier;
+    using Emespeid [[yuck]] = Membership_Service_Provider_Identifier;
+}
+#endiv

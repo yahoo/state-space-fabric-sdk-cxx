@@ -1,0 +1,44 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import tests.unit.ca.Service.template
+namespace tests::unit::ca::service {
+  template<> struct Service<library::Service<library::INFORMATION>>;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.ca.Service
+namespace tests::unit::ca::service {
+  template<> struct Service<library::Service<library::INFORMATION>> : public cppunit::test::Fixture {
+    using Subject = library::Service<library::INFORMATION>;
+    auto test_constructor() -> void;
+    static auto suite() -> cppunit::Test *;
+  };
+}
+#endiv
+#divert <cpp>
+namespace tests::unit::ca::service {
+  auto Service<library::Service<library::INFORMATION>>::test_constructor() -> void {
+#warning WRITETHIS auto tests::unit::ca::Service::test_constructor() -> void
+  }
+}
+#import rigging.suite.io
+namespace tests::unit::ca::service {
+  auto Service<library::Service<library::INFORMATION>>::suite() -> cppunit::Test * {
+    using namespace rigging::suite;
+    auto series = Stream{"INFORMATION"};
+    series << []() {
+                auto con = Stream{"constructor"};
+                con << call("...configurations...", &Service::test_constructor)
+                    << END;
+                return move(con);
+              }()
+           << END;
+    return finalize(series);
+  }
+}
+#endiv

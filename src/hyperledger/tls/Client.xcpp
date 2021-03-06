@@ -1,0 +1,45 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls {
+  //
+  // This is the mTLS client
+  //
+  // Concept:
+  //
+  //   A tls client specifies the {key, crt, ca}
+  //   - key matches crt
+  //   - crt tells who we are
+  //   - ca validates the crt (the server side must have this also to anchor the trust)
+  //
+  // Design:
+  //
+  //    auth - even when the tls (mTLS) triple is configured, do we do the auth?
+  //
+  //    tls (triple) contains
+  //      the key
+  //      the certificate
+  //      the authority (bundle)
+  //
+  //   This design is based on storing the components in files.
+  //   A different design would store the (encoded, armored) components ni memory.
+  //
+  // Usage:
+  //
+  //   Yes.   see hyperledger::http::call
+  //
+  class Client;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Boolean
+#import hyperledger.file.Path
+#import hyperledger.Optional
+#import hyperledger.pki.Triple
+struct hyperledger::tls::Client {
+  Boolean auth;
+  Optional<pki::Triple<file::Path>> tls;
+};
+#endiv

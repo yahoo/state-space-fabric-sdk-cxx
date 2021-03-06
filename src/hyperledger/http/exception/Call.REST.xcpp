@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.exception.Call.template
+namespace hyperledger::http::exception {
+  //
+  // A problem with a REST call
+  // Of course REST is just RPC in HTTP (with "continuations" managed at the application level)
+  //
+  // These distinguish the mechanics of the method verb itself, focusing on the HTTP method name.
+  // Expect: method DELETE, GET, POST, PUT, etc.
+  // but also expect the status to be crude from the transport level
+  //          status 200 or in the 200 series;
+  //                 405 (method not allowed), 406 (not acceptable), 409 (conflict), 410 (gone)
+  //
+  // Usage:
+  //
+  //   throw Call<REST>{"must POST before PUT", PUT_method, 404_http);
+  //
+  template<> class Call<REST>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.exception.call.Prototype
+#import hyperledger.http.method.Name
+namespace hyperledger::http::exception {
+  template<> class Call<REST> : public call::Prototype {
+    using Ancestor = call::Prototype;
+  protected:
+    using Method = method::Name;
+    Method offending_method;
+  public:
+    inline Call(Path const &path, Method, Status, std::string const &explanation);
+    inline auto method() const noexcept -> Method;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http::exception {
+  Call<REST>::Call(Path const &path, Method name, Status status, std::string const &explanation)
+    : Ancestor{path, status, explanation}
+    , offending_method{name}
+  { }
+  auto Call<REST>::method() const noexcept -> Method { return offending_method; }
+}
+#endiv

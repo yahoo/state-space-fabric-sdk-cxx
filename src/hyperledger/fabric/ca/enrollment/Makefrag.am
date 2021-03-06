@@ -1,0 +1,13 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_enrollment_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/enrollment/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/enrollment/Bundle.cpp \
+  obj/src/hyperledger/fabric/ca/enrollment/serialize.cpp \
+  obj/src/hyperledger/fabric/ca/enrollment/Request.cpp \
+  obj/src/hyperledger/fabric/ca/enrollment/Service.cpp \
+  obj/src/hyperledger/fabric/ca/enrollment/Package.cpp \
+  $(end)
+enrollment-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_enrollment_SUBSOURCES))

@@ -1,0 +1,39 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::revocations {
+  //
+  // The revocation request
+  // Descendants only; see Request<REVOCATIONS>.
+  //
+  // Redundant in the interface of Service<REVOCATIONS>
+  //
+  // Usage:
+  //
+  //   auto registrar = Package<ENROLLMENT>{...somehow...};
+  //   auto query = request<REVOCATIONS>{...somehow...};
+  //
+  //   auto revoked = Service<REVOCATIONS>{...somehow...};
+  //
+  //   auto listed = revoked.list(registrar, query);
+  //
+  struct Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Optional
+#import hyperledger.x509.query.Query // n.b. elided as x509::Query
+struct hyperledger::fabric::ca::revocations::Request {
+protected:
+  ~Request() = default;
+public:
+  Request() = default;
+  Request(Request const &) = delete;
+  auto operator=(Request const &) -> Request & = delete;
+  Request(Request &&) = default;
+  auto operator=(Request &&) -> Request & = default;
+  Optional<x509::Query<x509::REVOKED>> revoked;
+  Optional<x509::Query<x509::EXPIRES>> expires;
+};
+#endiv

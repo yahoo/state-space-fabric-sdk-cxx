@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::traits {
+  //
+  // Truth, my 'bot.
+  // What is there to say?
+  //
+  // Usage:
+  //
+  //   Figure it out.
+  //   see namespace hyperledger::fabric::ca::traits
+  //   see namespace hyperledger::x509::query::traits
+  //
+  template<required::Enumeration> struct True;
+}
+#endiv
+#divert <hpp>
+#import std.true_type
+namespace hyperledger {
+  template<required::Enumeration NAME> struct traits::True : public std::true_type { using Name = NAME; };
+}
+#endiv

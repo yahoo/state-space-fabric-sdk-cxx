@@ -1,0 +1,30 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.string.View
+namespace hyperledger::http::text {
+  //
+  // A (text) request is just some text.
+  //
+  // Concept:
+  //
+  //   The Request does NOT provide its own storage; it references other storage.
+  //
+  // Lifetimes:
+  //
+  //   The lifetime of the viewed content must last longer than the Request;
+  //   In turn the request must last longer than the call<METHOD>(...).
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto earl = url::String{...somehow...};
+  //   auto content = request{...somehow...};
+  //
+  //   auto posted = text::call<POST>(client, earl, content);
+  //   auto putted_sic = text::call<PUT>(client, earl, posted);
+  //
+  using Request = string::View;
+}
+#endiv

@@ -1,0 +1,58 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_same
+#forward hyperledger.pki.Secret
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Certificates
+#forward hyperledger.pki.Request
+#forward hyperledger.pki.revocation.Certificates
+#forward hyperledger.pki.revocation.Names
+namespace hyperledger::pki::required {
+  //
+  // What are the pki (x509) objects that can be recovered from a byte string
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto some_bytes_somehow = ...somehow...
+  //     ...
+  //     auto thing = pki::from<THING>(some_bytes_somehow);
+  //     ... use the thing directly ...
+  //   } catch (exception::Aspect const &) {
+  //     ... that was bad ...
+  //     ... cannot convert the bytes to a THING
+  //   }
+  //
+  template<typename OBJECT> concept bool Fromable = (std::is_same_v<OBJECT, Secret> ||
+                                                     std::is_same_v<OBJECT, Certificate> ||
+                                                     std::is_same_v<OBJECT, Certificates> ||
+                                                     std::is_same_v<OBJECT, Request> ||
+                                                     std::is_same_v<OBJECT, revocation::Certificates> ||
+                                                     std::is_same_v<OBJECT, revocation::Names>);
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.Secret
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Request
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::pki;
+    using namespace hyperledger::pki::required;
+    static_assert(Fromable<Secret>);
+    static_assert(Fromable<Certificate>);
+    static_assert(Fromable<Certificates>);
+    static_assert(Fromable<Request>);
+    static_assert(Fromable<revocation::Certificates>);
+    static_assert(Fromable<revocation::Names>);
+    static_assert(!Fromable<int>);
+  }
+}
+#endiv

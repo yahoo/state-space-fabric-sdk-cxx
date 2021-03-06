@@ -1,0 +1,34 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.query.Query.template
+namespace hyperledger::x509::query {
+  //
+  // Query for an Authority Key Identifier (AKI)
+  // This pertains to the Issuer.
+  //
+  // From RFC 3280, section 4.2.1.2:
+  // <quote>
+  //   (1) The keyIdentifier is composed of the 160-bit SHA-1 hash of the value of the BIT STRING subjectPublicKey
+  //       (excluding the tag, length, and number of unused bits).
+  //   (2) The keyIdentifier is composed of a four bit type field with the value 0100 followed by
+  //       the least significant 60 bits of the SHA-1 hash of the value of the BIT STRING subjectPublicKey
+  //       (excluding the tag, length, and number of unused bit string bits).
+  // </quote>
+  //
+  // i.e. 8 bytes.
+  template<> struct Query<AUTHORITY_KEY_IDENTIFIER>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.x509.query.Buffer
+namespace hyperledger::x509::query {
+  template<> class Query<AUTHORITY_KEY_IDENTIFIER> : public Buffer<byte, 8> {
+    using Ancestor = Buffer<byte, 8>;
+  public:
+    Query() = default;
+    using Ancestor::Buffer;
+  };
+}
+#endiv

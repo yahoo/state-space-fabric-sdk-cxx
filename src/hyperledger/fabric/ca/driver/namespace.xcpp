@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca
+#import hyperledger.fabric.ca.protocol
+#forward hyperledger.fabric.ca.protocol.Request
+namespace hyperledger::fabric::ca::driver {
+  //
+  // The driver needs to see all of the elements of namespace protocol without qualifiation
+  //
+  using namespace ca::protocol;
+  using ca::protocol::Request; // prefer this one instead of ca::Required (that one)
+}
+#endiv
+#divert <ipp>
+#import hyperledger.literals
+#import hyperledger.http.exception.constants
+namespace hyperledger::fabric::ca::driver {
+  using namespace hyperledger::literals;
+  using namespace hyperledger::http::exception::constants;
+  using hyperledger::http::exception::constants::HTTP; // otherwise enum class ca::HTTP is confounding; and Transport<HTTP> and Call<HTTP> use senses for HTTP (enum class, enum class member)
+}
+#endiv

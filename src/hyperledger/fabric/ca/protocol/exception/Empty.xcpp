@@ -1,0 +1,36 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // An empty syntax was discovered.
+  //
+  // Concept::
+  //
+  //   The python folk called it ValueError
+  //
+  // Usage:
+  //
+  //   auto name = ...somehow...;    e.g. 'max_enrollments' or 'enrollment_id' or such.
+  //   throw exception::Empty{name};
+  //
+  class [[nodiscard]] Empty;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.exception.Syntax
+#import hyperledger.string.Storage
+class hyperledger::fabric::ca::protocol::exception::Empty final : public Syntax {
+  using Ancestor = Syntax;
+public:
+  inline explicit Empty(string::Storage const &name);
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  Empty::Empty(string::Storage const &name)
+    : Ancestor{name, "is empty"}
+  { }
+}
+#endiv

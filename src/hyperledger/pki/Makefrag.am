@@ -1,0 +1,69 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_pki_la = lib/libhyperledger-pki.la
+lib_libhyperledger_pki_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_pki_la_LIBADD = \
+  $(end)
+lib_libhyperledger_pki_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_pki_la_SOURCES))
+lib_libhyperledger_pki_la_SOURCES = \
+  obj/src/hyperledger/pki/namespace.cpp \
+  obj/src/hyperledger/pki/packaging/namespace.cpp \
+  \
+  obj/src/hyperledger/pki/Authority.cpp \
+  obj/src/hyperledger/pki/Bundle.template.cpp \
+  obj/src/hyperledger/pki/Bundle.Secret.Certificate.cpp \
+  obj/src/hyperledger/pki/Bundle.Secret.Certificate.Authority.cpp \
+  obj/src/hyperledger/pki/Bundle.Certificate.Authority.cpp \
+  obj/src/hyperledger/pki/Bundle.revocation.Certificates.Names.cpp \
+  obj/src/hyperledger/pki/Bundle.revocation.Certificates.cpp \
+  obj/src/hyperledger/pki/Bundle.revocation.Names.cpp \
+  obj/src/hyperledger/pki/Bundle.cpp \
+  \
+  obj/src/hyperledger/pki/Certificates.cpp \
+  obj/src/hyperledger/pki/Certificate.cpp \
+  obj/src/hyperledger/pki/Request.cpp \
+  obj/src/hyperledger/pki/Secret.cpp \
+  obj/src/hyperledger/pki/Triple.cpp \
+  \
+  obj/src/hyperledger/pki/channel.cpp \
+  \
+  obj/src/hyperledger/pki/assemble.template.cpp \
+  obj/src/hyperledger/pki/assemble.Secret.cpp \
+  obj/src/hyperledger/pki/assemble.cpp \
+  \
+  obj/src/hyperledger/pki/from.template.cpp \
+  obj/src/hyperledger/pki/from.Certificate.cpp \
+  obj/src/hyperledger/pki/from.Certificates.cpp \
+  obj/src/hyperledger/pki/from.Request.cpp \
+  obj/src/hyperledger/pki/from.Secret.cpp \
+  obj/src/hyperledger/pki/from.revocation.Certificates.cpp \
+  obj/src/hyperledger/pki/from.revocation.Names.cpp \
+  obj/src/hyperledger/pki/from.cpp \
+  obj/src/hyperledger/pki/to_string.cpp \
+  \
+  $(obj_src_hyperledger_pki_error_SUBSOURCES) \
+  $(obj_src_hyperledger_pki_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_pki_required_SUBSOURCES) \
+  $(obj_src_hyperledger_pki_revocation_SUBSOURCES) \
+  $(obj_src_hyperledger_pki_slurp_SUBSOURCES) \
+  $(obj_src_hyperledger_x509_SUBSOURCES) \
+  $(end)
+include src/hyperledger/pki/error/Makefrag.am
+include src/hyperledger/pki/exception/Makefrag.am
+include src/hyperledger/pki/required/Makefrag.am
+include src/hyperledger/pki/revocation/Makefrag.am
+include src/hyperledger/pki/packaging/slurp/Makefrag.am
+include src/hyperledger/x509/Makefrag.am
+pki-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_pki_la_SUBSOURCES))
+$(lib_libhyperledger_pki_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/pki/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_pki_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/pki/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/pki/dependencies.mk

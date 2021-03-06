@@ -1,0 +1,37 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.json.object.Object
+namespace hyperledger::json::object {
+  //
+  // An object that is JSON.
+  //
+  // Concept:
+  //
+  //   Only for the OBJECT form to simulate a "document"
+  //   In the olden days we would have used an XML DOM.
+  //   And prior to that ... there was some other populat on-the-wire-du-jour.
+  //
+  //   We're NOT looking for an alternative boxed representation for integers, strings, floats, etc.
+  //   Only the OBJECT form, never the ARRAY form.
+  //
+  // Invariants:
+  //
+  //   The hyperledger::json::OBject will only ever hold the top-level ::json::Value of type OBJECT
+  //
+  // Design:
+  //
+  //   Thin, thin thin on top of Value.
+  //   Always forcing OBJECT.
+  //
+  // Usage:
+  //
+  //   Hack the Spew.
+  //
+  struct Object;
+}
+namespace hyperledger::json {
+  using object::Object;
+}
+#endiv

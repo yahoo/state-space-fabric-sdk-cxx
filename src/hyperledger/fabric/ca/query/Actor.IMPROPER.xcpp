@@ -1,0 +1,59 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.query.Actor.template
+namespace hyperledger::fabric::ca::query {
+  //
+  // A boolean accumulator.
+  // A disjunction of the improperness test.
+  // This is an OR operator.
+  //
+  // Function:
+  //
+  //   Returns true if any observed quantities are improper, where such is defined as
+  //   an optional value that *also* holds an empty string. (this is iproper).
+  //
+  // Usage:
+  //
+  //   auto some_function() -> bool {
+  //     Actor<IMPROPER> actor;
+  //     return (actor, field1, field2, field3, field4, ..., fieldN);
+  //   }
+  //
+  template<> struct Actor<IMPROPER>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+#import std.map
+namespace hyperledger::fabric::ca::query {
+  template<> struct Actor<IMPROPER> {
+    inline Actor();
+    inline operator bool() const;
+    inline auto observe(Optional<string::Storage> const &) -> void;
+    inline auto observe(std::map<string::Storage, string::Storage> const &) -> void;
+  protected:
+    bool accumulator;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::query {
+  Actor<IMPROPER>::Actor()
+    : accumulator{false}
+  { }
+  Actor<IMPROPER>::operator bool() const { return accumulator; }
+  auto Actor<IMPROPER>::observe(Optional<string::Storage> const &specimen) -> void {
+    // See the definition f improper in the commentariat (above)
+    accumulator |= specimen && specimen->empty();
+  }
+  auto Actor<IMPROPER>::observe(std::map<string::Storage, string::Storage> const &specimen) -> void {
+    for (auto const &[key, value] : specimen) {
+      accumulator |= key.empty();
+      accumulator |= value.empty();
+    }
+  }
+}
+#endiv

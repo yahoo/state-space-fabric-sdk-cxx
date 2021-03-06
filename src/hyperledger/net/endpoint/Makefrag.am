@@ -1,0 +1,12 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-user-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_net_endpoint_SUBSOURCES = \
+  obj/src/hyperledger/net/endpoint/namespace.cpp \
+  obj/src/hyperledger/net/endpoint/Endpoints.cpp \
+  obj/src/hyperledger/net/endpoint/Formatter.cpp \
+  obj/src/hyperledger/net/endpoint/get_port.cpp \
+  obj/src/hyperledger/net/endpoint/get_hostport.cpp \
+  $(end)
+net-endpoint-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_net_endpoint_SUBSOURCES))

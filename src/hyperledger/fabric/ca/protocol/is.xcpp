@@ -1,0 +1,67 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.string.View
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // The Protocol is an on-the-wire sort of a thing.
+  // As such the nouns (object names) must have a reasonable shape.
+  // It is possible estimate-check whether a noun name is legal before attempting to use it.
+  //
+  // Policy:
+  //
+  //   Identifiers are "like email names."
+  //        rough checking for the allowed characters; no grammatical parsing (repeats, inappropriate positions) is done here.
+  //   Identifiers cannot begin with a difficult character.
+  //
+  // Concept:
+  //
+  //   It may be possible provide deeper semantic checks; e.g. for integer size, range, overflow.
+  //   It may not be possible to provide such ch ecks; e.g. the identifier exists.
+  //
+  //   Everything has a length limit; think about it.
+  //   The length limits here are high enough that they shouldn't intersect with the *real* application-level length limits.
+  //
+  // Design:
+  //
+  //   These are read-only conditions; prefer string::View.
+  //
+  // Usage:
+  //
+  //   auto syntax = ...somehow...
+  //
+  //   auto is_numeric(syntax);
+  //   auto is_identifier(syntax);
+  //   
+  namespace packaging::is_implementation {
+    using namespace std;
+    inline constexpr auto MAXIMUM_NUMERIC_LENGTH = 100lu;
+    inline constexpr auto MAXIMUM_IDENTIFIER_LENGTH = 1000lu;
+    namespace interface {
+      inline auto is_numeric(string::View) -> bool;
+      inline auto is_enrollment(string::View) -> bool;
+      inline auto is_affiliation(string::View) -> bool;
+    }
+    inline auto is_identifier0(char) -> bool;
+    inline auto is_identifierN(char) -> bool;
+    inline auto is_identifier(string::View) -> bool;
+  }
+  using namespace packaging::is_implementation::interface;
+}
+#endiv
+#divert <ipp>
+#import std.all_of
+#import std.isdigit
+#import std.isalnum
+namespace hyperledger::fabric::ca::protocol::packaging {
+  auto is_implementation::is_identifier0(char candidate) -> bool { return '_' == candidate || isalpha(candidate); }
+  auto is_implementation::is_identifierN(char candidate) -> bool { return isalnum(candidate) || '_' == candidate || '-' == candidate || '+' == candidate || '.' == candidate || '@' == candidate; }
+  auto is_implementation::is_identifier(string::View candidate) -> bool { return !candidate.empty() && is_identifier0(candidate.front()) && all_of(next(candidate.begin()), candidate.end(), is_identifierN) && candidate.size() < MAXIMUM_NUMERIC_LENGTH; }
+  namespace is_implementation {
+    auto interface::is_numeric(string::View candidate) -> bool     { return !candidate.empty() && all_of(candidate.begin(), candidate.end(), [](auto c) { return isdigit(c); }) && candidate.size() < MAXIMUM_NUMERIC_LENGTH; }
+    auto interface::is_enrollment(string::View candidate) -> bool  { return is_identifier(candidate); }
+    auto interface::is_affiliation(string::View candidate) -> bool { return is_identifier(candidate); }
+  }
+}
+#endiv

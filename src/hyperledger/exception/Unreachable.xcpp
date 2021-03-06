@@ -1,0 +1,37 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::exception {
+  //
+  // Declare that there was "some problem" with the code path.
+  // An unreachabel location was reache3d.
+  //
+  // Usage:
+  //
+  //   Oh come on. It's an exception, you throw it!
+  //   throw Unreachable{__FUNCTION__, __FILE__, __LINE__};
+  //
+  class Unreachable;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import nonstd.exception.Unreachable
+// NOT YET ---> #import tunitas.exception.Unreachable <--- NOT YET swap this in circa tunitas-basics >= 2.0
+class hyperledger::exception::Unreachable : public Aspect,
+                                            public nonstd::exception::Unreachable {
+  struct Ancestors {
+    using Aspect = hyperledger::exception::Aspect;
+    using Exception = nonstd::exception::Unreachable;
+  };
+public:
+  using Ancestors::Exception::Unreachable;
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <cpp>
+namespace hyperledger::exception {
+  auto Unreachable::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

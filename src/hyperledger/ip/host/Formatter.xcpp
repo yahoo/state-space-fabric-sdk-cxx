@@ -1,0 +1,54 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::ip::host {
+  //
+  // Format an ip::Host
+  // A separate type so that ADL will find it.
+  //
+  struct Formatter;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.ip.Host
+#import hyperledger.string.Storage
+#import hyperledger.required.Character
+#import hyperledger.required.Character_Traits
+#import hyperledger.net.endpoint.Formatter
+#import std.basic_ostream
+namespace hyperledger::ip {
+  namespace host {
+    inline auto format(Host const &) -> Formatter;
+    inline auto to_string(Formatter const &) -> string::Storage;
+    template<required::Character CHAR, required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+  }
+  class host::Formatter : public net::endpoint::Formatter<Host> {
+    using Ancestor = net::endpoint::Formatter<Host>;
+  public:
+    using Ancestor::Formatter;
+  };
+}
+#endiv
+#divert <ipp>
+#forward hyperledger.ip.Host
+#import hyperledger.ip.host.Visitor
+#import std.basic_string_view
+#import hyperledger.detail.reformat
+namespace hyperledger::ip {
+  auto host::format(Host const &hh) -> Formatter { return Formatter{hh}; }
+  auto host::to_string(Formatter const &ff) -> string::Storage { return detail::reformat::to_string(ff); }
+  template<required::Character CHAR, required::Character_Traits TRAITS> auto host::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+     using Result = std::basic_ostream<CHAR, TRAITS> &;
+     using View = std::basic_string_view<CHAR, TRAITS>;
+     // [[FIXTHIS]] will this trickery work to widen the narrow characters of the names out to the wideness of CHAR?  Is there more to it? [surely]  o.widen(c)
+     // [[FIXTHIS]] need codecvt or such?  Recipe?
+     auto visitor = Visitor{[&o](variant::Uninterpreted const &name) -> Result { return o << View{name.data(), name.size()}; },
+                            [&o](variant::Name const &name) -> Result { return o << View{name.data(), name.size()}; },
+                            [&o](variant::Address4 const &name) -> Result { return o << View{name.data(), name.size()}; }, //  [[FIXTHIS]] when Address4 is not hacked as a string
+                            [&o](variant::Address6 const &name) -> Result { return o << View{name.data(), name.size()}; }}; // [[FIXTHIS]] when Address6 is not hacked as a string
+     return visit(visitor, f.value);
+  }
+}
+#endiv

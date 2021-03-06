@@ -1,0 +1,37 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_v0_run_SUBSOURCES = \
+  obj/src/hyperledger/fabric/v0/run/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/run/Arguments.cpp \
+  obj/src/hyperledger/fabric/v0/run/arguments.Stream.cpp \
+  obj/src/hyperledger/fabric/v0/run/push_back.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.template.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.optional.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.vector.byte.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.Client.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.Triple.ITEM.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Compare.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.are_the_same.cpp \
+  obj/src/hyperledger/fabric/v0/run/loader.Basis.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.fabric.Context.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.peer.Context.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.chaincode.Context.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.Orderer.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.Peers.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.Client.cpp \
+  obj/src/hyperledger/fabric/v0/run/Loader.Call.cpp \
+  obj/src/hyperledger/fabric/v0/run/Chaincode.cpp \
+  obj/src/hyperledger/fabric/v0/run/Chaincode.Success.cpp \
+  obj/src/hyperledger/fabric/v0/run/Chaincode.string.cpp \
+  obj/src/hyperledger/fabric/v0/run/Chaincode.ALL.cpp \
+  obj/src/hyperledger/fabric/v0/run/chaincode.Basis.cpp \
+  obj/src/hyperledger/fabric/v0/run/Peer.cpp \
+  obj/src/hyperledger/fabric/v0/run/Peer.Success.cpp \
+  obj/src/hyperledger/fabric/v0/run/Peer.string.cpp \
+  obj/src/hyperledger/fabric/v0/run/Peer.ALL.cpp \
+  obj/src/hyperledger/fabric/v0/run/peer.Basis.cpp \
+  $(end)
+run-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_fabric_v0_run_SUBSOURCES))

@@ -1,0 +1,57 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Configuration
+#forward hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.traits.Configuration
+#include <hpp/hyperledger.fabric.ca.traits.Configuration>
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this Configuration<NAME> in the universe of Configurations, as named??
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Configuration<NAME>
+  //   The concept condition MUST align if-and-only-if with name::Configuration<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Configuration<CONFIGURATION> ..................... required::Configuration<ca::Configuration<MAIN>>;
+  //   required::name::Configuration<NAME> .................. required::name::Configuration<MAIN>;
+  //
+  // Usage:
+  //
+  //   template<required::Configuration CONFIGURATION> auto get_by_object() -> CONFIGURATION;
+  //   template<required::name::Configuration NAME> auto get_by_name() -> ca::Configuration<NAME>;
+  //
+  namespace [[eponymous]] configuration {
+    template<typename CONFIGURATION> concept bool Configuration = requires(CONFIGURATION) {
+      typename traits::template Configuration<CONFIGURATION>::Name;
+      requires traits::template Configuration<CONFIGURATION>::value;
+      requires required::name::Configuration<typename traits::template Configuration<CONFIGURATION>::Name>;
+    };
+  }
+  using configuration::Configuration;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Configuration
+namespace {
+  namespace tests {
+    namespace required = hyperledger::fabric::ca::required;
+    using namespace hyperledger::fabric::ca;
+    static_assert(required::Configuration<Configuration<PASS>>);
+    static_assert(required::Configuration<Configuration<TOKEN>>);
+    //
+    static_assert(required::Configuration<Configuration<DRIVER>>);
+    static_assert(required::Configuration<Configuration<MAIN>>);
+    //
+    static_assert(required::Configuration<Configuration<FILES>>);
+    static_assert(required::Configuration<Configuration<HTTP>>);
+    static_assert(required::Configuration<Configuration<SOCKET>>);
+    static_assert(required::Configuration<Configuration<SQLITE>>);
+  }
+}
+#endiv

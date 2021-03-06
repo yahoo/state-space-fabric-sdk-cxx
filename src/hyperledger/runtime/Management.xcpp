@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.tuple
+namespace hyperledger::runtime {
+  //
+  // Concept:
+  //
+  //   The sense of Mutability is different than the sense of Ownership.
+  //
+  //   Ownership is what happens upon destruction as has been popularized by that Rust language.
+  //   Mutability what happens to an lvalue is 'const' as has been known to C++ since '94.
+  //
+  // Reminders:
+  //
+  //   ALSO, the OpenSSL has a different way of signalling "is a readonly object"
+  //   We do not continue with the suffix-by-zero naming convention.
+  //   Instead we do it the C++ way, C++20 to be clear.
+  //
+  enum class Ownership { MANAGED, BORROWED }; // ... what happens upon destruction?
+  enum class Mutability { MUTABLE, CONSTIE }; // ..... what happens to an lvalue?
+  struct Management : std::tuple<Ownership, Mutability> { using tuple::tuple; };
+}
+#endiv

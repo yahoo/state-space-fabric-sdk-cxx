@@ -1,0 +1,30 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca
+#forward hyperledger.http.url.String
+#import hyperledger.runtime.constants
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // For certain protocol operations there is a "and really do it anyway" sense.
+  // To force it or not is a boolean but with more ceremony.
+  //
+  enum Force { NO, YES };
+  //
+  // In the get_path(...) utility functions the Spontaneous takes the place of a specific name in many overloads.
+  //
+  enum class Spontaneous { };
+  //
+  // Convenience ... for you know what
+  //
+  using Path = http::url::String;
+  //
+  // Because enough of the elements of namespace pki use the theme constants RO and RW to warrant this ubiquity
+  using namespace runtime::constants;
+}
+#endiv
+#endiv
+#divert <ipp>
+#import hyperledger.http.url.String
+#endiv

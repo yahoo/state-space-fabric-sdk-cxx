@@ -1,0 +1,50 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// See the LICENSE file at the top of this repository.
+#divert <fpp>
+namespace langu::ish::python::binascii { } // in lieu of the nearby namespace.xcpp
+#endiv
+#divert <hpp>
+#import std.string_view
+#import std.string
+namespace langu::ish::python::binascii {
+  //
+  // Something about hex coding following the Python API.
+  //
+  // From https://docs.python.org/3/library/binascii.html
+  //
+  //   binascii.hexlify(data[, sep[, bytes_per_sep=1]])
+  //
+  //      Return the hexadecimal representation of the binary data.
+  //      Every byte of data is converted into the corresponding 2-digit hex representation.
+  //      The returned bytes object is therefore twice as long as the length of data.
+  //
+  //      Similar functionality (but returning a text string) is also conveniently accessible using the bytes.hex() method.
+  //      <unimplemented>
+  //        If sep is specified, it must be a single character str or bytes object.
+  //        It will be inserted in the output after every bytes_per_sep input bytes.
+  //        Separator placement is counted from the right end of the output by default,
+  //        if you wish to count from the left, supply a negative bytes_per_sep value.
+  //      </unimplemented>
+  //
+  inline auto hexlify(std::string_view) -> std::string;
+}
+#endiv
+#divert <ipp>
+namespace langu::ish::python {
+  auto binascii::hexlify(std::string_view in) -> std::string {
+    auto hex = [](unsigned c) -> char { return c < 10 ? (c + '0') : (c - 10 + 'a'); };
+    auto lo = [hex](auto c) -> char { return hex(c & 0xf); };
+    auto hi = [hex](auto c) -> char { return hex((c >> 4) & 0xf); };
+    auto ret = std::string{};
+    ret.reserve(2*in.size());
+    for (auto c : in) {
+      ret += hi(c);
+      ret += lo(c);
+    }
+    return ret;
+  }
+}
+#endiv

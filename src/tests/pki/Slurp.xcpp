@@ -1,0 +1,50 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+namespace tests::pki {
+  namespace slurp {
+    class Slurp;
+    namespace library = ::hyperledger::pki;
+  }
+  using slurp::Slurp;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::pki::slurp::Slurp : public cppunit::test::Fixture {
+  auto test_Certificate() -> void;
+  auto test_Request() -> void;
+  auto test_Secret() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.pki.slurp // we are testing this, all the variants
+#endiv
+#divert <cpp>
+namespace tests::pki::slurp {
+  auto Slurp::test_Certificate() -> void {
+#warning WRITETHIS auto Slurp::test_Certificate() -> void
+  }
+  auto Slurp::test_Request() -> void {
+#warning WRITETHIS auto Slurp::test_Request() -> void
+  }
+  auto Slurp::test_Secret() -> void {
+#warning WRITETHIS auto Slurp::test_Secret() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::pki::slurp::Slurp::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"slurp<...>"};
+  series << call("Certificate", &Slurp::test_Certificate)
+         << call("Request", &Slurp::test_Request)
+         << call("Secret", &Slurp::test_Secret)
+         << END;
+  return finalize(series);
+}
+#endiv

@@ -1,0 +1,78 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::exception::call {
+  //
+  // The abstraction of a problem with an HTTP or REST call.
+  // Descendants only.
+  //
+  // The commonality among all the Call<LEVEL> exceptions is the HTTP status code
+  // Expect: 400 (bad request), 401 (not authorized), 403 (forbidden), 404 (not found)
+  //
+  // Usage:
+  //
+  //   see the descendants
+  //
+  namespace prototype {
+    // [[ICK]] there does not seem to be a way to shut up this warning except by designing it out
+    // [[ICK!]] src/hyperledger/http/exception/call.Prototype.xcpp:28:43: warning: direct base ‘hyperledger::exception::Aspect’ inaccessible in ‘hyperledger::http::exception::call::Prototype’ due to ambiguity
+    struct Hyperledger;
+    struct HTTP;
+    class Prototype;
+  }
+  using prototype::Prototype;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.http.exception.Aspect
+#import hyperledger.http.status.Code
+#import hyperledger.http.url.String
+#import std.runtime_error
+#import std.shared_ptr
+#import std.string
+namespace hyperledger::http::exception::call {
+  struct prototype::HTTP : public http::exception::Aspect { };
+  struct prototype::Hyperledger : public hyperledger::exception::Aspect { };
+  class prototype::Prototype : public prototype::HTTP,
+                               public prototype::Hyperledger,
+                               public std::runtime_error {
+    struct Ancestors {
+      struct Aspects {
+        using Protocol = http::exception::Aspect;
+        using Hyperledger = hyperledger::exception::Aspect;
+      };
+      using Exception = std::runtime_error;
+    };
+  protected:
+    ~Prototype() = default;
+    using Path = http::url::String;
+    std::shared_ptr<Path> offending_path;
+    using Status = http::status::Code;
+    Status offending_status;
+  public:
+    inline Prototype(url::String const &path, Status, std::string const &explanation);
+    inline auto path() const noexcept -> url::String const &;
+    inline auto status() const noexcept -> Status;
+    auto what() const noexcept -> char const * override final;
+  };
+}
+#endiv
+#divert <ipp>
+#import std.make_shared
+namespace hyperledger::http::exception::call::prototype {
+  Prototype::Prototype(url::String const &path, Status code, std::string const &explanation)
+    : Ancestors::Exception{explanation}
+    , offending_path{std::make_shared<Path>(path.begin(), path.end())}
+    , offending_status{code} 
+  { }
+  auto Prototype::path() const noexcept -> url::String const & { return *offending_path; }
+  auto Prototype::status() const noexcept -> Status { return offending_status; }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::http::exception::call::prototype {
+  auto Prototype::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

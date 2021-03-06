@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <tpp>
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+#import std.is_move_constructible
+#import std.is_move_assignable
+#import std.is_class
+#import nonstd.same_as
+namespace tests::concepts {
+  namespace [[eponymous]] can {
+    inline namespace [[interface]] interface { }
+    using namespace ::std;
+    using namespace ::nonstd;
+    namespace interface {
+      enum DEFAULT { };
+      enum COPY { };
+      enum MOVE { };
+    }
+    template<typename OPERATION> concept bool Operation = same_as<OPERATION, DEFAULT> || same_as<OPERATION, COPY> || same_as<OPERATION, MOVE>;
+    //
+    template<typename OBJECT, typename OPERATION> concept bool Can1 = requires(OBJECT, OPERATION) {
+      requires is_class_v<OBJECT>;
+      requires Operation<OPERATION>;
+      requires !same_as<OPERATION, DEFAULT> || is_default_constructible_v<OBJECT>;
+      requires !same_as<OPERATION, COPY> || (is_copy_constructible_v<OBJECT> && is_copy_assignable_v<OBJECT>);
+      requires !same_as<OPERATION, MOVE> || (is_move_constructible_v<OBJECT> && is_move_assignable_v<OBJECT>);
+    };
+    namespace interface {
+  #if 1
+      template<typename OBJECT, typename... OPERATION> concept bool Can = (Can1<OBJECT, OPERATION> && ... );
+  #else
+      // src/tests/concepts/hyperledger/fabric/ca/namespace.xcpp:26:89: internal compiler error: in synthesize_implicit_template_parm, at cp/parser.c:41299
+      // g++ (GCC) 9.3.1 20200408 (Red Hat 9.3.1-2)
+      template<typename OBJECT, Operation... OPERATION> concept bool Can = requires(OBJECT ignored, Operation ...OPERATION) {
+        requires is_class_v<OBJECT>;
+        requires (Can1<OBJECT, OPERATION> && ... );
+      };
+  #endif
+      template<typename OBJECT, typename... OPERATION> concept bool Not = (not Can<OBJECT, OPERATION> && ... );
+    }
+  }
+  using namespace can::interface;
+}
+#endiv

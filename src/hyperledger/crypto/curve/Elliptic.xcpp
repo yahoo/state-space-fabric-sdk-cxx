@@ -1,0 +1,277 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::curve {
+  //
+  // A concrete class (the one non-abstract instance) for elliptic curve crypto.
+  // was: class Ecies
+  //
+  // A crypto implementation based on ECDSA and SHA. """
+  //
+  // The constructor and the factory are substantially the same.
+  //
+  // Usage:
+  //
+  //   auto subject =  ecies();
+  //   auto subject = curve::Elliptic{size::CURVE_P_256, hash::algorithm::SHA2};
+  //
+  class Elliptic;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.curve.Prototype
+#import hyperledger.crypto.Number
+#import std.tuple
+class hyperledger::crypto::curve::Elliptic : public Prototype {
+  using Ancestor = Prototype;
+public:
+  // Init the curve and hash function.
+  //
+  // :param security_level: security level
+  // :param hash_algorithm: hash function
+  Elliptic(Security_Level = size::CURVE_P_256, hash::Algorithm = hash::Algorithm::SHA2);
+  //
+  // Sign the message with ECDSA.
+  //
+  // :param private_key: private key
+  // :param message: message to sign
+  // :Returns: signature
+  auto sign(key::Private const &, Message const &) const -> Signature override;
+  //
+  // Verify the signature with ECDSA.
+  //
+  // :param public_key: Signing public key
+  // :param message: Origin message
+  // :param signature: Signature of message
+  // :Returns: verify result boolean, True means valid
+  auto verify(key::Public const &, Message const &message, Signature const &) const -> bool override;
+  //
+  // Perform key pair generation by current curve in ECDSA .
+  //
+  // :Returns: A private key object which include public key object.
+  auto generate_private_key() const -> key::Private override;
+  //
+  // Decrypt the cipher text.
+  //
+  // Algorithm (specification)
+  // 1. restore the ephemeral public key from bytes(97 bytes for 384, 65 bytes for 256).
+  // 2. derive a shared key based ecdh,
+  // 3. use the key based hkdf to generate aes key and hmac key,
+  //    use hmac-sha3 to verify the hmac bytes.
+  //    use aes-256-cfb to decrypt the bytes.
+  //
+  // See the references https://wiki.state-space.solutions
+  //
+  // :param private_key: private key
+  // :param cipher_text: cipher text
+  // :Returns: plain text
+  auto decrypt(key::Private const &, Message const &cipher_text) const -> Message override;
+  //
+  // Encrypt the plain text.
+  //
+  // 1. create a ephemeral ecdsa key pair, then serialize the public key for part of result.
+  // 2. derive a shared key based ecdh,
+  // 3. use the key based hkdf to generate aes key and hmac key,
+  //    use aes-256-cfb to generate the part of result.
+  //    use hmac-sha3 [[WHAT? FIXTHIS and the part of previous step to generate the last part of the result.]]
+  //
+  // :param public_key: public key
+  // :param plain_text: plain text
+  // :Returns: cipher text
+  auto encrypt(key::Public const &, Message const &plain_text) const -> Message override;
+#if 0
+  // REMINDER  generate_csr(...) has moved over to the static constructor as pki::Request::generate(...)
+  // NO MORE ---> auto generate_csr(key::Private const &, x509::Name<RO> const &subject, std::optional<x509::Constraints<RO>> = std::optional<x509::Constraints<RO>>{}) -> pki::Request;
+  auto generate_csr(key::Private const &, x509::Name<RO> const &subject, std::optional<x509::Constraints<RO>> = std::optional<x509::Constraints<RO>>{}) -> pki::Request;
+#endif
+private:
+  Number order, half_order;
+  inline auto prevent_malleability(Signature const &) const -> Signature;
+  inline auto check_malleability(Signature const &) const -> bool;
+  static auto decode_dss_signature(Signature const &) -> std::tuple<Number,Number>;
+  static auto encode_dss_signature(Number, Number) -> Signature;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::crypto::curve {
+  auto Elliptic::prevent_malleability(Signature const &sig) const -> Signature {
+    auto [r, s] = decode_dss_signature(sig);
+    if (s > half_order) {
+      s = order - s;
+    }
+    return encode_dss_signature(r, s);
+  }
+  auto Elliptic::check_malleability(Signature const &sig) const -> bool {
+    auto [r, s] = decode_dss_signature(sig);
+    return s > half_order ? false : true;
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.crypto.exception.Algorithm
+#import hyperledger.crypto.number.literals
+namespace hyperledger::crypto::curve {
+  Elliptic::Elliptic(Security_Level security_level, hash::Algorithm algorithm) {
+    using namespace number::literals;
+    if (size::CURVE_P_256 == security_level) {
+      //
+      // order = openssl.backend._lib.BN_new()
+      // curve = openssl.backend._lib.EC_GROUP_new_by_curve_name(openssl.backend._lib.NID_X9_62_prime256v1)
+      // openssl.backend._lib.EC_GROUP_get_order(curve, order, openssl.backend._ffi.NULL)
+      //
+      // self.order = int("115792089210356248762697446949407573529"
+      //                  "996955224135760342422259061068512044369")
+      // self.half_order = self.order >> 1
+      // self.curve = ec.SECP256R1
+      // self.sign_hash_algorithm = hashes.SHA256()
+      order = ("115792089210356248762697446949407573529"
+               "996955224135760342422259061068512044369"_number);
+      half_order = order >> 1;
+#warning FIXTHIS self.curve = ec.SECP256R1
+      // self.curve = ec.SECP256R1
+      // self.sign_hash_algorithm = hashes.SHA256()
+    } else if (size::CURVE_P_384 == security_level) {
+      //
+      // order = openssl.backend._lib.BN_new()
+      // curve = openssl.backend._lib.EC_GROUP_new_by_curve_name(openssl.backend._lib.NID_secp384r1)
+      // openssl.backend._lib.EC_GROUP_get_order(curve, order, openssl.backend._ffi.NULL)
+      //
+      // self.order = int("39402006196394479212279040100"
+      //                  "14361380507973927046544666794"
+      //                  "69052796276593991132635693989"
+      //                  "56308152294913554433653942643")
+      // self.half_order = self.order >> 1
+      // self.curve = ec.SECP384R1
+      // self.sign_hash_algorithm = hashes.SHA384()
+      order = ("39402006196394479212279040100"
+               "14361380507973927046544666794"
+               "69052796276593991132635693989"
+               "56308152294913554433653942643"_number);
+      half_order = order >> 1;
+#warning FIXTHIS self.curve = ec.SECP384R1
+      // self.curve = ec.SECP384R1
+      // self.sign_hash_algorithm = hashes.SHA384()
+    } else {
+      throw exception::Algorithm{"invalid security level"};
+    }
+    if (hash::Algorithm::SHA2 == algorithm) {
+      hash_function = hash::function::SHA2_256;
+    } else if (hash::Algorithm::SHA3 == algorithm && size::CURVE_P_256 == security_level) {
+      hash_function = hash::function::SHA3_256;
+    } else {
+      hash_function = hash::function::SHA3_384;
+    }
+  }
+  auto Elliptic::sign(key::Private const &private_key, Message const &message) const -> Signature {
+#if 1
+#warning WRITETHIS auto Elliptic::sign(key::Private const &private_key, Message const &message) const -> Signature
+     throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+    auto ssignedd = private_key.sign(message, ec.ECDSA(self.sign_hash_algorithm));
+    return prevent_malleability(ssignedd);
+#endif
+  }
+  auto Elliptic::verify(key::Public const &public_key, Message const &message, Signature const &signature) const -> bool {
+#if 1
+#warning WRITETHIS auto Elliptic::verify(key::Public const &public_key, Message const &message, Signature const &signature) const -> bool
+     throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+        if not (self.check_malleability(signature)):
+            return False
+        try:
+            public_key.verify(signature, message, ec.ECDSA(self.sign_hash_algorithm))
+        except InvalidSignature:
+            return False
+        except Exception as e:
+            raise e
+        return True
+#endif
+  }
+  auto Elliptic::generate_private_key() const -> key::Private {
+#if 1
+#warning WRITETHIS auto Elliptic::generate_private_key() const -> key::Private
+     throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+    return ec.generate_private_key(self.curve, default_backend())
+#endif
+  }
+  auto Elliptic::decrypt(key::Private const &private_key, Message const &cipher_text) const -> Message {
+#if 1
+#warning WRITETHIS auto Elliptic::decrypt(key::Private const &private_key, Message const &cipher_text) const -> Message
+     throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+        key_len = private_key.curve.key_size
+        if key_len != self.curve.key_size:
+            raise ValueError(
+                "Invalid key. Input security level {} does not "
+                "match the current security level {}".format(
+                    key_len,
+                    self.curve.key_size))
+        d_len = key_len >> 3
+        rb_len = ((key_len + 7) /-python-slash-slash-operator-/ 8) * 2 + 1
+        ct_len = len(cipher_text)
+        if ct_len <= rb_len + d_len:
+            raise ValueError(
+                "Illegal cipherText length: cipher text length {} "
+                "must be > rb length plus d_len {}".format(ct_len,
+                                                           rb_len + d_len)
+            )
+
+        rb = cipher_text[:rb_len]
+        em = cipher_text[rb_len:ct_len - d_len]
+        d = cipher_text[ct_len - d_len:ct_len]
+
+        ephemeral_public_key = EllipticCurvePublicNumbers \
+            .from_encoded_point(self.curve(), rb) \
+            .public_key(default_backend())
+        z = private_key.exchange(ec.ECDH(), ephemeral_public_key)
+        hkdf_output = Hkdf(salt=None, input_key_material=z, hash=self._hash) \
+            .expand(length=AES_KEY_LENGTH + HMAC_KEY_LENGTH)
+        aes_key = hkdf_output[:AES_KEY_LENGTH]
+        hmac_key = hkdf_output[AES_KEY_LENGTH:AES_KEY_LENGTH +
+                               HMAC_KEY_LENGTH]
+
+        mac = hmac.new(hmac_key, em, self._hash)
+        recovered_d = mac.digest()
+        if not constant_time.bytes_eq(recovered_d, d):
+            raise ValueError("Hmac verify failed.")
+
+        iv = em[:IV_LENGTH]
+        aes_cipher = AES.new(key=aes_key, mode=AES.MODE_CFB, iv=iv)
+        return aes_cipher.decrypt(em[IV_LENGTH:len(em)])
+#endif
+  }
+  auto Elliptic::encrypt(key::Public const &public_key, Message const &plain_text) const -> Message {
+#if 1
+#warning WRITETHIS auto Elliptic::encrypt(key::Public const &public_key, Message const &plain_text) const -> Message
+     throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+        ephemeral_private_key = self.generate_private_key()
+        rb = ephemeral_private_key.public_key().public_numbers().encode_point()
+
+        z = ephemeral_private_key.exchange(ec.ECDH(), public_key)
+        hkdf_output = Hkdf(salt=None, input_key_material=z, hash=self._hash) \
+            .expand(length=AES_KEY_LENGTH + HMAC_KEY_LENGTH)
+        aes_key = hkdf_output[:AES_KEY_LENGTH]
+        hmac_key = hkdf_output[AES_KEY_LENGTH:AES_KEY_LENGTH +
+                               HMAC_KEY_LENGTH]
+
+        aes_cipher = AES.new(aes_key, AES.MODE_CFB)
+        em = aes_cipher.iv + aes_cipher.encrypt(plain_text)
+        mac = hmac.new(hmac_key, em, self._hash)
+        d = mac.digest()
+
+        return rb + em + d
+#endif
+  }
+#if 0
+  auto Elliptic::generate_csr(key::Private const &private_key, x509::Name<RO> const &subject, std::optional<x509::Constraints<RO>> constraints) -> pki::Request {
+    python
+        builder = x509.CertificateSigningRequestBuilder(subject_name, [] if constraints is None else constraints)
+        return builder.sign(private_key, self.sign_hash_algorithm, default_backend())
+      /python
+  }
+#endif
+}
+#endiv

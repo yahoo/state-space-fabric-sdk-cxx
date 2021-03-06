@@ -1,0 +1,72 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::key {
+  //
+  // An asymmetric key.
+  // Descendants only.
+  // Was: class AsymmetricKey
+  //
+  // Concept
+  //
+  //   Can be a public key or private key.
+  //   The private key can retrieve public key with the relevant method.
+  //
+  // Design:
+  //
+  //   And we're sure it has one
+  //   This descendancy is left over from the dynamically-typed Python design in Hyperledger Fabric.
+  //   is_private, get_public_key are both used as smells herein.
+  //
+  // Usage:
+  //
+  //   Asymmetric const &pub = Public{...};
+  //   Asymmetric const &priv = Private{...};
+  //
+  class Asymmetric;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.key.Prototype
+#forward hyperledger.crypto.key.Public
+class hyperledger::crypto::key::Asymmetric : public Prototype {
+  using Ancestor = Prototype;
+protected:
+  virtual ~Asymmetric();
+public:
+  Asymmetric() = default;
+  using Ancestor::Prototype;
+#ifdef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+  //
+  auto is_symmetric() const -> bool override final;
+  //
+  // Return if this key is private key [[FIXTHIS]] get rid of this, it is redundant in the very type of the descendant
+  // :Returns: True or False
+  virtual auto is_private() const -> bool = 0;
+  //
+  // Get the corresponding public key for this private key.
+  // If this key is already a public one, then return itself.
+  // :Returns: Public key
+  virtual auto get_public_key() const -> Public = 0;
+#endif
+  //
+  // Return the SKI string
+  //            SKI = Subject Key Indicator
+  //            https://tools.ietf.org/html/rfc5280#section-4.2.1.2
+  // :Returns: string represent the SKI
+  virtual auto get_SKI() const -> std::string = delete; // [[VERIFY]]] no one uses this ... and it's just the hash of the public key
+};
+#endiv
+#divert <ipp>
+#import hyperledger.crypto.key.Public
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::key {
+  Asymmetric::~Asymmetric() = default;
+#ifdef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+  auto Asymmetric::is_symmetric() const -> bool { return false; }
+#endif
+}
+#warning  DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+#endiv

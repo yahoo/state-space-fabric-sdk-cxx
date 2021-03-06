@@ -1,0 +1,38 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.exception.Call.template
+namespace hyperledger::http::exception {
+  //
+  // A problem with an HTTP call
+  // Of course HTTP, it the currently-fashionable transport protocol of hypertext-as-codec-of-application-state.
+  //
+  // These exceptions distinguish the mechanics of the transport itself, focusing on the HTTP status code.
+  // Expect: 400 (bad request), 401 (not authorized), 403 (forbidden), 404 (not found)
+  //
+  // Usage:
+  //
+  //   throw Call<HTTP>{"bad url", 400_http);
+  //
+  template<> class Call<HTTP>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.exception.call.Prototype
+#import std.string
+namespace hyperledger::http::exception {
+  template<> class Call<HTTP> : public call::Prototype {
+    using Ancestor = call::Prototype;
+  public:
+    inline Call(url::String const &path, Status, std::string const &explanation);
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http::exception {
+  Call<HTTP>::Call(url::String const &path, Status status, std::string const &explanation)
+    : Ancestor{path, status, explanation}
+  { }
+}
+#endiv

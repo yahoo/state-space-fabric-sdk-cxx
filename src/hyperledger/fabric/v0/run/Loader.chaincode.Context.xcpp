@@ -1,0 +1,37 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.v0.run.Loader
+#import hyperledger.fabric.v0.peer.chaincode.Context
+namespace hyperledger::fabric::v0::run {
+  //
+  // The (argument) loader for the generic 'peer chaincode' subcommands
+  // This does NOT load the order field
+  // Use Loader<order::Contact>
+  //
+  template<> class Loader<peer::chaincode::Context>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.loader.Basis
+namespace hyperledger::fabric::v0::run {
+  template<> struct Loader<peer::chaincode::Context> : public loader::Basis {
+    using Source = peer::chaincode::Context;
+  protected:
+    ~Loader() = default;
+    Loader() = default;
+    inline auto load(Arguments &lhs, Source const &rhs) -> void;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::v0::run {
+  auto Loader<peer::chaincode::Context>::load(Arguments &lhs, Source const &rhs) -> void {
+    // DO NOT load the order field here; descendants need to make a choice about that.
+    //
+    // Therefore, there is nothing else to load
+  }
+}
+#endiv

@@ -1,0 +1,18 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_pki_revocation_SUBSOURCES = \
+  obj/src/hyperledger/pki/revocation/namespace.cpp \
+  obj/src/hyperledger/pki/revocation/Certificates.cpp \
+  obj/src/hyperledger/pki/revocation/Names.cpp \
+  \
+  obj/src/hyperledger/pki/revocation/reason/namespace.cpp \
+  obj/src/hyperledger/pki/revocation/reason/category.cpp \
+  obj/src/hyperledger/pki/revocation/reason/Category.cpp \
+  obj/src/hyperledger/pki/revocation/reason/Condition.cpp \
+  obj/src/hyperledger/pki/revocation/reason/Code.cpp \
+  obj/src/hyperledger/pki/revocation/reason/code.Package.cpp \
+  obj/src/hyperledger/pki/revocation/reason/code.Enumeration.cpp \
+  $(end)
+revocation-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_pki_revocation_SUBSOURCES))

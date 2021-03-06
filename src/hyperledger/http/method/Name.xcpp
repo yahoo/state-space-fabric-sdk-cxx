@@ -1,0 +1,30 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::method {
+  //
+  // The HTTP method names.
+  // Turns out there are an arbitrary number of method names, you can make them up on your own.
+  // However, there are the well known ones. We supply only the definitions for the well-known
+  // ones which are used in the Hyperledger family.  As such the number-to-name assignments are
+  // substantially arbitrary. See the user-defined literals nearby.
+  //
+  // We focus on the methods used in REST (HTTP-as-RPC).
+  //
+  // Usage:
+  //
+  //    oh come on, it's an enum.
+  //
+  enum class Name
+    { OPTIONS,
+      DELETE,
+      DELEETE = DELETE, // .... [[FIXTHIS]] don't need this affectation in upper case (but you do need it in lower case)
+      DEELEETE = DELETE, // ... [[FIXTHIS]] ibidem.
+      GET,
+      POST,
+      PUT,
+      // Whereas "PUT" is voiced as "update" in the land of HTTP
+      UPDATE = PUT };
+}
+#endiv

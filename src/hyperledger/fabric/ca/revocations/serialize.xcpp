@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.serialize
+#forward hyperledger.time.Point
+#forward hyperledger.string.Storage
+namespace hyperledger::fabric::ca::revocations {
+  //
+  // Just what it says on the label (serialize some stuff).
+  //
+  using ca::protocol::serialize;
+  inline auto serialize(time::Point const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.time.Point
+#import hyperledger.time.point.put
+#import std.ostringstream
+namespace hyperledger::fabric::ca {
+  auto revocations::serialize(time::Point const &then) -> string::Storage {
+    auto buf = std::ostringstream{};
+    buf << time::point::put(then, "%FT%T");
+    return buf.str();
+  }
+}
+#endiv

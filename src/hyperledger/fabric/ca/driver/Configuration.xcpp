@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::driver {
+  //
+  // Configuration of the transport Driver.
+  // Descendants only.
+  // You will use Configuration<DRIVER>
+  //
+  // From caservice.py
+  //
+  // Concept:
+  //
+  //   The Configuration<DRIVER> specifies how to communicate with the service (server)
+  //   Different implementations of the transport will access the server (uh) differently.
+  //
+  // Usage:
+  //
+  //   Whatever man, you know the drill.
+  //
+  //   auto cfg = ca::Configuration<DRIVER>{...somehow...};
+  //   auto driver = ca::Driver<DRIVER>{move(cfg)};
+  //
+  class Configuration;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+class hyperledger::fabric::ca::driver::Configuration {
+protected:
+  ~Configuration() = default;
+public:
+#if 0 // [[REMOVETHIS]] because it is subsumed elsewhere
+  // The "ca_name" is subsumed into the Service<MAIN> as service::Core::tenant and into the transport as tls::Client
+  // [[FIXTHIS]] find a way to share certain configuration variables among the three levels
+  inline explicit Configuration(Optional<string::Storage> ca_name);
+  // ca_name also lives up in the Service<MAIN>
+  Optional<string::Storage> ca_name;
+#endif
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::driver {
+#if 0 // [[REMOVETHIS]] because it is subsumed elsewhere
+  Configuration::Configuration(Optional<string::Storage> ca_name)  : ca_name{move(ca_name)}  { }
+#endif
+}
+#endiv

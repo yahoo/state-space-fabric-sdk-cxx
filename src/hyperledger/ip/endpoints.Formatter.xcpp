@@ -1,0 +1,36 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.net.endpoint.Formatter
+namespace hyperledger::ip::endpoints {
+  //
+  // The endpoints formatter.
+  //
+  // Provides:
+  //
+  //   format(...)
+  //   to_string(...)
+  //
+  // Usage:
+  //
+  //   #import hyperledger.ip.endpoints.Formatter
+  //   auto es = Endpoints{{"localhost", 80},{"localhost",8080},{"localhost":8088}};
+  //   cerr << format(es);
+  //   auto s = std::to_string(es);
+  //
+  using net::endpoint::Formatter; 
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::ip::endpoints {
+  //
+  // "endpoint" is singular -----\ (here)
+  //                             |
+  //                /------------/
+  //                |
+  //                v
+  using net::endpoint::format;
+}
+#endiv

@@ -1,0 +1,185 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.exception
+#import hyperledger.crypto.exception
+#import hyperledger.fabric.ca.exception
+#import hyperledger.fabric.ca.protocol.exception
+#import hyperledger.fabric.exception
+#import hyperledger.fabric.user.exception
+#import hyperledger.http.exception
+#import hyperledger.json.exception
+#import hyperledger.pki.exception
+namespace tests::unit::exception {
+  namespace fixture {
+    class Fixture;
+    namespace libraries {
+      // keep them in alphabetical order so we can see that they are all accounted for.
+      namespace ca = ::hyperledger::fabric::ca::exception;
+      namespace crypto = ::hyperledger::crypto::exception;
+      namespace fabric = ::hyperledger::fabric::exception;
+      namespace http = ::hyperledger::http::exception;
+      namespace hyperledger = ::hyperledger::exception;
+      namespace json = ::hyperledger::json::exception;
+      namespace pki = ::hyperledger::pki::exception;
+      namespace protocol = ::hyperledger::fabric::ca::protocol::exception;
+      namespace user = ::hyperledger::fabric::user::exception;
+    }
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::exception::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_ca_Aspect() -> void;
+  auto test_crypto_Aspect() -> void;
+  auto test_fabric_Aspect() -> void;
+  auto test_http_Aspect() -> void;
+  auto test_hyperledger_Aspect() -> void;
+  auto test_json_Aspect() -> void;
+  auto test_pki_Aspect() -> void;
+  auto test_protocol_Aspect() -> void;
+  auto test_user_Aspect() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Infrastructure;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.http.literals
+namespace tests::unit::exception::fixture {
+  using namespace ::hyperledger::http::literals;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.exception.Aspect
+#import hyperledger.fabric.ca.exception.Service
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_ca_Aspect() -> void try {
+    throw libraries::ca::Service{};
+  } catch (libraries::ca::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.crypto.exception.Aspect
+#import hyperledger.crypto.exception.Deterministic
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_crypto_Aspect() -> void try {
+    throw libraries::crypto::Deterministic{};
+  } catch (libraries::crypto::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.http.exception.Aspect
+#import hyperledger.fabric.exception.Aspect
+#import hyperledger.fabric.exception.Invalid
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_fabric_Aspect() -> void try {
+    throw libraries::fabric::Invalid{"badness"};
+  } catch (libraries::hyperledger::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.http.exception.Aspect
+#import hyperledger.http.exception.Call
+#import hyperledger.http.status.Code
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_http_Aspect() -> void try {
+    auto const used = ::hyperledger::http::status::Code::IM_USED;
+    throw libraries::http::Call<libraries::http::HTTP>{"/badness"_url, used, "don't be bad"};
+  } catch (libraries::http::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.exception.Aspect
+#import hyperledger.exception.System
+#import std.system_category
+#import std.error_code
+#import std.errc
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_hyperledger_Aspect() -> void try {
+    throw libraries::hyperledger::System{(int)std::errc::no_such_file_or_directory, std::system_category(), "argh!"};
+  } catch (libraries::hyperledger::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.json.exception.Aspect
+#import hyperledger.json.exception.Missing
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_json_Aspect() -> void try {
+    throw libraries::json::Missing{"gone"};
+  } catch (libraries::json::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.pki.exception.Aspect
+#import tests.unit.exception.Fixture.Infrastructure // because there is yet no concrete pki exception
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_pki_Aspect() -> void try {
+    throw Infrastructure{};
+  } catch (libraries::pki::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.fabric.ca.protocol.exception.Aspect
+#import hyperledger.fabric.ca.protocol.exception.Empty
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_protocol_Aspect() -> void try {
+    throw libraries::protocol::Empty{"variablename"};
+  } catch (libraries::protocol::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import hyperledger.fabric.user.exception.Aspect
+#import hyperledger.fabric.user.exception.Validation
+namespace tests::unit::exception::fixture {
+  auto Fixture::test_user_Aspect() -> void try {
+    throw libraries::user::Validation{"badness"};
+  } catch (libraries::user::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#import tests.unit.exception.ca.Fixture
+#import tests.unit.exception.crypto.Fixture
+#import tests.unit.exception.fabric.Fixture
+#import tests.unit.exception.http.Fixture
+#import tests.unit.exception.hyperledger.Fixture
+#import tests.unit.exception.json.Fixture
+#import tests.unit.exception.pki.Fixture
+#import tests.unit.exception.protocol.Fixture
+#import tests.unit.exception.user.Fixture
+#import rigging.suite.io
+  auto tests::unit::exception::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"exception"};
+  series << []() {
+              auto asp = Stream{"Aspect"};
+              asp << call("hyperledger", &Fixture::test_hyperledger_Aspect)
+                  << call("hyperledger::crypto", &Fixture::test_crypto_Aspect)
+                  << call("hyperledger::fabric", &Fixture::test_fabric_Aspect)
+                  << call("hyperledger::fabric::ca", &Fixture::test_ca_Aspect)
+                  << call("hyperledger::fabric::ca::protocol", &Fixture::test_protocol_Aspect)
+                  << call("hyperledger::fabric::user", &Fixture::test_user_Aspect)
+                  << call("hyperledger::http", &Fixture::test_http_Aspect)
+                  << call("hyperledger::json", &Fixture::test_json_Aspect)
+                  << call("hyperledger::pki", &Fixture::test_pki_Aspect)
+                  << END;
+              return move(asp);
+            }()
+         << add<ca::Fixture>()
+         << add<crypto::Fixture>()
+         << add<fabric::Fixture>()
+         << add<http::Fixture>()
+         << add<hyperledger::Fixture>()
+         << add<json::Fixture>()
+         << add<pki::Fixture>()
+         << add<protocol::Fixture>()
+         << add<user::Fixture>()
+         << END;
+  return finalize(series);
+}
+#endiv

@@ -1,0 +1,25 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#if 1
+#import nonstd.required.container.Push_Back
+namespace hyperledger::required::container {
+  //
+  // Is this a container, that is appendable?
+  // Does it have a push_back(Value) member?
+  //
+  template<typename CONTAINER> concept bool Push_Back = nonstd::required::container::Push_Back<CONTAINER>;
+}
+#else
+[[FIXTHIS]] This should be available as nonstd::required::container::Push_Back, but not until at least module-nonstd-devel >= 0.3.0
+#import nonstd.required.Container
+namespace hyperledger::required::container {
+  template<typename CONTAINER> concept bool Push_Back = nonstd::required::Container<CONTAINER> && requires(CONTAINER container) {
+    typename CONTAINER::value_type;
+    { container.push_back(typename CONTAINER::value_type{}) }
+  };
+}
+#endif
+#endiv

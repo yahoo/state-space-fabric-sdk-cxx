@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Transport
+#forward hyperledger.fabric.ca.transport.Transport
+#import hyperledger.fabric.ca.traits.Transport
+#include <hpp/hyperledger.fabric.ca.traits.Transport>
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this type, Transport<NAME>, in the universe of Transports, as named?
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Transport<NAME>.
+  //   The concept condition MUST align if-and-only-if with name::Transport<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Transport<TRANSPORT> .................... required::Transport<ca::transport::Transport<HTTP>>;
+  //   required::name::Transport<NAME> ................... required::name::Transport<HTTP>;
+  //
+  // Usage:
+  //
+  //   template<required::Transport TRANSPORT> auto get_by_object() -> TRANSPORT;
+  //   template<required::name::Transport NAME> auto get_by_name() -> ca::transport::Transport<NAME>;
+  //
+  namespace [[eponymous]] transport {
+    template<typename TRANSPORT> concept bool Transport = requires(TRANSPORT) {
+      typename traits::Transport<TRANSPORT>::Name;
+      requires traits::template Transport<TRANSPORT>::value;
+      requires required::name::Transport<typename traits::template Transport<TRANSPORT>::Name>;
+    };
+  }
+  using transport::Transport;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.transport.Transport
+  namespace tests {
+namespace {
+    using namespace hyperledger::fabric::ca;
+    static_assert(required::Transport<transport::Transport<FILES>>);
+    static_assert(required::Transport<transport::Transport<HTTP>>);
+    static_assert(required::Transport<transport::Transport<SOCKET>>);
+    static_assert(required::Transport<transport::Transport<SQLITE>>);
+  }
+}
+#endiv

@@ -1,0 +1,30 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.time.point.Range.template
+#import hyperledger.time.Point
+#import hyperledger.Optional
+namespace hyperledger::time::point {
+  //
+  // Either side of the range is optional.
+  // Degenerately, both sides of the range being optinoal is still representable.
+  //
+  template<> struct Range<Optional<Point>, Optional<Point>>;
+}
+#endiv
+#divert <hpp>
+#import std.pair
+namespace hyperledger::time::point {
+  template<> class Range<Optional<Point>, Optional<Point>> : private std::pair<Optional<Point>, Optional<Point>> {
+    using Ancestor = std::pair<Optional<Point>, Optional<Point>>;
+  public:
+    Range() = default;
+    using Ancestor::pair;
+    constexpr auto left() const -> Ancestor::first_type const &   { return Ancestor::first; }
+    constexpr auto left() -> Ancestor::first_type &               { return Ancestor::first; }
+    constexpr auto right() const -> Ancestor::second_type const & { return Ancestor::second; }
+    constexpr auto right() -> Ancestor::second_type &             { return Ancestor::second; }
+  };
+}
+#endiv

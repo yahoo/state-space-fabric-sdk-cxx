@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::exception {
+  //
+  // Declare that there was "some problem" with the crypto system.
+  // For example, something was not configured within reasonable bounds.
+  //
+  // Usage:
+  //
+  //   throw Algorithm{"invalid security level"};
+  //
+  class Algorithm;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.exception.Aspects
+#import hyperledger.string.View
+#import std.runtime_error
+class hyperledger::crypto::exception::Algorithm : public Aspects, public std::runtime_error {
+  struct Ancestors {
+    using Aspects = crypto::exception::Aspects;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Algorithm(string::View reason);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.string.Storage
+namespace hyperledger::crypto::exception {
+  // [[YUCK]] fix runtime_error to not need that extra gratuitous copy
+  Algorithm::Algorithm(string::View reason) : Ancestors::Exception{string::Storage{reason.begin(), reason.end()}} { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::crypto::exception {
+  auto Algorithm::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

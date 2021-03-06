@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.pki.packaging
+namespace hyperledger::pki::packaging::slurp { }
+//
+// All implementations will need these
+//
+#import hyperledger.Outcome
+#import hyperledger.Returning
+#import hyperledger.file.Path
+#import hyperledger.pki.required.Slurpable
+#import hyperledger.pki.required.openssl.Pairwise
+#endiv
+#divert <hpp>
+namespace hyperledger::pki::packaging::slurp {
+  namespace could_not {
+    // An OS problem
+    inline auto const *OPEN_THE_FILE = "could not open the file";
+    inline auto const *READ_THE_FILE = "could not read the file";
+    // A "bad data" problem.
+    // Also, in older module-openssl <= 0.3.0-0.devel this ALSO indicates that the file could not be opened, read, parsed, etc.. [[REMOVEWHEN]] these conditions are separated
+    inline auto const *DECODE_THE_PEM = "could not decode the PEM";
+  }
+}
+#endiv

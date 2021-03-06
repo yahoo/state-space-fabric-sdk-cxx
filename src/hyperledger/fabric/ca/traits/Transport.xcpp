@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.transport.Transport
+namespace hyperledger::fabric::ca::traits {
+  template<typename TRANSPORT> struct Transport;
+  template<> struct Transport<transport::Transport<FILES>>;
+  template<> struct Transport<transport::Transport<SQLITE>>;
+  template<> struct Transport<transport::Transport<HTTP>>;
+  template<> struct Transport<transport::Transport<SOCKET>>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.traits.name.Transport
+namespace hyperledger::fabric::ca {
+  template<typename TRANSPORT> struct traits::Transport : public False { };
+  namespace traits {
+    template<> struct Transport<transport::Transport<FILES>>  : public name::Transport<FILES> { };
+    template<> struct Transport<transport::Transport<SQLITE>> : public name::Transport<SQLITE> { };
+    template<> struct Transport<transport::Transport<HTTP>>   : public name::Transport<HTTP> { };
+    template<> struct Transport<transport::Transport<SOCKET>> : public name::Transport<SOCKET> { };
+  }
+}
+#endiv

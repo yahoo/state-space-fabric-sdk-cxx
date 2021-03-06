@@ -1,0 +1,56 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_x509_SUBSOURCES = \
+  obj/src/hyperledger/x509/namespace.cpp \
+  obj/src/hyperledger/x509/required/namespace.cpp \
+  $(obj_src_hyperledger_x509_DEPRECATION_SUBSOURCES) \
+  $(obj_src_hyperledger_x509_query_SUBSOURCES) \
+  $(obj_src_hyperledger_x509_constraint_key_identifierSUBSOURCES) \
+  $(obj_src_hyperledger_x509_serial_SUBSOURCES) \
+  \
+  obj/src/hyperledger/x509/constraints.Prototype.cpp \
+  obj/src/hyperledger/x509/constraints.Constraints.template.cpp \
+  obj/src/hyperledger/x509/constraints.Constraints.RO.cpp \
+  obj/src/hyperledger/x509/constraints.Constraints.RW.cpp \
+  obj/src/hyperledger/x509/constraints.Constraints.cpp \
+  obj/src/hyperledger/x509/Constraints.cpp \
+  \
+  obj/src/hyperledger/x509/name.Hard.cpp \
+  obj/src/hyperledger/x509/name.Prototype.cpp \
+  obj/src/hyperledger/x509/name.Name.template.cpp \
+  obj/src/hyperledger/x509/name.Name.RO.cpp \
+  obj/src/hyperledger/x509/name.Name.RW.cpp \
+  obj/src/hyperledger/x509/name.Name.cpp \
+  obj/src/hyperledger/x509/Name.cpp \
+  $(end)
+include src/hyperledger/x509/query/Makefrag.am
+NOTYET_obj_src_hyperledger_x509_constraint_key_identifier_SUBSOURCES = \
+  obj/src/hyperledger/x509/constraint/namespace.cpp \
+  obj/src/hyperledger/x509/constraint/key_identifier.Prototype.cpp \
+  obj/src/hyperledger/x509/constraint/key_identifier.Key_Identifier.template.cpp \
+  obj/src/hyperledger/x509/constraint/key_identifier.Key_Identifier.RO.cpp \
+  obj/src/hyperledger/x509/constraint/key_identifier.Key_Identifier.RW.cpp \
+  obj/src/hyperledger/x509/constraint/key_identifier.Key_Identifier.cpp \
+  obj/src/hyperledger/x509/constraint/Key_Identifier.cpp \
+  $(end)
+NOTYET_obj_src_hyperledger_x509_serial_SUBSOURCES = \
+  obj/src/hyperledger/x509/Serial.cpp \
+  obj/src/hyperledger/x509/serial.Prototype.cpp \
+  obj/src/hyperledger/x509/serial.Serial.template.cpp \
+  obj/src/hyperledger/x509/serial.Serial.RO.cpp \
+  obj/src/hyperledger/x509/serial.Serial.RW.cpp \
+  $(end)
+x509-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_x509_SUBSOURCES))
+#
+# These are deprecated as X.509 objects because they belong in 'namespace pki'
+# e.g.
+#   x509::Certificate -> pki::Certificate
+#   x509::slurp<...>(...> -> pki::slurp<...>(...)
+#
+obj_src_hyperledger_x509_DEPRECATION_SUBSOURCES = \
+  obj/src/hyperledger/x509/Certificate.cpp \
+  obj/src/hyperledger/x509/Request.cpp \
+  obj/src/hyperledger/x509/slurp.cpp \
+  $(end)

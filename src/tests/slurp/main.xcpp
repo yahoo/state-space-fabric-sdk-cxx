@@ -1,0 +1,93 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <hpp>
+#import std.deque
+#import std.string
+#import std.string_literals
+#import sys.exits.Code
+namespace tests::slurp {
+  using Argv = std::deque<std::string>;a
+  auto main(Argv) -> sys::exits::Code;
+  using namespace std::string_literals;
+  inline auto const NAME = "slurp"s;
+  extern bool verbose_mode;
+}
+#import std.ostream
+namespace tests::slurp::detail {
+  auto emit_usage(std::ostream &) -> void;
+}
+#endiv
+#divert <cpp>
+auto main(int cc, char *vv[]) -> int {
+  return tests::slurp::main(Argv{&vv[0], &vv[cc]});
+}
+#import hyperledger.pki.slurp
+#import hyperledger.pki.to_string
+#import std.cerr
+#import std.cout
+#import sys.exits.constants
+auto tests::slurp::main(Argv av) -> sys::exits::Code {
+  if (av.size() < 3) {
+    if (2 == av.size()) {
+      auto const &word = av[1];
+      if ("--usage"s == word || "--help"s == word || "-h"s == word) {
+        emit_usage(std::cerr);
+        return sys::exits::OK;
+      }
+    }
+    std::cerr << "error: requires a type and a filename\n";
+    emit_usage(std::cerr);
+    return sys::exits::USAGE;
+  } else if (3 < av.size()) {
+    std::cerr << "error: requires only type and a filename\n";
+    emit_usage(std::cerr);
+    return sys::exits::USAGE;
+  } else {
+    try {
+      auto const &type = av[1];
+      auto const filepath = std::filesystem::path{av[2]};
+      using hyperledger::pki;
+      if (0) {
+      } else if ("crt"s == type || "certificate"s == type) {
+        auto certificate = slurp<Certificate>(filepath);
+        std::cout << to_string(request) << '\n';
+      } else if ("crts"s == type || "certificates"s == type || "bundle"s == type || "chain"s == type) {
+        auto certificates = slurp<Certificates>(filepath);
+        std::cout << to_string(request) << '\n';
+      } else if ("key"s == type || "secret"s == type) {
+        auto private_key = slurp<Certificates>(filepath);
+        std::cout << to_string(request) << '\n';
+      } else if ("req"s == type || "request"s == type || "csr"s == type) {
+        auto request = slurp<Certificates>(filepath);
+        std::cout << to_string(request) << '\n';
+      } else {
+        std::cerr << "error: invalid type " << format::q(type) << '\n'
+                  << "error: use the --usage option to see the possible types\n";
+        return sys::exits::CONFIG;
+      }
+      if (Verbose_mode) {
+        std::cerr << "OK " << filepath << '\n';
+      }
+      return sys::exits::OK;
+    } catch (hyperledger::exception::System const &e) {
+      std::cerr << "error: exception saying " << e.what() << '\n'
+                << "       error message " << e.code().message() << '\n';
+      return sys::exits::FAIL;
+    }
+  }
+}
+auto tests::slurp::detail::emit_usage(std::ostream &outbound) -> void {
+  outbound << "usage " << NAME << " { crt | crts | key | req  } filename\n"
+           << "\n"
+           << "'crt' or alternatively 'certificate'\n"
+           << "'crts' or alternatively 'certificates', 'bundle' or 'chain'\n"
+           << "'key' or alternatively 'sectet'\n"
+           << "'req' or alternatively 'request', or 'csr'\n"
+    ;
+}
+namespace tests::slurp {
+  bool verbose_mode = true;
+}
+#endiv

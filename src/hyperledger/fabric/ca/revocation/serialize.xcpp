@@ -1,0 +1,60 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.serialize
+#forward hyperledger.fabric.ca.revocation.Request
+#import hyperledger.pki.revocation.reason.Code  // ....... recall elision_trickery_bundling  ... herein this is pki::reason::Code
+#forward hyperledger.string.Storage
+#forward hyperledger.x509.query.Query // ................. recall elision_trickery_bundling  ... this is NOT fabric::ca::Query<NAME>
+#import hyperledger.x509.query.required.name.Query // .... ibidem.
+namespace hyperledger::fabric::ca::revocation {
+  //
+  // Just what it says on the label (serialize some stuff).
+  //
+  using ca::protocol::serialize;
+  auto serialize(Request const &) -> string::Storage;
+  template<x509::required::name::Query NAME> auto serialize(x509::Query<NAME> const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.x509.query.Query
+#endiv
+#divert <tpp>
+#import hyperledger.base64.encode
+namespace hyperledger::fabric::ca {
+  //       elision_trickery_bundling 
+  template<revocation::x509::required::name::Query NAME> auto revocation::serialize(x509::Query<NAME> const &query) -> string::Storage {
+    //
+    // This is as easy as it begs for ...gloating?...
+    // (nearly all of these fields are 'BYTE' or 'BIT STRING'
+    // So encode 'em and ship 'em.
+    //
+    return base64::encode(query.begin(), query.end());
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.dictionary.to_json
+#import hyperledger.fabric.ca.revocation.Request
+#import hyperledger.json.to_string
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca {
+  auto revocation::serialize(Request const &req) -> string::Storage {
+    auto build = [&req]() {
+                   auto build1 = [&req]() {
+                                   auto que = json::Object{};
+                                   que["reason"] = serialize(req.reason);
+                                   if (req.common_name)              { que["common-name"] = serialize(*req.common_name); }
+                                   if (req.authority_key_identifier) { que["aki"] = serialize(*req.authority_key_identifier); }
+                                   if (req.serial)                   { que["serial"] = serialize(*req.serial); }
+                                   return que;
+                                 };
+                   auto top = json::Object{};
+                   top["query"] = build1();
+                   return top;
+                 };
+    return to_string(build());
+  }
+}
+#endiv

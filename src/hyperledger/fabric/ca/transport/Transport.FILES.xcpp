@@ -1,0 +1,65 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.transport.Transport.template
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The FILES transport of the Certificate Authority Service.
+  //
+  // This means that the (user) database is stored locally in files.
+  // The signing activity occurs in the current process with key material known to the current process.
+  // Obviously you'd use this only for testing, yes?
+  //
+  // There is no precedent for this feature in the Python or Go implementations of Hyperledger Fabric CA (Client SDK).
+  //
+  // Exceptions:
+  //
+  //   Not by design.
+  //   Exceptions are thrown if the procedure call cannot be interpreted, if there is no way to return a response.
+  //   As all of the interpretation occurs in the current process, this is less likely.
+  //   When exceptions appar, it indicates a serious problem rather than a transient network connectivity issue.
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<FILES>{...somehow...};
+  //   auto dri = transport::Driver{FILES{}, move(cfg)};
+  //
+  template<> struct Transport<FILES>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Configuration.FILES
+#import hyperledger.fabric.ca.transport.Prototype
+namespace hyperledger::fabric::ca::transport {
+  template<> class Transport<FILES> : public Prototype, private Configuration<FILES> {
+    struct Ancestors {
+      using Prototype = transport::Prototype;
+      using Configuration = ca::Configuration<FILES>;
+    };
+  public:
+    inline explicit Transport(Configuration<FILES> &&);
+    auto DELETE(Path const &, Headers const &) -> Response override;
+    auto GET(Path const &, Headers const &) -> Response override;
+    auto POST(Path const &, Headers const &, Request const &) -> Response override;
+    auto PUT(Path const &, Headers const &, Request const &) -> Response override;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::transport {
+  Transport<FILES>::Transport(Configuration<FILES> &&cfg)
+    : Ancestors::Configuration{forward<Configuration<FILES>>(cfg)}
+  { }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Unimplemented
+#warning WRITETHIS
+namespace hyperledger::fabric::ca::transport {
+  auto Transport<FILES>::DELETE(Path const &path, Headers const &) -> Response                        { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<FILES>::GET(Path const &path, Headers const &headers) -> Response                    { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<FILES>::POST(Path const &path, Headers const &, Request const &request) -> Response  { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<FILES>::PUT(Path const &path, Headers const &, Request const &request) -> Response   { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+}
+#endiv

@@ -1,0 +1,99 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki {
+  //
+  // Something about a (certificate signing) request
+  //
+  // Is usable in Outcome<Request>,
+  // It is write once at construction, and read only.
+  //
+  class Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.pki.from.Request
+#import hyperledger.pki.packaging.slurp.load.template
+#import openssl.x509.Req
+#forward hyperledger.crypto.Primitives
+#forward hyperledger.pki.Secret
+#forward hyperledger.x509.Name
+#forward hyperledger.x509.Constraints
+namespace hyperledger {
+  namespace pki {
+    inline auto to_string(Request const &) -> string::Storage;
+  }
+  class pki::Request {
+    using Req = openssl::x509::Req;
+    friend auto pki::from<Request>(std::vector<std::byte> const &) -> Request;
+    friend auto pki::packaging::slurp::load<Request, Req>(file::Path const &) -> Request;
+    friend auto pki::packaging::slurp::load<Request, Req>(Returning, file::Path const &) -> Loaded<Request>;
+    friend auto pki::to_string(Request const &) -> std::string;
+    inline explicit Request(Req);
+  public:
+    Request() = default; // this is required so that Outcome<Request> template constraints are satisfied
+    Request(Request const &) = delete;
+    auto operator=(Request const &) -> Request & = delete;
+    Request(Request &&) = default;
+    auto operator=(Request &&) -> Request & = default;
+    using Subject = x509::Name<RO>; // const so we have to return the consty one
+    inline auto subject() const -> Subject;
+    using Constraints = x509::Constraints<RO>; // ibidem.
+    inline auto constraints() const -> Constraints;
+    static auto generate(Secret const &, Subject const &, Constraints const &, crypto::Primitives const &backend) -> Request;
+  private:
+    Req req;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.crypto.Primitives
+#import hyperledger.pki.Secret
+#import hyperledger.x509.Name
+#import hyperledger.x509.Constraints
+#import openssl.pem.to_string
+namespace hyperledger {
+  auto pki::to_string(Request const &request) -> string::Storage { return openssl::pem::to_string(request.req); }
+  namespace pki {
+    Request::Request(Req req)  : req{move(req)}  { }
+    auto Request::subject() const -> Subject { return Subject{req.get_subject_name()}; }
+    auto Request::constraints() const -> Constraints { return Constraints{req.get_extensions()}; }
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::pki {
+  auto Request::generate(pki::Secret const &secret, Subject const &subject, Constraints const &constraints, crypto::Primitives const &backend) -> Request {
+    Request::Req req;
+#if 1
+#warning WRITESTHIS auto Request::generate(pki::Secret const &secret, Subject const &subject, Constraints const &constraints, crypto::Primitives const &backend) -> Request
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+#else
+    req.set_pubkey(secret);
+    req.set_subject_name(subject);
+    req.set_constraints(constraints);
+    req.sign(secret, backend.hash()); // a.k.a. EVP_sha256()
+#endif
+    return Request{move(req)};
+  }
+}
+#warning WRITETHIS ... is not this just the same as openssl::x509::Req
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+#import nonstd.required.Outcomable
+namespace hyperledger::pki {
+  // This is NOT std::semiregular<Request>
+  static_assert(std::is_default_constructible_v<Request>);
+  static_assert(not std::is_copy_constructible_v<Request>);
+  static_assert(not std::is_copy_assignable_v<Request>);
+  static_assert(std::is_move_constructible_v<Request>);
+  static_assert(std::is_move_assignable_v<Request>);
+  static_assert(nonstd::required::Outcomable<Request>);
+}
+#endiv

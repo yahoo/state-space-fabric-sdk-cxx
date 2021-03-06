@@ -1,0 +1,21 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::exception {
+  //
+  // The sorts of (rpc) calls that can have problems
+  // Packaged in a namespace, in that certain style, so we can import it elsewhere.
+  //
+  enum class Level { HTTP = 0,  REST };
+  inline namespace constants { }
+  namespace constants {
+#if 10 <= __GNUC__
+    using enum Level;
+#else
+    inline constexpr auto HTTP = Level::HTTP;
+    inline constexpr auto REST = Level::REST;
+#endif
+  }
+}
+#endiv

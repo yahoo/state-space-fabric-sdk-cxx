@@ -1,0 +1,38 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger
+#import hyperledger.runtime.constants
+namespace hyperledger::crypto {
+  enum Size : unsigned;
+  namespace size { }
+  using Security_Level = Size;
+  enum Length : unsigned;
+  namespace length { }
+  // in lieu of their own separate .../namespace.xcpp
+  namespace curve { }
+  namespace defaults { }
+  namespace hash { }
+  namespace number { }
+  // Because enough of the elements of namespace crypto use the theme constants RO and RW to warrant this ubiquity
+  using namespace runtime::constants;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::crypto {
+  namespace size {
+    constexpr auto NONCE = Size{24u};
+    constexpr auto CURVE_P_256 = Size{256u};
+    constexpr auto CURVE_P_384 = Size{384u};
+  }
+  namespace length {
+    constexpr auto AES_KEY = Length{32u};
+    constexpr auto HMAC_KEY = Length{32u};
+    constexpr auto IV = Length{16u};
+  }
+  namespace defaults {
+    constexpr auto NONCE = size::NONCE;
+  }
+}
+#endiv

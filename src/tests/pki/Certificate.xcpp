@@ -1,0 +1,46 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+namespace tests::pki {
+  namespace certificate {
+    class Certificate;
+    namespace library = ::hyperledger::pki;
+  }
+  using certificate::Certificate;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.pki.Certificate
+struct tests::pki::certificate::Certificate : public cppunit::test::Fixture {
+  using Subject = library::Certificate;
+  auto test_constructor_default() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+namespace tests::pki::certificate {
+  auto Certificate::test_constructor_default() -> void {
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+#warning WRITETHIS more like this auto Certificate::test_constructor() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::pki::certificate::Certificate::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Certificate"};
+  series << []{
+              auto con = Stream{"constructor"};
+              con << call("default", &Certificate::test_constructor_default)
+                  << END;
+              return move(con);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

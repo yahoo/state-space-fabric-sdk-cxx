@@ -1,0 +1,63 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::net::error {
+  //
+  // The (internal) error categories of the Hyperledger Fabric.
+  // these are distinct from the taxonomy of
+  // - Hyperledger (Runtime) in namespace hyperledger::error
+  // - Hyperledger PKI in namespace hyperledger::pki::errior
+  // - (external) errors of the HTTP status codes.
+  // - operating system errors of system_error or generic_error
+  // - C++ runtime errors of future_error, etc.
+  //
+  class Category;
+}
+#endiv
+#divert <hpp>
+#import std.error_category
+#import std.error_condition
+#import std.string
+class hyperledger::net::error::Category : public std::error_category {
+  using Ancestor = std::error_category;
+  Category() = default;
+  friend auto category() -> Category const &;
+public:
+  auto name() const noexcept -> char const *;
+  auto default_error_condition(int code) const noexcept -> std::error_condition;
+  auto message(int code) const -> std::string;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.net.error.Condition
+#import hyperledger.net.error.Code
+#import std.to_string
+namespace hyperledger::net::error {
+  auto Category::name() const noexcept -> char const * { return "net"; }
+  auto Category::default_error_condition(int code) const noexcept -> std::error_condition {
+    auto condy = 0 != code ? Condition::FAILURE : Condition::SUCCESS;
+    return {condy};
+  }
+  auto Category::message(int codint) const -> std::string {
+    switch (code::Enumeration{codint}) {
+    case Code::SUCCESS:
+      return "success";
+    case Code::FAILURE:
+      return "failure";
+    case Code::SYNTAX_HOST:
+      return "syntax error in host name or host address"; 
+    case Code::SYNTAX_PORT:
+      return "syntax error in port number or value out of bounds"; 
+    case Code::SYNTAX_ENDPOINT:
+      return "syntax error in endpoint"; 
+    case Code::SYNTAX_ENDPOINTS:
+      return "syntax error in endpoint list"; 
+    case Code::BOUNDS_PORT:
+      return "port value is out is bounds"; // 1..65535
+    default:
+      return "error #" + std::to_string(codint);
+    }
+  }
+}
+#endiv

@@ -1,0 +1,113 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.protocol.exception
+namespace hyperledger::fabric::ca::revocations {
+  //
+  // The revocations subapi.
+  // Descendants only; see the final in Service<REVOCATIONS>
+  // was: generateCRL
+  //
+  // Lifetimes:
+  //
+  //   The lifetime of the transport::Driver must be longer than that of the Revocation sub-api.
+  //
+  // Usage:
+  //
+  //   auto revoked = Service<REVOCATIONS>{...somehow...};
+  //
+  //   auto listed = revoked.list(...);     was generateCRL ... but realistically more like "enumerate the available one"
+  //
+  namespace [[eponymous]] service {
+    class Service;
+    namespace exception {
+      using namespace ca::protocol::exception;
+    }
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.x509.query.Query // n.b. elided as x509::Query
+#forward hyperledger.fabric.ca.Package
+#forward hyperledger.fabric.ca.Request
+#import hyperledger.fabric.ca.service.Heavyweight
+class hyperledger::fabric::ca::revocations::service::Service : public ca::service::Heavyweight {
+  using Ancestor = ca::service::Heavyweight;
+protected:
+  using Ancestor::Heavyweight;
+public:
+  //
+  // Generate a list of revocations
+  // Generate a Certificate Revocation List (CRL)
+  //
+  // Starts with a query, returns with revocation statements corresponding to all the matched certificates
+  //
+  /*
+    Args
+      revokedBefore (Date) - Include certificates that were revoked before this UTC timestamp (in RFC3339 format) in the CRL
+      revokedAfter (Date) - Include certificates that were revoked after this UTC timestamp (in RFC3339 format) in the CRL
+      expireBefore (Date) - Include revoked certificates that expire before this UTC timestamp (in RFC3339 format) in the CRL
+      expireAfter (Date) - Include revoked certificates that expire after this UTC timestamp (in RFC3339 format) in the CRL
+    Returns: CRL (str): The Certificate Revocation Names (CRL)
+  */
+  inline auto list(ca::Package<ENROLLMENT> const &registrar, ca::Request<REVOCATIONS> &&) -> ca::Package<REVOCATIONS>;
+  inline auto list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &) -> ca::Package<REVOCATIONS>;
+  inline auto list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::EXPIRES> const &) -> ca::Package<REVOCATIONS>;
+  auto list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &, x509::Query<x509::EXPIRES> const &) -> ca::Package<REVOCATIONS>;
+  //
+  [[deprecated("prefer Service<REVOCATIONS>::list(ca::Package<ENROLLMENT>, Query<REVOKED>, Query<EXPIRES>)")]]
+  inline auto generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &) -> ca::Package<REVOCATIONS>;
+  [[deprecated("prefer Service<REVOCATIONS>::list(ca::Package<ENROLLMENT>, Query<REVOKED>, Query<EXPIRES>)")]]
+  inline auto generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::EXPIRES> const &) -> ca::Package<REVOCATIONS>;
+  [[deprecated("prefer Service<REVOCATIONS>::list(ca::Package<ENROLLMENT>, Query<REVOKED>, Query<EXPIRES>)")]]
+  inline auto generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &, x509::Query<x509::EXPIRES> const &) -> ca::Package<REVOCATIONS>;
+  [[deprecated("prefer Service<REVOCATIONS>::list(ca::Package<ENROLLMENT>, Query<REVOKED>, Query<EXPIRES>)")]]
+  inline auto generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<Optional<time::Point>> const &revokedBefore, x509::Query<Optional<time::Point>> const &revokedAfter, x509::Query<Optional<time::Point>> const &expireBefore, x509::Query<Optional<time::Point>> const &expireAfter) -> ca::Package<REVOCATIONS>;
+  [[deprecated("prefer Service<REVOCATIONS>::list(ca::Package<ENROLLMENT>, Query<REVOKED>, Query<EXPIRES>)")]]
+  inline auto generateCRL(x509::Query<Optional<time::Point>> const &revokedBefore, x509::Query<Optional<time::Point>> const &revokedAfter, x509::Query<Optional<time::Point>> const &expireBefore, x509::Query<Optional<time::Point>> const &expireAfter, ca::Package<ENROLLMENT> const &registrar) -> ca::Package<REVOCATIONS>;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.revocations.serialize
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::revocations::service {
+  using protocol::serialize;
+  using revocations::serialize;
+}
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.Package.REVOCATIONS
+#import hyperledger.fabric.ca.Request.REVOCATIONS
+namespace hyperledger::fabric::ca::revocations::service {
+  auto Service::list(ca::Package<ENROLLMENT> const &registrar, ca::Request<REVOCATIONS> &&request) -> ca::Package<REVOCATIONS>               { return core.revocations(forward<ca::Request<REVOCATIONS>>(request), registrar); }
+  auto Service::list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &revoked) -> ca::Package<REVOCATIONS>        { return list(registrar, revoked, {}); }
+  auto Service::list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::EXPIRES> const &expire) -> ca::Package<REVOCATIONS>         { return list(registrar, {}, expire); }
+  auto Service::generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &revoked) -> ca::Package<REVOCATIONS> { return list(registrar, revoked, {}); }
+  auto Service::generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::EXPIRES> const &expire) -> ca::Package<REVOCATIONS>  { return list(registrar, {}, expire); }
+  auto Service::generateCRL(ca::Package<ENROLLMENT> const &registrar, x509::Query<Optional<time::Point>> const &revokedBefore, x509::Query<Optional<time::Point>> const &revokedAfter, x509::Query<Optional<time::Point>> const &expireBefore, x509::Query<Optional<time::Point>> const &expireAfter) -> ca::Package<REVOCATIONS> { return list(registrar, {revokedBefore, revokedAfter}, {expireBefore, expireAfter}); }
+  auto Service::generateCRL(x509::Query<Optional<time::Point>> const &revokedBefore, x509::Query<Optional<time::Point>> const &revokedAfter, x509::Query<Optional<time::Point>> const &expireBefore, x509::Query<Optional<time::Point>> const &expireAfter, ca::Package<ENROLLMENT> const &registrar) -> ca::Package<REVOCATIONS> { return list(registrar, {revokedBefore, revokedAfter}, {expireBefore, expireAfter}); }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.http.json.Request
+#import hyperledger.fabric.ca.protocol.exception.Invariant
+namespace hyperledger::fabric::ca::revocations::service {
+  auto Service::list(ca::Package<ENROLLMENT> const &registrar, x509::Query<x509::REVOKED> const &revoked, x509::Query<x509::EXPIRES> const &expires) -> ca::Package<REVOCATIONS> {
+    if (revoked.right() && revoked.left()) {
+      if (*revoked.right() > *revoked.left()) {
+        throw exception::Invariant{"revokedAfter > revokedBefore"};
+      }
+    }
+    if (expires.right() && expires.left()) {
+      if (*expires.right() > *expires.left()) {
+        throw exception::Invariant{"expireAfter > expireBefore"};
+      }
+    }
+    auto request = ca::Request<REVOCATIONS>{};
+    request.revoked = revoked;
+    request.expires = expires;
+    return list(registrar, move(request));
+  }
+}
+#endiv

@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::registration {
+  //
+  // This is the completed (packaged) registration object.
+  // Descendants only.
+  // Use hyperledger::fabric:: ca::Package<REGISTRATINO>
+  //
+  // Concept
+  //
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  // 
+  // Origin & Evolution:
+  //
+  //   was: caservice.py
+  //   was: ... this is new(ish)
+  //
+  // Lifetime:
+  //
+  //   [[WHY?[[ The lifetime of the Registration (package) must be longer than that of the Service whence it came
+  //
+  // Usage:
+  //
+  //   yes, it gets a lot of usage
+  //   see Package<REGISTRATION>
+  //
+  class Package;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.Secret
+class hyperledger::fabric::ca::registration::Package {
+protected:
+  ~Package() = default;
+public:
+  inline explicit Package(pki::Secret);
+public:
+  Package(Package const &) = delete;
+  auto operator=(Package const &) -> Package & = delete;
+  Package(Package &&) = default;
+  auto operator=(Package &&) -> Package & = default;
+  inline auto private_key() const -> pki::Secret const &;
+  inline auto private_key(pki::Secret) -> void;
+private:
+  pki::Secret enrollment_secret;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::registration {
+  Package::Package(pki::Secret enrollment_secret) : enrollment_secret{move(enrollment_secret)} { }
+  auto Package::private_key() const -> pki::Secret const & { return enrollment_secret; }
+  auto Package::private_key(pki::Secret another) -> void { enrollment_secret = move(another); }
+}
+#endiv

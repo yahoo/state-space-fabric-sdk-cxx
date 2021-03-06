@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Configuration.template
+namespace hyperledger::fabric::ca {
+  //
+  // Configuration for the creation of the Service<FILES> of the Certificate Authority (CA)
+  //
+  // From caservice.py
+  //
+  // Concept
+  //
+  //   With all the defaults codified.
+  //
+  // Schema
+  //
+  //   the workstpace ist the name of a directory where teh user database lives (as files)
+  //   e.g. /var/hyperledger/fabric/users (or such)
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<FILES>{...somehow...};
+  //   auto sport = Transport<FILES>{move(cfg)};
+  //
+  template<> struct Configuration<FILES>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.file.Path
+namespace hyperledger::fabric::ca {
+  template<> struct Configuration<FILES> {
+    file::Path workspace;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.configuration.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::configuration;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Configuration<FILES>>);
+  }
+}
+#endiv

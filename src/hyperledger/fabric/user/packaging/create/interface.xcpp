@@ -1,0 +1,55 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.crypto.ecies
+#forward hyperledger.fabric.user.packaging.create.Created
+namespace hyperledger::fabric::user::packaging::create_implementation::interface {
+  //
+  // Create a user.
+  // Whereas a user is a storage location.
+  // Thus: load it from a storage location.
+  //
+  // The older verb for "load" was "create"
+  // Turns out the "user" is already created.
+  // This interface merely LOADS the user provenances off the disk, where is stored in files thereon.
+  //
+  // was: create_user(...) in user.py
+  // Args:
+  //   name: user's name
+  //   org: org name
+  //   state_store: user state store
+  //   msp_id: msp id for the user
+  //   crypto_suite: the cryptoSuite used to store crypto and key store settings
+  //   key_path: identity private key path
+  //   cert_path: identity public cert path
+  //
+  // Usage:
+  //
+  //   auto loaded = create(...somehow...);
+  //   if (good(loaded)) {
+  //     auto user = value(move(loaded));
+  //     ...use the user to do some transaction-like behaviors...
+  //   } else {
+  //     auto ec = error_code(loaded);
+  //     ...complain...
+  //      ...leave...
+  //   }
+  //
+  [[deprecated("instead prefer hyperledger::fabric::user::load(...) with the same arguments")]] inline auto create(Name, Organization, State_Store, Emespeid, file::Path const &key_path, file::Path const &cert_path, Crypto_Suite = crypto::ecies()) -> Created;
+  [[deprecated("instead prefer hyperledger::fabric::user::load(...) with the same arguments")]] inline auto create_user(Name, Organization, State_Store, Emespeid, file::Path const &key_path, file::Path const &cert_path, Crypto_Suite = crypto::ecies()) -> Created;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.user.packaging.create.Created
+#import hyperledger.fabric.user.load
+namespace hyperledger::fabric::user::packaging::create_implementation {
+  auto interface::create_user(Name name, Organization org, State_Store state_store, Emespeid msp_id, file::Path const &key_path, file::Path const &cert_path, Crypto_Suite crypto_suite) -> Created {
+    return load(move(name), move(org), move(state_store), move(msp_id), key_path, cert_path, move(crypto_suite));
+  }
+  auto interface::create(Name name, Organization org, State_Store state_store, Emespeid msp_id, file::Path const &key_path, file::Path const &cert_path, Crypto_Suite crypto_suite) -> Created {
+    // [[FIXTHIS]] add some sense of "load-existing" versus "create a new one" versus "create if not existing"
+    return load(move(name), move(org), move(state_store), move(msp_id), key_path, cert_path, move(crypto_suite));
+  }
+}
+#endiv

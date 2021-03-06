@@ -1,0 +1,51 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki.required.Triplet
+namespace hyperledger::pki {
+  //
+  // The triple of pki
+  // The triple stores
+  // a) the bytes themselves
+  // b) the optional bytes themselves
+  // c) the filename of where the bytes may be found
+  // d) the optional filename of where the bytes may be found 
+  //
+  // Usage:
+  //
+  //   Triple<std::vector<std::byte>> material;
+  //   Triple<std::optional<std::string>> pemencoded;
+  //   std::optional<Triple<std::filesystem:;path>> pemencoded;
+  //   
+  //
+  template<required::Triplet> class Triple;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger {
+  template<pki::required::Triplet ITEM> struct pki::Triple {
+    using Value = ITEM;
+    Triple() = default;
+    Value key;
+    Value crt;
+    Value ca;
+  };
+}
+#endiv
+#divert <cpp>
+#import std.string
+#import std.vector
+#import std.byte
+#import std.filesystem.path
+namespace hyperledger::pki {
+  // Obviously, this is test code
+  static_assert(sizeof (Triple<std::string>));
+  static_assert(sizeof (Triple<std::filesystem::path>));
+  static_assert(sizeof (Triple<std::vector<std::byte>>));
+  static_assert(sizeof (Triple<std::optional<std::string>>));
+  static_assert(sizeof (Triple<std::optional<std::vector<std::byte>>>));
+  static_assert(sizeof (Triple<std::optional<std::filesystem::path>>));
+}
+#endiv

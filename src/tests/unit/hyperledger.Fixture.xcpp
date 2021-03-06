@@ -1,0 +1,94 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger
+namespace tests::unit::hyperledger {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::hyperledger::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Boolean() -> void;
+  auto test_Count() -> void;
+  auto test_Dictionary() -> void;
+  auto test_Optional() -> void;
+  auto test_Outcome() -> void;
+  auto test_Success() -> void;
+  auto test_literals() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.Boolean
+#import hyperledger.Count
+#import hyperledger.Dictionary
+#import hyperledger.Optional
+#import hyperledger.Outcome
+#import hyperledger.Success
+#import hyperledger.literals
+namespace tests::unit::hyperledger::fixture {
+  auto Fixture::test_Boolean() -> void {
+    auto subject = library::Boolean{true};
+    CPPUNIT_ASSERT(subject);
+    subject = false;
+    CPPUNIT_ASSERT(!subject);
+  }
+  auto Fixture::test_Count() -> void {
+    using Subject = library::Count;
+    auto zero = Subject{0};
+    auto one = Subject{1};
+    CPPUNIT_ASSERT(zero != one);
+  }
+  auto Fixture::test_Dictionary() -> void {
+    using Subject = library::Dictionary;
+    auto subject = Subject{}; // more detailed testing is accomplished dictionary::Fixture
+    CPPUNIT_ASSERT(subject.empty());
+  }
+  auto Fixture::test_Optional() -> void {
+    using Subject = library::Optional<int>;
+    auto subject = Subject{3};
+    CPPUNIT_ASSERT(true == (bool)subject);
+    CPPUNIT_ASSERT(3 == *subject);
+  }
+  auto Fixture::test_Outcome() -> void {
+    using Subject = library::Outcome<int>;
+    auto subject = Subject{3}; // by default construction, default-constructed value is a "failure" with error code zero ()
+    CPPUNIT_ASSERT(ok(subject));
+    CPPUNIT_ASSERT(3 == value(subject));
+  }
+  auto Fixture::test_Success() -> void {
+    auto subject = library::Success{library::SUCCESS};
+    CPPUNIT_ASSERT(ok(subject));
+  }
+  auto Fixture::test_literals() -> void {
+    using namespace library::literals;
+    auto s = ""s;
+    CPPUNIT_ASSERT(s.empty());
+    auto sv = ""s;
+    CPPUNIT_ASSERT(sv.empty());
+    // Any others?
+  }
+}
+#import rigging.suite.io
+auto tests::unit::hyperledger::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"hyperledger"};
+  series << call("Boolean", &Fixture::test_Boolean)
+         << call("Count", &Fixture::test_Count)
+         << call("Dictionary", &Fixture::test_Dictionary)
+         << call("Optional", &Fixture::test_Optional)
+         << call("Outcome", &Fixture::test_Outcome)
+         << call("Success", &Fixture::test_Success)
+         << call("literals", &Fixture::test_literals)
+         << END;
+  return finalize(series);
+}
+#endiv

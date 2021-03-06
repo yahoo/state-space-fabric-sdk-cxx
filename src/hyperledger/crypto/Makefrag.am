@@ -1,0 +1,44 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_crypto_la = lib/libhyperledger-crypto.la
+lib_libhyperledger_crypto_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_crypto_la_LIBADD = \
+  $(end)
+lib_libhyperledger_crypto_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_crypto_la_SOURCES))
+lib_libhyperledger_crypto_la_SOURCES = \
+  obj/src/hyperledger/crypto/namespace.cpp \
+  obj/src/hyperledger/crypto/Buffer.cpp \
+  obj/src/hyperledger/crypto/Message.cpp \
+  obj/src/hyperledger/crypto/Signature.cpp \
+  \
+  obj/src/hyperledger/crypto/ecies.cpp \
+  obj/src/hyperledger/crypto/Ecies.cpp \
+  \
+  obj/src/hyperledger/crypto/Primitives.cpp \
+  obj/src/hyperledger/crypto/primitives.Interface.cpp \
+  obj/src/hyperledger/crypto/generate_nonce.cpp \
+  \
+  $(obj_src_hyperledger_crypto_curve_SUBSOURCES) \
+  $(obj_src_hyperledger_crypto_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_crypto_hash_SUBSOURCES) \
+  $(obj_src_hyperledger_crypto_key_SUBSOURCES) \
+  $(obj_src_hyperledger_crypto_number_SUBSOURCES) \
+  $(end)
+crypto-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_crypto_la_SOURCES))
+include src/hyperledger/crypto/curve/Makefrag.am
+include src/hyperledger/crypto/exception/Makefrag.am
+include src/hyperledger/crypto/hash/Makefrag.am
+include src/hyperledger/crypto/key/Makefrag.am
+include src/hyperledger/crypto/number/Makefrag.am
+$(lib_libhyperledger_crypto_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/crypto/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_crypto_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/crypto/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/crypto/dependencies.mk

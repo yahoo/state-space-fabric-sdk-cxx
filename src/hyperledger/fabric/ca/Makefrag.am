@@ -1,0 +1,118 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+# DSO API versioning; see the README which is nearby.
+# else https://wiki.scold-lang.org/page/DSO
+#
+#   CURRENT <= CURRENT+1 if any interfaces were added
+#           <= CURRENT+1 if any interfaces were removed
+#           <= CURRENT+1 if any interfaces were changed
+#           <= CURRENT   if no interface change, but any other (source code) change
+#
+#   REVISION <= 0          if any interfaces were added
+#            <= 0          if any interfaces were removed
+#            <= 0          if any interfaces were changed
+#            <= REVISION+1 if no interface change, but any other (source code) change
+#
+#   AGE <= AGE+1 if any interaces were added
+#       <= 0     if any interfaces were removed
+#       <= 0     if any interfaces were changed
+#       <= AGE   if no interface change, but any other (source code) change
+#
+lib_libhyperledger_fabric_ca_la_CURRENT = $(lib_libhyperledger_la_CURRENT)
+lib_libhyperledger_fabric_ca_la_REVISION = $(lib_libhyperledger_la_REVISION)
+lib_libhyperledger_fabric_ca_la_AGE = $(lib_libhyperledger_la_AGE)
+lib_libhyperledger_fabric_ca_la_CRA = $(lib_libhyperledger_fabric_ca_la_CURRENT):$(lib_libhyperledger_fabric_ca_la_REVISION):$(lib_libhyperledger_fabric_ca_la_AGE)
+
+lib_libhyperledger_fabric_ca_la = lib/libhyperledger-fabric-ca.la
+lib_libhyperledger_fabric_ca_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET) -version-info $(lib_libhyperledger_fabric_ca_la_CRA)
+# NOT YET lib_libhyperledger_fabric_ca_la_LIBADD = lib/libhyperledger-fabric-ca-goblob.so)
+# find the subsystem declarations in configure.ac driving the -l and -l*-module mentions
+lib_libhyperledger_fabric_ca_la_LIBADD = \
+  $(lib_libhyperledger_fabric_ca_protocol_la) \
+  $(lib_libwant_la) \
+  -ltunitas \
+  $(end)
+lib_libhyperledger_fabric_ca_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_ca_la_SOURCES))
+lib_libhyperledger_fabric_ca_la_SOURCES = \
+  obj/src/hyperledger/fabric/ca/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/defaults.cpp \
+  \
+  $(obj_src_hyperledger_fabric_ca_DEPRECATING_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_affiliation_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_authorization_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_certificate_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_driver_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_enrollment_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_identity_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_main_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_query_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_registration_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_required_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_revocation_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_revocations_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_service_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_traits_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_transport_SUBSOURCES) \
+  \
+  obj/src/hyperledger/fabric/ca/Configuration.template.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.PASS.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.TOKEN.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.DRIVER.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.MAIN.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.FILES.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.HTTP.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.SOCKET.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.SQLITE.cpp \
+  obj/src/hyperledger/fabric/ca/Configuration.cpp \
+  \
+  obj/src/hyperledger/fabric/ca/Request.template.cpp \
+  obj/src/hyperledger/fabric/ca/Request.ENROLLMENT.cpp \
+  obj/src/hyperledger/fabric/ca/Request.REGISTRATION.cpp \
+  obj/src/hyperledger/fabric/ca/Request.REVOCATION.cpp \
+  obj/src/hyperledger/fabric/ca/Request.REVOCATIONS.cpp \
+  obj/src/hyperledger/fabric/ca/Request.IDENTITY.cpp \
+  obj/src/hyperledger/fabric/ca/Request.cpp \
+  \
+  obj/src/hyperledger/fabric/ca/Package.template.cpp \
+  obj/src/hyperledger/fabric/ca/Package.ENROLLMENT.cpp \
+  obj/src/hyperledger/fabric/ca/Package.REGISTRATION.cpp \
+  obj/src/hyperledger/fabric/ca/Package.REVOCATION.cpp \
+  obj/src/hyperledger/fabric/ca/Package.REVOCATIONS.cpp \
+  obj/src/hyperledger/fabric/ca/Package.cpp \
+ \
+  obj/src/hyperledger/fabric/ca/Tenant.cpp \
+  $(end)
+obj_src_hyperledger_fabric_ca_DEPRECATING_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/IdentityService.cpp \
+  obj/src/hyperledger/fabric/ca/make_service.cpp \
+  $(end)
+include src/hyperledger/fabric/ca/affiliation/Makefrag.am
+include src/hyperledger/fabric/ca/authorization/Makefrag.am
+include src/hyperledger/fabric/ca/certificate/Makefrag.am
+include src/hyperledger/fabric/ca/driver/Makefrag.am
+include src/hyperledger/fabric/ca/enrollment/Makefrag.am
+include src/hyperledger/fabric/ca/exception/Makefrag.am
+include src/hyperledger/fabric/ca/identity/Makefrag.am
+include src/hyperledger/fabric/ca/main/Makefrag.am
+include src/hyperledger/fabric/ca/query/Makefrag.am
+include src/hyperledger/fabric/ca/registration/Makefrag.am
+include src/hyperledger/fabric/ca/required/Makefrag.am
+include src/hyperledger/fabric/ca/revocation/Makefrag.am
+include src/hyperledger/fabric/ca/revocations/Makefrag.am
+include src/hyperledger/fabric/ca/service/Makefrag.am
+include src/hyperledger/fabric/ca/traits/Makefrag.am
+include src/hyperledger/fabric/ca/transport/Makefrag.am
+ca-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_fabric_ca_la_SOURCES))
+$(lib_libhyperledger_fabric_ca_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/fabric/ca/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_fabric_ca_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/fabric/ca/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/fabric/ca/dependencies.mk

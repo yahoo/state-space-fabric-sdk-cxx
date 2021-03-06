@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.x509.query.Query
+namespace hyperledger::x509::query::traits {
+  template<typename QUERY> struct Query;
+  template<> struct Query<x509::query::Query<AUTHORITY_KEY_IDENTIFIER>>;
+  template<> struct Query<x509::query::Query<COMMON_NAME>>;
+  template<> struct Query<x509::query::Query<EXPIRES>>;
+  template<> struct Query<x509::query::Query<REVOKED>>;
+  template<> struct Query<x509::query::Query<SERIAL>>;
+  template<> struct Query<x509::query::Query<SUBJECT_KEY_IDENTIFIER>>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.x509.query.traits.name.Query
+namespace hyperledger::x509::query {
+  template<typename QUERY> struct traits::Query : public False { };
+  namespace traits {
+    template<> struct Query<query::Query<AUTHORITY_KEY_IDENTIFIER>> : public name::Query<AUTHORITY_KEY_IDENTIFIER> { };
+    template<> struct Query<query::Query<COMMON_NAME>>              : public name::Query<COMMON_NAME> { };
+    template<> struct Query<query::Query<EXPIRES>>                  : public name::Query<EXPIRES> { };
+    template<> struct Query<query::Query<REVOKED>>                  : public name::Query<REVOKED> { };
+    template<> struct Query<query::Query<SERIAL>>                   : public name::Query<SERIAL> { };
+    template<> struct Query<query::Query<SUBJECT_KEY_IDENTIFIER>>   : public name::Query<SUBJECT_KEY_IDENTIFIER> { };
+  }
+}
+#endiv

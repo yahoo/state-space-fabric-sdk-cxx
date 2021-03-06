@@ -1,0 +1,36 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.runtime.Management
+namespace hyperledger::x509::constraints {
+  //
+  // The "constraints" on an X.509 certificate are stored as "extensions"
+  // They can be readonly or readwrite
+  //
+  // Usage:
+  //
+  //   (mutable)
+  //     auto req = Request{...somehow...};
+  //     Constraints<RW> ex = req.constraints();
+  //
+  //     auto cert = Certificate{...somehow...};
+  //     Constraints<RW>> ex = cert.constraints();
+  //
+  //   (consty)
+  //
+  //     auto const req = Request{...somehow...};
+  //     Extension<RW> ex = req.constraints();
+  //
+  //     auto const cert = Certificate{...somehow...};
+  //     Extension<RW> ex = cert.constraints();
+  //
+  template<runtime::Management> class Constraints;
+}
+#import hyperledger.runtime.constants // all the specializations will need these
+namespace hyperledger::x509::constraints { using namespace runtime::constants; }
+#endiv
+#divert <hpp>
+// Every specialization will need these
+#import hyperledger.x509.constraints.Prototype
+#endiv

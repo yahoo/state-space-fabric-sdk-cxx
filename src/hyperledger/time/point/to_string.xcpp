@@ -1,0 +1,45 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.time.Point
+#import hyperledger.string.View
+#import hyperledger.string.Storage
+#import hyperledger.string.Sequencez
+namespace hyperledger::time::point {
+  //
+  // Convert a time point into a string 
+  //
+  // Concept:
+  //  
+  //   hyperledger::time::point::put ... see the commentariat therein
+  //   tunitas::time::put;
+  //   std::put_time
+  //
+  // Specification:
+  //
+  //   https://en.cppreference.com/w/cpp/io/manip/put_time
+  //
+  //   %F   %Y-%m-%d
+  //   %T   %H:%M:%S
+  //
+  // Usage:
+  //
+  //   auto then = time::Point{...somehow...};
+  //
+  //   auto s = time::point::to_string(then, "%FT%T");)
+  //
+  inline auto to_string(Point const &, string::Sequencez format) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.time.point.put
+#import std.ostringstream
+namespace hyperledger::time {
+  auto point::to_string(Point const &p, string::Sequencez format) -> string::Storage {
+    auto buf = std::ostringstream{};
+    buf << put(p, format.c_str());
+    return buf.str();
+  }
+}
+#endiv

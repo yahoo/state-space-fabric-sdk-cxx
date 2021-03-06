@@ -1,0 +1,14 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_langu_age_SUBSOURCES = \
+  obj/src/langu/age/namespace.cpp \
+  obj/src/langu/age/q.cpp \
+  obj/src/langu/age/dq.cpp \
+  obj/src/langu/age/dequote.Formatter.cpp \
+ $(end)
+age-objects : $(patsubst %.cpp, %.lo, $(obj_src_langu_age_SUBSOURCES))
+
+
+

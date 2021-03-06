@@ -1,0 +1,86 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki {
+  //
+  // A set certificates
+  //
+  // Concept:
+  //
+  //   An ordered list of certificates.
+  //   Suitable for use in Outcome<Certificates>; i.e. required::Outcomeable<Certificates>
+  //
+  // Design:
+  //
+  //   There's a tweet out there that basically says:
+  //   Q: what are linked lists good for?
+  //   A: interviews, mostly.
+  //   But here we are, in want of a variable-length container-shaped thingy
+  //
+  // Usage:
+  //
+  //   oh come on.
+  //
+  class Certificates;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.from.Certificates
+#import std.byte
+#import std.list
+#import std.string
+#import std.vector
+namespace hyperledger {
+  namespace pki {
+    using std::move;
+    using std::swap;
+    inline auto swap(Certificates &a, Certificates &b) noexcept -> void;
+    inline auto to_string(Certificates const &) -> std::string;
+  }
+  class pki::Certificates : public std::list<pki::Certificate> {
+    using Ancestor = std::list<pki::Certificate>;
+    friend auto from<Certificates>(std::vector<std::byte> const &) -> Certificates;
+    friend auto swap(Certificates &a, Certificates &b) noexcept -> void;
+  public:
+    Certificates() = default; // needed to allow Certificates to be used in Outcome<Certificates>
+    using Ancestor::list;
+    Certificates(Certificates const &) = delete;
+    auto operator=(Certificates const &) -> Certificates & = delete;
+    Certificates(Certificates &&) = default;
+    auto operator=(Certificates &&) -> Certificates & = default;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger {
+  auto pki::swap(Certificates &a, Certificates &b) noexcept -> void {
+    Certificates::Ancestor &aa{a}, &bb{b};
+    std::swap(aa, bb);
+  }
+}
+#endiv
+#divert <cpp>
+#warning WRITETHIS ... is not this just the same as openssl::stack::Stack<Crt>
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+#import nonstd.required.Outcomable
+namespace hyperledger::pki {
+  static_assert(std::is_default_constructible_v<Certificates>);
+  static_assert(!std::is_copy_constructible_v<Certificates>);
+  static_assert(std::is_move_constructible_v<Certificates>);
+  static_assert(!std::is_copy_assignable_v<Certificates>);
+  static_assert(std::is_move_assignable_v<Certificates>);
+#if 0
+  { namespace by = nonstd::required::constructible::by;
+    static_assert(by::Default<Certificates>);
+    static_assert(by::Copy<Certificates> || by::Move<Certificates>);
+    static_assert(0 != sizeof (::nonstd::Outcome<Certificates>)); }
+#endif  
+  static_assert(nonstd::required::Outcomable<Certificates>);
+}
+#endiv

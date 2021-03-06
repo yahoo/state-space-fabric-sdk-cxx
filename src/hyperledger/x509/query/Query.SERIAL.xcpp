@@ -1,0 +1,49 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.query.Query.template
+namespace hyperledger::x509::query {
+  //
+  // A query for a specific serial number
+  //
+  template<> struct Query<SERIAL>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.x509.query.Buffer
+namespace hyperledger::x509::query {
+  //
+  // It is the caller's responsibility to ensure that the vector is "reasonable" for a query.
+  // Else you'll get nothing because nothing would match.
+  //
+  // From RFC 3280
+  // <quote>
+  // 4.1.2.2  Serial number
+  //
+  //   The serial number MUST be a positive integer assigned by the CA to each certificate.
+  //   It MUST be unique for each certificate issued by a given CA (i.e., the issuer name and serial number identify a unique certificate).
+  //   CAs MUST force the serialNumber to be a non-negative integer.
+  //
+  //   Given the uniqueness requirements above, serial numbers can be expected to contain long integers.
+  //   Certificate users MUST be able to handle serialNumber values up to 20 octets.
+  //   Conformant CAs MUST NOT use serialNumber values longer than 20 octets.
+  //
+  //   Note: Non-conforming CAs may issue certificates with serial numbers that are negative, or zero.
+  //   Certificate users SHOULD be prepared to gracefully handle such certificates.
+  // </quote>
+  //
+  // You will query using the hexidecimal bytes.
+  //
+  // n.b. std::vector is a sloppy implementation detail.  What we want is a data structure that has at least some and at most 20 octets
+  // to denote the queryable integer.  The integer will have the highest bit zero, so 2^(20*8-1) possible numbers are representable
+  // [[TODO,FIXTHIS]] build better
+  //
+  template<> class Query<SERIAL> : public Buffer<byte, 20> {
+    using Ancestor = Buffer<byte, 20>;
+  public:
+    Query() = default;
+    using Ancestor::Buffer;
+  };
+}
+#endiv

@@ -1,0 +1,16 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_json_object_SUBSOURCES = \
+  obj/src/hyperledger/json/Object.cpp \
+  obj/src/hyperledger/json/to_string.cpp \
+  obj/src/hyperledger/json/object/namespace.cpp \
+  obj/src/hyperledger/json/object/Object.cpp \
+  obj/src/hyperledger/json/object/to_string.cpp \
+  obj/src/hyperledger/json/object/Reference.template.cpp \
+  obj/src/hyperledger/json/object/Reference.CONSTIE.cpp \
+  obj/src/hyperledger/json/object/Reference.MUTABLE.cpp \
+  obj/src/hyperledger/json/object/Reference.cpp \
+  $(end)
+object-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_json_object_SUBSOURCES))

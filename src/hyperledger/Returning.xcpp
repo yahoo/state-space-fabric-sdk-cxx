@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.nothrow_t
+namespace hyperledger {
+  //
+  // Means "less throwing"
+  // Will return an Outcome<RESULT>
+  enum Returning { RETURNING };
+  //
+  // Means "throws on any error"
+  // Always returns the RESULT directly.
+  enum Throwing { THROWING };
+  //
+  // implies noexcept(true)
+  // WATCHOUT - this should be reserved exclusively for noexcept(true)
+  // No. Exceptions.
+  using Nothrow = std::nothrow_t;
+}
+#endiv
+#divert <hpp>
+#import std.nothrow
+namespace hyperledger {
+  static_assert(sizeof (RETURNING));
+  static_assert(sizeof (THROWING));
+  inline constexpr auto NOTHROW = std::nothrow;
+}
+#endiv

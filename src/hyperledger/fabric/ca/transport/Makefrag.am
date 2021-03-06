@@ -1,0 +1,15 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_transport_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/transport/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Prototype.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.template.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.FILES.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.HTTP.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.SOCKET.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.SQLITE.cpp \
+  obj/src/hyperledger/fabric/ca/transport/Transport.cpp \
+  $(end)
+transport-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_transport_SUBSOURCES))

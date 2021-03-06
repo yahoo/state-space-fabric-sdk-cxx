@@ -1,0 +1,41 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.crypto.Primitives
+#import hyperledger.crypto // Security_Level (but matryoshka gets it anyway) [[FIXTHIS]]
+#import hyperledger.crypto.hash.Algorithm
+namespace hyperledger::crypto {
+  //
+  // Factory method for creating a Ecies instance.
+  // This is pointless. Was this worth it?  It's just a call to the constructor
+  // And yet ecies(...), when the Security_Level argument is presented, is accessible via ADL.
+  //
+  // [[FIXTHIS]] then why not call it 'factory'?  Or just use the constructor directly, that's what they are for.
+  //
+  // Args:
+  //   security_level: Security level
+  //   hash_algorithm: Hash algorithm
+  //
+  // Returns: A Primitives Factory instance (which is an Ecies)
+  //
+#if 1
+  inline auto ecies() -> Primitives;
+#else
+  inline auto ecies(Security_Level = size::CURVE_P_256, hash::Algorithm = hash::Algorithm::SHA2) -> Primitives;
+#endif
+}
+#endiv
+#divert <ipp>
+#import hyperledger.crypto.Ecies
+namespace hyperledger {
+#if 1
+  auto crypto::ecies() -> Primitives { return {}; }
+#else
+  auto crypto::ecies(Security_Level security_level, hash::Algorithm algorithm) -> Primitives { return {security_level, algorithm}; }
+#endif
+}
+#endiv
+#divert <cpp>
+#warning REMOVETHIS - it is redundant and not helpful
+#endiv

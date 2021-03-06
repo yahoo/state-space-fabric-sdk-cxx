@@ -1,0 +1,10 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_variant_SUBSOURCES = \
+  obj/src/hyperledger/variant/namespace.cpp \
+  obj/src/hyperledger/variant/Visitor.cpp \
+  obj/src/hyperledger/variant/visit.cpp \
+  $(end)
+variant-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_variant_SUBSOURCES))

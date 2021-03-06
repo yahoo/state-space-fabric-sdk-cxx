@@ -1,0 +1,11 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.pki.from.Certificate
+#import hyperledger.pki.from.Certificates
+#import hyperledger.pki.from.Request
+#import hyperledger.pki.from.Secret
+#import hyperledger.pki.from.revocation.Certificates
+#import hyperledger.pki.from.revocation.Names
+#endiv

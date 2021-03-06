@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.method.Name
+namespace hyperledger::http::text {
+  using Method = method::Name;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.http.protocol.Headers
+#forward hyperledger.http.text.Request
+#forward hyperledger.http.text.Response
+#forward hyperledger.http.url.String
+#forward hyperledger.tls.Client
+namespace hyperledger::http::text {
+  //
+  // The HTTP calls (that we need herein)
+  // Specializations only (for the ones that aren't trivial)
+  //
+  // Concept:
+  //
+  //   The HTTP verbs are either:
+  //     a. Bodyless by definition ()and practice)
+  //     b. Optionally bodyless (but why would you do a bodyless POST or PUT?  Sure that makes sense)
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto url = url::String{...somehow...};
+  //   auto headers = http::Headers{...somehow...};
+  //   auto text = ...somehow...
+  //
+  //   auto response = call<GET>(client, url, headers);
+  //   auto response = call<POST>(client, url, headers, text);
+  //
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &) -> Response;
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.protocol.Headers
+#import hyperledger.http.text.Request
+#import hyperledger.http.text.Response
+#import hyperledger.http.url.String
+#import hyperledger.tls.Client
+namespace hyperledger::http {
+  template<text::Method METHOD> auto text::call(tls::Client const &client, url::String const &earl, protocol::Headers const &head) -> Response { return call<METHOD>(client, earl, head, Request{}); }
+}
+#endiv

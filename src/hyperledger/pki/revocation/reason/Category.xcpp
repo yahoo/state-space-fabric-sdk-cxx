@@ -1,0 +1,51 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::revocation::reason {
+  //
+  // The Revocation Reason Category
+  //
+  // Usage:
+  //
+  //   see category.xcpp
+  //
+  class Category;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.revocation.reason.category
+#import want.enumeration.Category
+class hyperledger::pki::revocation::reason::Category : public want::enumeration::Category {
+  Category() = default;
+  friend auto reason::category() -> Category const &;
+public:
+  auto name() const noexcept -> char const * override;
+  auto message(int) const -> std::string override;
+};
+#endiv
+#divert <cpp>
+#import std.to_string
+#import hyperledger.pki.revocation.reason.Code
+namespace hyperledger::pki::revocation::reason {
+  auto Category::name() const noexcept -> char const * {
+    return "revocation-reason";
+  }
+  auto Category::message(int code) const -> std::string {
+    switch (code::Enumeration(code)) {
+    case Code::UNSPECIFIED:          return "Unspecified";
+    case Code::KEYCOMPROMISE:        return "Key Compromise";
+    case Code::CACOMPROMISE:         return "CA Compromise";
+    case Code::AFFILIATIONCHANGE:    return "Affiliation Change";
+    case Code::SUPERSEDED:           return "Superseded";
+    case Code::CESSATIONOFOPERATION: return "Cessation of Operation";
+    case Code::CERTIFICATEHOLD:      return "Certificate Hold";
+    case Code::REMOVEFROMCRL:        return "Remove From CRL";
+    case Code::PRIVILEGEWITHDRAWN:   return "Privilege Withdrawn";
+    case Code::AACOMPROMISE:         return "AA Compromise";
+    default:
+      return "reason " + std::to_string(code);
+    }
+  }
+}
+#endiv

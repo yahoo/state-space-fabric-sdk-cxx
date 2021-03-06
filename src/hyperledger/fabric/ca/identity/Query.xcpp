@@ -1,0 +1,69 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.query
+namespace hyperledger::fabric::ca::identity {
+  //
+  // The configuration of the identity service
+  // Descendants only.
+  // You will use Query<IDENTITY>
+  //
+  // Usage:
+  //
+  //   auto cfg_main = Query<MAIN>{...somehow...};
+  //   auto main = Service<MAIN>{move(cfg_main)};
+  //
+  //   auto cfg = Query<IDENTITY>{...somehow...};
+  //   auto id = main.api<IDENTITY>{move(cfg)};
+  //
+  namespace query {
+    struct Query;
+    using namespace ca::query;
+  }
+  using query::Query;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#import std.map
+namespace hyperledger::fabric::ca::identity {
+  namespace query {
+    inline auto empty(Query const &) -> bool;
+    inline auto improper(Query const &) -> bool;
+    inline auto encode(Query const &) -> string::Storage;
+  }
+  class query::Query {
+    using Map = std::map<string::Storage, string::Storage>; // not optional<string> because missing are optional are "not present."
+  protected:
+    ~Query() = default; // operate via the desdcendant: use Query<IDENTITY>
+  public:
+    Query(Query const &) = delete;
+    auto operator=(Query const &) -> Query & = delete;
+    Query(Query &&) = default;
+    auto operator=(Query &&) -> Query & = default;
+    // Only fields that we know about, not a general dictionary
+    // And yup ... everything is a string.  Yuk.
+    Optional<string::Storage> enrollmentID, affiliation, max_enrollments, type, secret;
+    Map attrs;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.query.Actor
+namespace hyperledger::fabric::ca::identity {
+  auto query::empty(Query const &s) -> bool {
+    Actor<EMPTY> actor;
+    return (actor, s.enrollmentID, s.affiliation, s.max_enrollments, s.type, s.secret, s.attrs);
+  }
+  auto query::improper(Query const &s) -> bool {
+    Actor<IMPROPER> actor;
+    return (actor, s.enrollmentID, s.affiliation, s.max_enrollments, s.type, s.secret, s.attrs);
+  }
+  auto query::encode(Query const &s) -> string::Storage {
+    Actor<ENCODE> actor;
+    return (actor, s.enrollmentID, s.affiliation, s.max_enrollments, s.type, s.secret, s.attrs);
+  }
+}
+#endiv

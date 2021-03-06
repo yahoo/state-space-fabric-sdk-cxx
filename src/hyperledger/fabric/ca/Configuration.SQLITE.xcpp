@@ -1,0 +1,34 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Configuration.template
+namespace hyperledger::fabric::ca {
+  //
+  // Configuration for the creation of the Service<SQLITE> of the Certificate Authority (CA)
+  //
+  // With all the defaults codified.
+  // From caservice.py
+  //
+  template<> struct Configuration<SQLITE>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.file.Path
+namespace hyperledger::fabric::ca {
+  template<> struct Configuration<SQLITE> {
+    file::Path database;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.configuration.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::configuration;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Configuration<SQLITE>>);
+  }
+}
+#endiv

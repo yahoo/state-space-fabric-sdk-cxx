@@ -1,25 +1,26 @@
 # This is a GNU -*- Makefile -*- fragment that is included by Automake
-# Copyright 2019, Oath Inc.
+# Copyright Verizon Media.
 # Licensed under the terms of the Apache-2.0 license.
 # See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 
 lib_libwant_la = lib/libwant.la
-lib_libwant_la_LIBADD = $(nothing)
+lib_libwant_la_LIBADD = \
+  $(lib_libwant_langu_la) \
+  $(lib_libwant_nonstd_la) \
+  -lshell-module \
+  $(end)
 lib_libwant_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libwant_la_SOURCES))
 lib_libwant_la_SOURCES = \
   obj/src/want/namespace.cpp \
   obj/src/want/Boolean.cpp \
-  obj/src/want/format.dq.cpp \
-  obj/src/want/format.dequote.Formatter.cpp \
-  obj/src/want/filesystem.dequote.cpp \
-  \
-  obj/src/want/run/namespace.cpp \
-  obj/src/want/run/Piped_From.cpp \
-  obj/src/want/run/Piped_To.cpp \
-  obj/src/want/run/Runner.cpp \
+  obj/src/want/enumeration.Category.cpp \
   $(end)
+want-objects : $(patsubst %.cpp, %.lo, $(lib_libwant_la_SOURCES))
+$(lib_libwant_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
 $(scold_cxxdir)/want/dependencies.mk:
-	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libwant_la_SOURCES))
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libwant_la_SOURCES))
 	$(TF_V_DONE) test -e $@
 include $(scold_cxxdir)/want/dependencies.mk
 clean-dependencies::

@@ -1,0 +1,85 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric
+namespace hyperledger::fabric::ca {
+  namespace names {
+    inline namespace authorizations { }
+    inline namespace services { }
+    inline namespace drivers { }
+    inline namespace transports { }
+  }
+  inline namespace name { using namespace names; }
+  namespace names::authorizations {
+    //
+    // There is just the one driver
+    //
+    enum class PASS { };
+    enum class TOKEN { };
+  }
+  namespace names::services {
+    //
+    // Uniqueness keys used among: Request, Package, Service
+    //
+    //    Request<UNIQUENESS> ......... request-bundle names
+    //    Package<UNIQUENESS> ......... result-package names
+    //    Service<UNIQUENESS> ......... service names themselves
+    //
+    // Also see required::name::Service<ENUM>    or required::Service<ca::Service<ENUM>>.
+    // Also see required::name::Subservice<ENUM> or required::Subservice<ca::Service<ENUM>>.
+    //
+    enum class AFFILIATION { };
+    enum class CERTIFICATE { };
+    enum class ENROLLMENT { };
+    enum class IDENTITY { };
+    enum class MAIN { };
+    enum class REGISTRATION { };
+    enum class REVOCATION { };
+    enum class REVOCATIONS { };
+    enum class INFORMATION { };
+  }
+  namespace names::drivers {
+    //
+    // There is just the one driver
+    //
+    enum class DRIVER { };
+  }
+  namespace names::transports {
+    //
+    // Uniqueness keys used among: Transport<UNIQUENESS>
+    //
+    //    transport<UNIQUENESS> ......... how the driver gets request-response to/from the service
+    //
+    // Also see request::name::Transport<ENUM> or request::Transport<transport::Transport<ENUM>>.
+    //
+    enum class FILES { }; // WATCHOUT - this is not "FILE" singular because the data is held in multiple files (i.e. in a directory)
+    enum class HTTP { };
+    enum class SQLITE { };
+    enum class SOCKET { };
+  }
+}
+#endiv
+#divert <hpp>
+#import std.empty
+#import std.move
+#import std.forward
+namespace hyperledger::fabric::ca {
+  using std::empty; // ..... because it is frequently needed throughout
+  using std::move; // ...... so that ADL will find these against Configuration<THING>{...}, Request<THING>{...}, Service<THING>{...}
+  using std::forward; // ... ibidem.
+}
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    // The point being with all that "inline namespace" machinery
+    // these names appear "as if" they were in 'namespace ca' directly.
+    static_assert(sizeof (PASS));
+    static_assert(sizeof (AFFILIATION));
+    static_assert(sizeof (DRIVER));
+    static_assert(sizeof (FILES));
+  }
+}
+#endiv

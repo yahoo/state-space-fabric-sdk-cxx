@@ -1,0 +1,61 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::net::endpoint {
+  //
+  // A formatter, upon which hangs an operator<<
+  // The magic happens in the overloaded operator<<
+  // The overloaded operator<< is supplied for each template instance,
+  //    the operator<< is not defined here.
+  //
+  // For the TYPE, the expectation is that there is an ADL-visible format(...) function which constructs the Formatter<TYPE>
+  // The Formatter captures a reference to its subject.
+  // The subject of the formatter must have a lifetime longer than that of the Formatter.
+  //
+  // Usage:
+  //
+  //    auto hyperledger::endpoint::operator<<(std::ostream &, Formatter<Thing> const &) -> std::ostream & {
+  //       ...something happens here...
+  //    }
+  //
+  //   cerr << format(thing);
+  //
+  template<typename TYPE> struct Formatter;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.net.endpoint.Endpoints
+#import hyperledger.required.Character
+#import hyperledger.required.Character_Traits
+#import std.basic_ostream
+namespace hyperledger::net {
+  namespace endpoint {
+    // [[FIXTHIS]] constrain ENDPOINT with a concept
+    template<required::Character CHAR, required::Character_Traits TRAITS, typename ENDPOINT> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter<Endpoints<ENDPOINT>> const &) -> std::basic_ostream<CHAR, TRAITS> &;
+    template<typename ENDPOINT> inline auto format(Endpoints<ENDPOINT> const &) -> Formatter<Endpoints<ENDPOINT>>;
+  }
+  template<typename TYPE> struct endpoint::Formatter {
+    using Value = TYPE;
+    inline explicit Formatter(Value const &value) : value{value} { }
+    Value const &value;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.net.endpoint.Endpoints
+#import std.transform
+#import std.make_ostream_joiner
+namespace hyperledger::net {
+  template<required::Character CHAR, required::Character_Traits TRAITS, typename ENDPOINT> auto endpoint::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter<Endpoints<ENDPOINT>> const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+    // // WATCHOUT - this will rewquire the format(...) of the ENDPOINT to be available by ADL lest the nearby in-namespace one be found applicable.
+    auto const thunk = [](auto const &endpoint) { return format(endpoint); };
+    std::transform(f.value.begin(), f.value.end(), std::make_ostream_joiner(o, ","), thunk);
+    return o;
+  }
+  template<typename ENDPOINT> auto endpoint::format(Endpoints<ENDPOINT> const &es) -> Formatter<Endpoints<ENDPOINT>> {
+    return Formatter<Endpoints<ENDPOINT>>{es};
+  }
+}
+#endiv

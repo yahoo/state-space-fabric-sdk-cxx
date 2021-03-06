@@ -1,0 +1,39 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.string.Storage
+#forward hyperledger.json.object.Object
+#forward hyperledger.json.object.Reference
+namespace hyperledger::json::object {
+  //
+  // Turn th is JSON object into a string
+  //
+  // Usage:
+  //
+  //   auto o = json::Object{...somehow...};
+  //
+  //   auto s = to_string(o);
+  //
+  inline auto to_string(Object const &) -> string::Storage;
+  template<runtime::Mutability ABILITY> inline auto to_string(Reference<ABILITY> const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.string.Storage
+#import hyperledger.json.Object
+#import hyperledger.json.object.Reference
+#import json.value.toString
+namespace hyperledger::json {
+  template<runtime::Mutability ABILITY> auto object::to_string(Reference<ABILITY> const &r) -> string::Storage { return to_string(r.get()); }
+  auto object::to_string(Object const &object) -> string::Storage {
+    //
+    // That's it!  That's the tweet!
+    // Pragmatically, we're going to use the "standard" implementation directly.
+    //
+    // They don't use the "standard" nomenclature of "to_string"
+    // Also, this is a template and it doesn't do well with descendants of ::json::Value
+    return ::json::value::toString(static_cast<::json::Value const &>(object));
+  }
+}
+#endiv

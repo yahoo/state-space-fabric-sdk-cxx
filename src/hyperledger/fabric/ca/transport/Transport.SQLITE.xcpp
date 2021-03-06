@@ -1,0 +1,63 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.transport.Transport.template
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The SQLITE transport of the Certificate Authority Service.
+  //
+  // Concept:
+  //
+  //   This means that the (user) database is stored locally in an SQLite database.
+  //   This is similar to the case of Transport<FILES>.
+  //
+  //   The signing activity occurs in the current process with key material known to the current process.
+  //   Obviously you'd use this only for testing, yes?
+  //
+  //   There is no precedent for this feature in the Python or Go implementations of Hyperledger Fabric CA (Client SDK).
+  //
+  // Exceptions:
+  //
+  //   Not by design.
+  //   Exceptions are thrown if the procedure call cannot be interpreted, if there is no way to return a response.
+  //   As all of the interpretation occurs in the current process, this is less likely.
+  //   When exceptions appar, it indicates a serious problem rather than a transient network connectivity issue.
+  //   SQLite can throw exceptions.
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<SQLITE>{...somehow...};
+  //   auto dri = transport::Driver{SQLITE{}, move(cfg)};
+  //
+  template<> struct Transport<SQLITE>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Configuration.SQLITE
+#import hyperledger.fabric.ca.transport.Prototype
+namespace hyperledger::fabric::ca::transport {
+  template<> class Transport<SQLITE> : public Prototype, private Configuration<SQLITE> {
+    struct Ancestors {
+      using Prototype = transport::Prototype;
+      using Configuration = ca::Configuration<SQLITE>;
+    };
+  public:
+    inline explicit Transport(Configuration<SQLITE> &&);
+    auto DELETE(Path const &, Headers const &) -> Response override;
+    auto GET(Path const &, Headers const &) -> Response override;
+    auto POST(Path const &, Headers const &, Request const &) -> Response override;
+    auto PUT(Path const &, Headers const &, Request const &) -> Response override;
+  };
+}
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Unimplemented
+#warning WRITETHIS
+namespace hyperledger::fabric::ca::transport {
+  auto Transport<SQLITE>::DELETE(Path const &path, Headers const &headers) -> Response                { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SQLITE>::GET(Path const &path, Headers const &headers) -> Response                   { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SQLITE>::POST(Path const &path, Headers const &headers, Request const &) -> Response { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SQLITE>::PUT(Path const &path, Headers const &headers, Request const &) -> Response  { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+}
+#endiv

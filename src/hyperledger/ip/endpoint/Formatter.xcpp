@@ -1,0 +1,62 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::ip::endpoint {
+  //
+  // Format an ip::Endpoint
+  //
+  // Concept:
+  //
+  //   A separate type so that ADL will find it.
+  //
+  // Design:
+  //
+  //   Because the formatter MAY bundle up other formatting options, to_string(Formatter) is well posed.
+  //   Its use may be relevant in templates with lookup by ADL.
+  //   to_string is useful in idiom, as shown
+  //   
+  // Usage:
+  //
+  //   auto s = to_string(format(...somehow...))
+  //
+  struct Formatter;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.net.endpoint.Formatter
+#forward hyperledger.ip.Endpoint
+#import hyperledger.required.Character
+#import hyperledger.required.Character_Traits
+#import hyperledger.string.Storage
+#import std.basic_ostream
+namespace hyperledger::ip {
+  namespace endpoint {
+    inline auto format(Endpoint const &) -> Formatter;
+    inline auto to_string(Formatter const &) -> string::Storage;
+    template<required::Character CHAR, required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Formatter const &) -> std::basic_ostream<CHAR, TRAITS> &;
+  }
+  class endpoint::Formatter : public net::endpoint::Formatter<Endpoint> {
+    using Ancestor = net::endpoint::Formatter<Endpoint>;
+  public:
+    using Ancestor::Formatter;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.ip.Endpoint
+#import hyperledger.ip.host.Formatter // for format(...)
+#import hyperledger.ip.port.Formatter // ibidem.
+#import hyperledger.detail.reformat
+#import std.ostringstream
+namespace hyperledger::ip {
+  auto endpoint::format(Endpoint const &ee) -> endpoint::Formatter { return Formatter{ee}; }
+  auto endpoint::to_string(Formatter const &ff) -> string::Storage { return detail::reformat::to_string(ff); }
+  template<required::Character CHAR, required::Character_Traits TRAITS> auto endpoint::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Formatter const &f) -> std::basic_ostream<CHAR, TRAITS> & {
+    o << host::format(f.value.host);
+    if (f.value.port) { o << ':' << port::format(*f.value.port); }
+    return o;
+  }
+}
+#endiv

@@ -1,2 +1,19 @@
 .libs
+#
+# the unit testers
 unit
+unit-*[^.~]
+#
+# directly named
+decode
+encode
+crypto
+pki
+#
+# addenda themselves
+want
+format
+langu
+nonstd
+shell
+# end

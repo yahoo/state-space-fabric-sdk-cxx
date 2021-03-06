@@ -1,0 +1,22 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_service_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/Service.template.cpp \
+  obj/src/hyperledger/fabric/ca/Service.AFFILIATION.cpp \
+  obj/src/hyperledger/fabric/ca/Service.CERTIFICATE.cpp \
+  obj/src/hyperledger/fabric/ca/Service.ENROLLMENT.cpp \
+  obj/src/hyperledger/fabric/ca/Service.IDENTITY.cpp \
+  obj/src/hyperledger/fabric/ca/Service.MAIN.cpp \
+  obj/src/hyperledger/fabric/ca/Service.REGISTRATION.cpp \
+  obj/src/hyperledger/fabric/ca/Service.REVOCATION.cpp \
+  obj/src/hyperledger/fabric/ca/Service.REVOCATIONS.cpp \
+  obj/src/hyperledger/fabric/ca/Service.cpp \
+  \
+  obj/src/hyperledger/fabric/ca/service/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/service/Lightweight.cpp \
+  obj/src/hyperledger/fabric/ca/service/Heavyweight.cpp \
+  obj/src/hyperledger/fabric/ca/service/Core.cpp \
+  $(end)
+service-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_service_SUBSOURCES))

@@ -1,0 +1,64 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::ip::endpoint {
+  //
+  // An endpoint is a Host and (optionally) a Port.
+  // Whereas default port values are application-level choices,
+  // if there is a well-known default port, then it must be supplied above.
+  //
+  // Usage:
+  //
+  //   auto e = Endpoint{"localhost", 80};
+  //   cerr << format(e);
+  //   auto s = to_string(e);
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.ip.Host
+#import hyperledger.ip.Port
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+namespace hyperledger::ip {
+  namespace endpoint {
+    using std::move;
+    using std::swap;
+    inline auto swap(Endpoint &, Endpoint &) noexcept -> void;
+    inline auto to_string(Endpoint const &) -> string::Storage;
+  }
+  struct endpoint::Endpoint {
+    using Host = ip::Host; // helpul for descendants in other namespaces
+    using Port = ip::Port;
+    Endpoint() = default;
+    inline explicit Endpoint(Host);
+    inline Endpoint(Host, Port);
+    Host host;
+    Optional<Port> port;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.ip.endpoint.Formatter
+namespace hyperledger::ip {
+  auto endpoint::swap(Endpoint &a, Endpoint &b) noexcept -> void {
+    swap(a.host, b.host);
+    swap(a.port, b.port);
+  }
+  auto endpoint::to_string(Endpoint const &ee) -> string::Storage {
+    std::ostringstream buf;
+    buf << format(ee);
+    return buf.str();
+  }
+  namespace endpoint {
+    Endpoint::Endpoint(Host host) : host{move(host)} { }
+    Endpoint::Endpoint(Host host, Port port)
+      : host{move(host)}
+      , port{move(port)}
+    { }
+  }
+}
+#endiv

@@ -1,0 +1,15 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.ip.port.Formatter
+#import hyperledger.ip.host.Formatter
+#import hyperledger.ip.endpoint.Formatter
+#import hyperledger.ip.endpoints.Formatter
+namespace hyperledger::ip {
+  using port::format;
+  using host::format;
+  using endpoint::format;
+  using endpoints::format;
+}
+#endiv

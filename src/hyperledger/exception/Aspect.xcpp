@@ -1,0 +1,37 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::exception {
+  //
+  // The aspect of a Hyperledger Fabric exception.
+  // This is a mixin in the standard styling.
+  // Descendants.
+  //
+  // Usage:
+  //
+  //   class my::Problem : public hyperledger::Aspect, public std::runtime_error {
+  //     explicit Problem(std::string reason);
+  //     auto what() const -> char const * final { return std::runtime_error::what(); }
+  //   };
+  //
+  class Aspect;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+class hyperledger::exception::Aspect {
+protected:
+  virtual ~Aspect() = default;
+public:
+  virtual auto message() const -> string::Storage;
+  virtual auto what() const noexcept -> char const * = 0;
+};
+#endiv
+#divert <cpp>
+namespace hyperledger::exception {
+  auto Aspect::message() const -> string::Storage { return what(); }
+}
+#endiv
+

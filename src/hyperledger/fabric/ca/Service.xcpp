@@ -1,0 +1,14 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Service.template
+#import hyperledger.fabric.ca.Service.AFFILIATION
+#import hyperledger.fabric.ca.Service.CERTIFICATE
+#import hyperledger.fabric.ca.Service.ENROLLMENT
+#import hyperledger.fabric.ca.Service.IDENTITY
+#import hyperledger.fabric.ca.Service.MAIN
+#import hyperledger.fabric.ca.Service.REGISTRATION
+#import hyperledger.fabric.ca.Service.REVOCATION
+#import hyperledger.fabric.ca.Service.REVOCATIONS
+#endiv

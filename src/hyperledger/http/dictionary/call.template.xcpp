@@ -1,0 +1,52 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.http.method.Name
+namespace hyperledger::http::dictionary {
+  using Method = method::Name;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.http.dictionary.Response
+#forward hyperledger.http.dictionary.Request
+#forward hyperledger.http.protocol.Headers
+#forward hyperledger.http.url.String
+#forward hyperledger.tls.Client
+namespace hyperledger::http::dictionary {
+  //
+  // The HTTP calls (that we need herein, specialized to the Dictionary)
+  // Specializations only (and only teh specializations that aren't trivial)
+  //
+  // Concept:
+  //
+  //   Not all HTTP methods have specializations.
+  //   Only the methods that meaningful dictionary (request) bodies or responses.
+  //
+  // Usage:
+  //
+  //   auto mtls = tls::Client{...somehow...};
+  //   auto url = url::String{...somehow...};
+  //   auto headers = http::Headers{...somehow...};
+  //   auto request = http::dictionary::Request{...somehow...}
+  //
+  //   auto response = call<GET>(mtls, url, headers);
+  //   auto response = call<POST>(mtls, url, headers, request);
+  //
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &) -> Response;
+  template<Method> auto call(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.dictionary.Request
+#import hyperledger.http.dictionary.Response
+#import hyperledger.http.protocol.Headers
+#import hyperledger.http.url.String
+#import hyperledger.tls.Client
+namespace hyperledger::http {
+  //
+  // The default implementation of call<METHOD> for the unspecified METHOD is to send an empty (request) body.
+  //
+  template<dictionary::Method METHOD> auto dictionary::call(tls::Client const &client, url::String const &earl, protocol::Headers const &head) -> Response { return call<METHOD>(client, earl, head, Request{}); }
+}
+#endiv

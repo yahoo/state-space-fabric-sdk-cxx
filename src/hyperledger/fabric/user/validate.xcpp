@@ -1,0 +1,44 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.User
+namespace hyperledger::fabric::user {
+  //
+  // Check the user.
+  //
+  // Return Value:
+  //
+  //   The argument.  MAkes it convenient to wrap around the just-computed return value.
+  //
+  // Exceptions:
+  //
+  //    exception::Validation: When some user property is invalid
+  //
+  // Usage:
+  //
+  //   auto noobie = User{...somehow...};
+  //   auto noobie = create_user(...somehow...);
+  //   auto validated = validate(noobie);
+  //
+  inline auto validate(User const &) -> void;
+  inline auto validate(User &&) -> User &&;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.user.exception.Validation
+auto hyperledger::fabric::user::validate(User &&candidate) -> User && {
+  if (candidate.name.empty()) { throw exception::Validation{"Missing user name."}; }
+  if (auto const &enrollment = candidate.enrollment; !enrollment) {
+    throw exception::Validation{"Missing user enrollment."};
+#if 0
+  } else {
+    if (!enrollment.certificate) { throw exception::Validation{"Missing user enrollment certificate."}; }
+    if (!enrollment.private_key) { throw exception::Validation{"Missing user enrollment private key."}; }
+#endif
+  }
+  if (!candidate.msp_id)       { throw exception::Validation{"Missing msp id."}; }
+  if (!candidate.crypto_suite) { throw exception::Validation{"Missing crypto suite."}; }
+  return forward<User>(candidate);
+}
+#endiv

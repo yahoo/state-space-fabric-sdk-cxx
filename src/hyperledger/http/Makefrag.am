@@ -1,0 +1,45 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_http_la = lib/libhyperledger-http.la
+lib_libhyperledger_http_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_http_la_LIBADD = \
+  $(end)
+lib_libhyperledger_http_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_http_la_SOURCES))
+lib_libhyperledger_http_la_SOURCES = \
+  obj/src/hyperledger/http/namespace.cpp \
+  obj/src/hyperledger/http/literals.cpp \
+  $(obj_src_hyperledger_http_dictionary_SUBSOURCES) \
+  $(obj_src_hyperledger_http_error_SUBSOURCES) \
+  $(obj_src_hyperledger_http_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_http_json_SUBSOURCES) \
+  $(obj_src_hyperledger_http_method_SUBSOURCES) \
+  $(obj_src_hyperledger_http_protocol_SUBSOURCES) \
+  $(obj_src_hyperledger_http_required_SUBSOURCES) \
+  $(obj_src_hyperledger_http_status_SUBSOURCES) \
+  $(obj_src_hyperledger_http_text_SUBSOURCES) \
+  $(obj_src_hyperledger_http_url_SUBSOURCES) \
+  $(end)
+include src/hyperledger/http/dictionary/Makefrag.am
+include src/hyperledger/http/exception/Makefrag.am
+include src/hyperledger/http/error/Makefrag.am
+include src/hyperledger/http/json/Makefrag.am
+include src/hyperledger/http/method/Makefrag.am
+include src/hyperledger/http/protocol/Makefrag.am
+include src/hyperledger/http/required/Makefrag.am
+include src/hyperledger/http/status/Makefrag.am
+include src/hyperledger/http/text/Makefrag.am
+include src/hyperledger/http/url/Makefrag.am
+  $(end)
+http-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_http_la_SUBSOURCES))
+$(lib_libhyperledger_http_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/http/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_http_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/http/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/http/dependencies.mk

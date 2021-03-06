@@ -1,0 +1,43 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.pki.required.Fromable
+#import hyperledger.required.Octet
+#import hyperledger.byte.Span
+#import hyperledger.byte.Octet
+#import hyperledger.string.View
+#import std.vector
+namespace hyperledger::pki {
+  //
+  // Convert (parse) from a string into the OBJECT.
+  // An exception is thrown if the parsing cannot be accomplished.
+  // Specializations only.
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto object = from<OBJECT>(stringy_thingy);
+  //     ... use the object ...
+  //   } catch (exception::Aspect const &) {
+  //      ... something bad happened ...
+  //   }
+  //
+  template<required::Fromable OBJECT> inline auto from(byte::Span) -> OBJECT = delete; // specializations elsewhere
+  template<required::Fromable OBJECT> inline auto from(string::View) -> OBJECT;
+  template<required::Fromable OBJECT> [[deprecated("prefer te variant on byte::Span")]] inline auto from(std::vector<std::byte> const &) -> OBJECT;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger {
+  template<pki::required::Fromable OBJECT> auto pki::from(string::View source) -> OBJECT {
+    auto const data = reinterpret_cast<std::byte const *>(source.data());
+    auto const size = source.size();
+    return from<OBJECT>(byte::Span{data, size});
+  }
+  template<pki::required::Fromable OBJECT> auto pki::from(std::vector<std::byte> const &source) -> OBJECT {
+    using Span = byte::Span;
+    return from<OBJECT>(Span{source.data(), source.size()});
+  }
+}
+#endiv

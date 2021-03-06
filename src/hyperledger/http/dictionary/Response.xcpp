@@ -1,0 +1,103 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::dictionary {
+  //
+  // A response, framed around a dictionary.
+  //
+  // Concept:
+  //
+  //   A "dictionary" of arbitrary key-value-pairs.
+  //   This is the result of recovering the response from the server's natural serialization scheme
+  //     (which is Markup-Language-du-Jour: CBOR, BSON, or JSON)
+  //
+  // Design:
+  //
+  //   Rhymes with json::Response but uses a Dictionary instead of the json::Object.
+  //
+  //   [[at this point]] this is boilerplate.
+  //   The transform from the lower-level on-the-wire transport is not show.
+  //   But c.f. hyperledger::fabric::ca::protocol::deserialize(...) or duch.
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto url = http::url::String{...somehow...};
+  //
+  //   auto recovered = call<POST>(client, url, response);
+  //   if (good(recovered)) {
+  //     ...somehow...
+  //   } else {
+  //     ...complain...
+  //   }
+  //
+  struct Response;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Dictionary
+#import hyperledger.http.protocol.Response
+#import std.swap
+namespace hyperledger::http {
+  namespace dictionary {
+    using std::move;
+    using std::swap;
+    inline auto swap(Response &, Response &) noexcept -> void;
+  }
+  class dictionary::Response : public protocol::Response {
+    using Ancestor = protocol::Response;
+    friend auto swap(Response &, Response &) noexcept -> void;
+    using Body = hyperledger::dictionary::Dictionary;
+  public:
+    Response() = default;
+    inline explicit Response(status::Code, Body &&);
+    Response(Response const &) = delete;
+    auto operator=(Response const &) -> Response & = delete;
+    Response(Response &&) = default;
+    auto operator=(Response &&) -> Response & = default;
+  protected:
+    Body the_body;
+    friend auto value(Response const &r) -> Body const & { return r.the_body; }
+    friend auto value(Response &r) -> Body & { return r.the_body; }
+    friend auto value(Response &&r) -> Body && { return move(r.the_body); }
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http {
+  auto dictionary::swap(Response &a, Response &b) noexcept -> void {
+    Response::Ancestor &aa{a}, &bb{b};
+    hyperledger::dictionary::swap(a.the_body, b.the_body);
+    protocol::response::swap(aa, bb);
+  }
+  namespace dictionary {
+    Response::Response(status::Code some_code, Body &&some_body)
+      : Ancestor{some_code}
+      , the_body{forward<Body>(some_body)}
+    { }
+  }
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.http.protocol.response.Accessors
+namespace {
+  namespace local {
+    namespace subject = hyperledger::http::dictionary;
+    namespace assertion = tests::concepts::hyperledger::http::protocol::response;
+#if 0 // [[REMOVETHIS]] because it is subsumed by assertion::Accessors
+  template<typename RESPONSE> concept bool Acc = requires(RESPONSE const &response) {
+    { good(response) };
+    { ok(response) };
+    { status(response) };
+#if 0
+    { value(response) };
+#endif
+    requires true;
+  };
+    static_assert(Acc<subject::Response>);
+#endif
+    static_assert(assertion::Accessors<subject::Response>);
+  }
+}
+#endiv

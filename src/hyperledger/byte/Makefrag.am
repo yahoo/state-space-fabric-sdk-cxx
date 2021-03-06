@@ -1,0 +1,12 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_byte_SUBSOURCES = \
+  obj/src/hyperledger/byte/namespace.cpp \
+  obj/src/hyperledger/byte/Octet.cpp \
+  obj/src/hyperledger/byte/Storage.cpp \
+  obj/src/hyperledger/byte/Span.cpp \
+  obj/src/hyperledger/byte/literals.cpp \
+  $(end)
+byte-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_byte_SUBSOURCES))

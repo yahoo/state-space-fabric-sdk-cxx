@@ -1,0 +1,45 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+check_lib_libtests_concepts_la = check/lib/libtests-concepts.la
+check_lib_libtests_concepts_la_LIBADD = $(nothing)
+check_lib_libtests_concepts_la_MODULES = $(call TF_SOURCEStoMODULES, $(check_lib_libtests_concepts_la_SOURCES))
+check_lib_libtests_concepts_la_SOURCES = \
+  obj/src/tests/concepts/namespace.cpp \
+  obj/src/tests/concepts/Can.cpp \
+  \
+  obj/src/tests/concepts/hyperledger/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/http/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/http/protocol/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/http/protocol/response.Accessors.cpp \
+  \
+  obj/src/tests/concepts/hyperledger/http/json/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/http/json/response.Accessors.cpp \
+  \
+  obj/src/tests/concepts/hyperledger/http/dictionary/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/http/dictionary/response.Accessors.cpp \
+  \
+  obj/src/tests/concepts/hyperledger/fabric/ca/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/fabric/ca/configuration.Constructible.cpp \
+  obj/src/tests/concepts/hyperledger/fabric/ca/package.Constructible.cpp \
+  obj/src/tests/concepts/hyperledger/fabric/ca/query.Constructible.cpp \
+  obj/src/tests/concepts/hyperledger/fabric/ca/request.Constructible.cpp \
+  \
+  obj/src/tests/concepts/hyperledger/pki/namespace.cpp \
+  obj/src/tests/concepts/hyperledger/pki/Constructible.cpp \
+  $(end)
+concepts-objects : $(patsubst %.cpp, %.lo, $(lib_libtests_concepts_la_SOURCES))
+# NOT ---> $(check_lib_libtests_concepts_la_SOURCES) \
+# NOT ---> $(scold_cxxdir)/tests/concepts/dependencies.mk: DC_FLAGS+=--no-insert-namespace
+# NOT ---> $(check_lib_libtests_concepts_la_SOURCES) \
+# NOT ---> $(scold_cxxdir)/tests/concepts/dependencies.mk: bbDC_FLAGS+=--no-insert-namespace
+$(check_lib_libtests_concepts_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/tests/concepts/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(check_lib_libtests_concepts_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/tests/concepts/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/tests/concepts/dependencies.mk

@@ -1,0 +1,81 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::key {
+  //
+  // An abstract base class for Key.
+  // Descendants only
+  // Was: class Key
+  //
+  // Key represents a base cryptographic key. It can be symmetric or asymmetric.
+  // In asymmetric case, the private key can retrieve public key with the relevant method.
+  //
+  // A key can be referenced via the Subject Key Identifier (SKI) with DER or PEM encoding.
+  //
+  class Prototype;
+}
+#endiv
+#divert <hpp>
+#import std.byte
+#import std.iterator_traits
+#import std.size
+#import std.string
+#import hyperledger.crypto.Buffer
+#import hyperledger.required
+#import nonstd.span
+#import hyperledger.required.Octet
+#import nonstd.required.iterator.Producing
+class hyperledger::crypto::key::Prototype : protected Buffer {
+  using Ancestor = Buffer;
+protected:
+  virtual ~Prototype() = default;
+public:
+  // New School
+  using Value = Ancestor::value_type;
+  using Size = std::size_t;
+  using Iterator = Ancestor::iterator;
+  using Const_Iterator = Ancestor::const_iterator;
+  using Span = nonstd::span<Value const>;
+  // old_school
+  using value_type = Value;
+  using size_type = Size;
+  using iterator = Iterator;
+  using const_iterator = Const_Iterator;
+public:
+  Prototype() = default;
+  inline explicit Prototype(Span);
+  inline Prototype(Value const *, Size); // [[FIXTHIS]] remove this because Prototype({data, size}) does just fine
+  template<typename ITERATOR> inline Prototype(ITERATOR start, ITERATOR finish)
+    requires (required::Octet<typename std::iterator_traits<ITERATOR>::value_type> &&
+              required::iterator::Producing<ITERATOR, typename std::iterator_traits<ITERATOR>::value_type>);
+  // The minimal buffer interface
+  using Ancestor::empty;
+  using Ancestor::size;
+  using Ancestor::data;
+  using Ancestor::begin;
+  using Ancestor::end;
+#undef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+#ifdef DEPRECATE_DYNAMIC_TYPING_CRYPTO_KEY_PROTOTYPE_ASYMMETRIC_PUBLIC_PRIVATE
+  //
+  // Return if this key is with symmetric crypt, i.e. whether it's a symmetric key.
+  // :Returns: True or False
+  virtual auto is_symmetric() const -> bool = 0;
+#endif
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::crypto::key {
+  Prototype::Prototype(Value const *data, Size size)
+    : Ancestor{&data[0], &data[size]}
+  { }
+  Prototype::Prototype(Span sp)
+    : Prototype{sp.data(), sp.size()}
+  { }
+  template<typename ITERATOR> Prototype::Prototype(ITERATOR start, ITERATOR finish)
+    requires (required::Octet<typename std::iterator_traits<ITERATOR>::value_type> &&
+              required::iterator::Producing<ITERATOR, typename std::iterator_traits<ITERATOR>::value_type>)
+    : Ancestor{start, finish}
+  { }
+}
+#endiv

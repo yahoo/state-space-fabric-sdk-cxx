@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::query {
+  //
+  // An accumulator actor with operator,
+  //
+  // Wait a Minute!
+  //
+  //   Isn't this what a <em>fold expression</em> does?
+  //   Fair enough.
+  //
+  // Usage:
+  //
+  //   auto actor = Actor<EMPTY>{};
+  //   return (actor, this_thing, that_thing, the_other_thing, ... );
+  //
+  enum Name { EMPTY, ENCODE, IMPROPER };
+  template<Name> struct Actor;
+}
+#endiv
+#divert <hpp>
+#import std.map
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca::query {
+  template<Name NAME, typename TYPE> inline auto operator,(Actor<NAME> &lhs, TYPE const &rhs) -> Actor<NAME> &;
+  template<Name NAME, typename TYPE> inline auto operator,(Actor<NAME> &lhs, std::map<string::Storage, string::Storage> const &rhs) -> Actor<NAME> &;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca {
+  template<query::Name NAME, typename TYPE> auto query::operator,(Actor<NAME> &lhs, TYPE const &rhs) -> Actor<NAME> & {
+    lhs.observe(rhs);
+    return lhs;
+  }
+  template<query::Name NAME, typename TYPE> auto query::operator,(Actor<NAME> &lhs, std::map<string::Storage, string::Storage> const &rhs) -> Actor<NAME> & {
+    lhs.observe(rhs);
+    return lhs;
+  }
+}
+#endiv

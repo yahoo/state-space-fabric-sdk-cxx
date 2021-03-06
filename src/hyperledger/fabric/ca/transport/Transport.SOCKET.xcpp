@@ -1,0 +1,71 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.transport.Transport.template
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The SOCKET transport up to the Certificate Authority Service.
+  //
+  // Concept:
+  //
+  //   These are UNIX (LOCAL) sockets, not TCP sockets, think /usr/var/lib/hyperledger/fabric/hyperledger-fabric-ca.socket (or such name)
+  //   If you want TCP sockts then you're going to be using Transport<HTTP>
+  //
+  //   The Transport<SOCKET> provides some privilege separation between the CA client SDK (us) and the real CA Service (them).
+  //
+  //   This means that the (user) database is maintained by a separate service on the local machine.
+  //   The signing activity occurs in a different process with key material known to that separate process.
+  //   Obviously you'd use this in regimes wh ere the CA service was moderately trusted but was reqwuired to be privilege-separated from the client (us).
+  //
+  //   There is no precedent for this feature in the Python or Go implementations of Hyperledger Fabric CA (Client SDK).
+  //
+  // Exceptions:
+  //
+  //   Yes, as befits the stature of any network client.
+  //   As the network connection is to a service that is local to the current machine, there should be few such exceptional events.
+  //   Where such events occur, they indicate serious problems rather than transient network connetivity issues.
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<SOCKET>{...somehow...};
+  //   auto dri = transport::Driver{SOCKET{}, move(cfg)};
+  //
+  template<> struct Transport<SOCKET>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Configuration.SOCKET
+#import hyperledger.fabric.ca.transport.Prototype
+namespace hyperledger::fabric::ca::transport {
+  template<> class Transport<SOCKET> : public Prototype, private Configuration<SOCKET> {
+    struct Ancestors {
+      using Prototype = transport::Prototype;
+      using Configuration = ca::Configuration<SOCKET>;
+    };
+  public:
+    inline explicit Transport(Configuration<SOCKET> &&);
+    auto DELETE(Path const &, Headers const &) -> Response override;
+    auto GET(Path const &, Headers const &) -> Response override;
+    auto POST(Path const &, Headers const &, Request const &) -> Response override;
+    auto PUT(Path const &, Headers const &, Request const &) -> Response override;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::transport {
+  Transport<SOCKET>::Transport(Configuration<SOCKET> &&configuration)
+    : Ancestors::Configuration{forward<Configuration<SOCKET>>(configuration)}
+  { }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Unimplemented
+#warning WRITETHIS
+namespace hyperledger::fabric::ca::transport {
+  auto Transport<SOCKET>::DELETE(Path const &path, Headers const &headers) -> Response                       { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SOCKET>::GET(Path const &path, Headers const &headers) -> Response                          { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SOCKET>::POST(Path const &path, Headers const &headers, Request const &request) -> Response { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+  auto Transport<SOCKET>::PUT(Path const &path, Headers const &headers, Request const &request) -> Response  { throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__}; }
+}
+#endiv

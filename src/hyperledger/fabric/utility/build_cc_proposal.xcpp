@@ -1,0 +1,57 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#include "hyperledger/protos/peer/proposal.pb.h" // ChaincodeProposalPayload
+#include "hyperledger/protos/peer/proposal.pb.h" // Proposal
+#include "hyperledger/protos/common/common.pb.h" // Header
+#include "hyperledger/protos/peer/chaincode.pb.h" // ChaincodeInvocationSpec
+#include "hyperledger/protos/peer/proposal.pb.h" // TransientMap
+#import std.byte
+#import std.map
+#import std.optional
+#import std.string
+#import std.vector
+namespace hyperledger::fabric::utility {
+  //
+  // Create an chaincode transaction proposal
+  //
+  // Args:
+  //   transient_map: transient data map
+  //   cci_spec: The spec
+  //   header: header of the proposal
+  //
+  // Returns: The created proposal
+  //
+  namespace package::build_cc_proposal::function {
+    using ::protos::Proposal;
+    using ::common::Header;
+    using TransientMap = ::google::protobuf::Map<std::string, std::string>;
+    using Specification = ::protos::ChaincodeInvocationSpec;
+    using Result = Proposal;
+    inline auto build_cc_proposal(Specification cci_spec, Header header, std::optional<TransientMap> transient_map) -> Result;
+    using ::protos::ChaincodeProposalPayload;
+  }
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::utility::package::build_cc_proposal {
+  auto function::build_cc_proposal(Specification cci_spec, Header header, std::optional<TransientMap> transient_map) -> Result {
+    auto cc_payload = ChaincodeProposalPayload();
+    { std::string tmp;
+      cci_spec.SerializeToString(&tmp);
+      cc_payload.set_input(std::move(tmp)); }
+    if (transient_map) {
+      *cc_payload.mutable_transientmap() = std::move(*transient_map);
+    }
+    auto proposal = Proposal();
+    { std::string tmp;
+      header.SerializeToString(&tmp);
+      proposal.set_header(std::move(tmp)); }
+    { std::string tmp;
+      cc_payload.SerializeToString(&tmp);
+      proposal.set_payload(std::move(tmp)); }
+    return proposal;
+  }
+}
+#endiv

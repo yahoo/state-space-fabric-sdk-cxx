@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import std.filesystem.path
+#import std.nothrow_t
+#import nonstd.Outcome
+#import hyperledger.pki.required.Slurpable
+namespace hyperledger::x509 {
+  //
+  // Just offer the deprecation warning
+  // The underlying slurp will provide type safety
+  //
+  template<pki::required::Slurpable OBJECT> [[deprecated("hyperledger::x509::slurp(...) is deprecated; prefer hyperledger::pki::slurp(...) for the same arguments")]] auto slurp(std::filesystem::path const &) -> OBJECT;
+  template<pki::required::Slurpable OBJECT> [[deprecated("hyperledger::x509::slurp(...) is deprecated; prefer hyperledger::pki::slurp(...) for the same arguments")]] auto slurp(std::nothrow_t, std::filesystem::path const &) -> nonstd::Outcome<OBJECT>;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.slurp
+namespace hyperledger {
+  template<pki::required::Slurpable OBJECT> auto x509::slurp(std::filesystem::path const &filepath) -> OBJECT {
+    return pki::slurp<OBJECT>(filepath);
+  }
+  template<pki::required::Slurpable OBJECT> auto x509::slurp(std::nothrow_t no, std::filesystem::path const &filepath) -> nonstd::Outcome<OBJECT> {
+    return pki::slurp<OBJECT>(no, filepath);
+  }
+}
+#endiv
+

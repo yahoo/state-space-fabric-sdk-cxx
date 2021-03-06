@@ -1,0 +1,43 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto.curve
+namespace tests::crypto::curve {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::crypto::curve;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::crypto::curve::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Elliptic() -> void;
+  auto test_Curve() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.crypto.curve.Elliptic
+namespace tests::crypto::curve::fixture {
+  auto Fixture::test_Curve() -> void {
+#warning WRITETHIS auto Fixture::test_Curve() -> void
+  }
+  auto Fixture::test_Elliptic() -> void {
+#warning WRITETHIS auto Fixture::test_Elliptic() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::crypto::curve::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"curve"};
+  series << call("Curve", &Fixture::test_Curve)
+         << call("Elliptic", &Fixture::test_Elliptic)
+         << END;
+  return finalize(series);
+}
+#endiv

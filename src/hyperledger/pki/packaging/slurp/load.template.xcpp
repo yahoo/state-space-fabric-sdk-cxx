@@ -1,0 +1,82 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.file.Path
+#forward hyperledger.pki.packaging.slurp.Loaded
+namespace hyperledger::pki::packaging::slurp {
+  //
+  // Of course, this is an implementation detail and you must avoid calling it directly.
+  //
+  // Usage:
+  //
+  //   see pki::slurp(...)
+  //
+  template<required::Slurpable RESULT, typename OPENSSL> requires required::openssl::Pairwise<RESULT, OPENSSL> auto load(file::Path const &) -> RESULT;
+  template<required::Slurpable RESULT, typename OPENSSL> requires required::openssl::Pairwise<RESULT, OPENSSL> auto load(Returning, file::Path const &) -> Loaded<RESULT>;
+}
+#endiv
+#divert <ipp>
+// The pki::slurp(...) need this at <ipp>
+#import hyperledger.pki.packaging.slurp.Loaded
+#endiv
+#divert <tpp>
+// All the template and all teh specializations will need all these
+// All the complexity is in the exception handling.  There are so many ways to recognize a failure.
+#import hyperledger.pki.exception.Crypto
+#import hyperledger.exception.Filepath
+#import hyperledger.exception.System
+#import hyperledger.file.Path
+#import hyperledger.pki.error.Code
+#import openssl.exception.Aspect
+// NOT YET ---> #import openssl.exception.Filepath <--- NOT YET
+#import openssl.exception.System
+#import openssl.pem.load
+#import std.error_code
+namespace hyperledger::pki::packaging {
+  template<required::Slurpable RESULT, typename OPENSSL> requires required::openssl::Pairwise<RESULT, OPENSSL> auto slurp::load(Returning, file::Path const &filepath) -> Loaded<RESULT> try {
+    //
+    // This idiom requires the cooperating conversion constructor for RESULT
+    // where RESULT = pki::{Secret,Certificate,Request}
+    // which was checked for and guaranteed by Pairwise<RESULT, OPENSSL>
+    //
+    // WATCHOUT - pki::Secret does not obey this constraint so a nearby specialization is maintained.
+    //
+    auto loaded = openssl::pem::load<OPENSSL>(filepath);
+    //
+    //             /------------ Certificate::Certificate(Crt)
+    //             |
+    //             | /---------- Request::Request(Req)
+    //             | |
+    //             | |           Secret::Secret(pki::Private) <---------- FAILS FAILS FAILS
+    //             | |
+    //             vvvvvvvvvvv
+    return {RESULT{move(loaded)}};
+  } catch (openssl::exception::System const &e) {
+    return e.code();
+  } catch (openssl::exception::Aspect const &e) {
+    return {error::Code{error::Code::DECODE}};
+  }
+  template<required::Slurpable RESULT, typename OPENSSL> requires required::openssl::Pairwise<RESULT, OPENSSL> auto slurp::load(file::Path const &filepath) -> RESULT try {
+    //
+    //            /--/--/--/--/--/--/--/--/--/--/--/--/--------- Ibidem.
+    //            |  |  |  |  |  |  |  |  |  |  |  |  |
+    //            |  |  |  |  |  |  |  |  |  |  |  |  |
+    //            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    return RESULT{openssl::pem::load<OPENSSL>(filepath)};
+#if 1 // [[FIXTHIS]] older module-openssl circa 0.3.0-0.devel threw std::error_code.  AND also openssl::exception::Aspect (descendants).  It wasn't a good idea.
+  } catch (std::error_code const &ec) {
+    // The caller is responsible for associating the filepath with the failure in some UX setting
+    throw exception::System{ec.value(), ec.category(), could_not::READ_THE_FILE};
+#endif
+#if 0 // #include hyperledger.exception.Filepath
+    // [[FIXTHIS]] when module-openssl >= 0.3.0-0.devel starts throwing exceptino::Filepath (a.k.a. sys::filesystem::path), then add that in so that the offending filepath is preserved
+  } catch (openssl::exception::Filepath const &theirs) {
+    throw exception::Filepath{theirs};
+#endif
+  } catch (openssl::exception::System const &theirs) {
+    // ibidem ("the caller")
+    throw exception::System{theirs.code(), could_not::READ_THE_FILE};
+  }
+}
+#endiv

@@ -1,0 +1,67 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::service {
+  //
+  // The prototype of a "lightweight" specialized service
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   The "lightweight" services do not perform much processing on the returned response.
+  //   The response is a mere protocol::Response or an Outcome<protocol::Response>
+  //
+  // Design:
+  //
+  //   No copy semantic.
+  //   But move semantics is still available.
+  //   [[FIXTHIS]] not clear this is truly necessary, but it "makes sense" and might be helpful in the future
+  //
+  // Descendants:
+  //
+  //   See the various Service<NAME> descendants
+  //
+  // Lifetimes:
+  //
+  //  The lifetime of the Driver must be longer than the Lightweight (descendant).
+  //
+  // Usage:
+  //
+  //   See the certain of the Service<NAME>.
+  //
+  class Lightweight;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.fabric.ca.Authorizer
+#forward hyperledger.fabric.ca.Driver
+#forward hyperledger.fabric.ca.Tenant
+#import hyperledger.crypto.Primitives
+class hyperledger::fabric::ca::service::Lightweight {
+protected:
+  ~Lightweight() = default;
+public:
+  inline [[implicit]] Lightweight(Tenant const &, Authorizer &, Driver &);
+  Lightweight(Lightweight const &) = delete;
+  auto operator=(Lightweight const &) -> Lightweight & = delete;
+  // can't move them either
+protected:
+  Tenant const &tenant;
+  // Because it is a reference, not a pointer, these things (and their descendants) are not copyable (anyway)
+  Authorizer &authorizer;
+  Driver &driver;
+public:
+  crypto::Primitives primitives; // [[FIXTHIS]] if this is a singleton with no alternativew ... then why objectify it?
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::service {
+  Lightweight::Lightweight(Tenant const &t, Authorizer &a, Driver &d)
+    : tenant{t}
+    , authorizer{a}
+    , driver{d}
+    , primitives{crypto::Primitives{}}
+  { }
+}
+#endiv

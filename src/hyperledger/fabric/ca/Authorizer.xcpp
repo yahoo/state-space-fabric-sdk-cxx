@@ -1,0 +1,63 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca {
+  //
+  // The Authorizer
+  //
+  // Concept:
+  //
+  //   Manages the authorization (generator)
+  //   Computes the authorization
+  //   Inserts it into the transaction (wherever that might be)
+  //
+  //   The authorizer is a peer of the Driver within Service<MAIN>
+  ///  Every subservice has a reference to an authorizer.
+  //
+  // Design:
+  //
+  //   Yes, it was designed.
+  //
+  // Usage:
+  //
+  //   see Service<MAIN>
+  //   
+  struct Authorizer;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.authorization.Prototype
+#forward hyperledger.fabric.ca.Configuration
+#forward hyperledger.fabric.ca.Package
+#import hyperledger.fabric.ca.protocol.Headers
+#forward hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.required.name.Authorization
+#import hyperledger.string.Storage
+#import std.unique_ptr
+struct hyperledger::fabric::ca::Authorizer {
+  template<required::name::Authorization NAME> inline explicit Authorizer(Configuration<NAME> &&);
+  Authorizer(Authorizer const &) = delete;
+  auto operator=(Authorizer const &) -> Authorizer & = delete;
+  inline auto generate(Package<ENROLLMENT> const &) -> Optional<string::Storage>;
+  inline auto generate(Package<ENROLLMENT> const &, protocol::Request const &) -> Optional<string::Storage>;
+  inline auto standard_headers(string::Storage authorization) -> protocol::Headers;
+protected:
+  std::unique_ptr<ca::authorization::Prototype> authorization;
+};
+#endiv
+#divert <ipp>
+#import std.make_unique
+#import hyperledger.fabric.ca.Authorization
+#import std.make_unique
+namespace hyperledger::fabric::ca {
+  template<required::name::Authorization NAME> Authorizer::Authorizer(Configuration<NAME> &&cfg)
+    : authorization{std::make_unique<Authorization<NAME>>(forward<Configuration<NAME>>(cfg))}
+  { }
+  auto Authorizer::generate(Package<ENROLLMENT> const &registrar) -> Optional<string::Storage>                                       { return authorization->generate(registrar); }
+  auto Authorizer::generate(Package<ENROLLMENT> const &registrar, protocol::Request const &request) -> Optional<string::Storage> { return authorization->generate(registrar, request); }
+  auto Authorizer::standard_headers(string::Storage authorization) -> protocol::Headers {
+    return protocol::Headers{{"Authorization", move(authorization)}};
+  }
+}
+#endiv

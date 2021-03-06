@@ -1,14 +1,21 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-namespace tests::unit::ip { class Fixture; }
+#import hyperledger.ip
+namespace tests::unit::ip {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::ip;
+  }
+  using fixture::Fixture;
+}
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::ip::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::ip::fixture::Fixture : public cppunit::test::Fixture {
   auto test_Port() -> void;
   auto test_Host() -> void;
   auto test_Endpoint() -> void;
@@ -16,85 +23,88 @@ public:
   static auto suite() -> cppunit::Test *;
 };
 #endiv
+#divert <ipp>
+#import hyperledger.ip.format
+#import hyperledger.ip.to_string
+namespace tests::unit::ip::fixture {
+  using library::format;
+  using library::to_string;
+}
+  #endiv
 #divert <cpp>
-#import hyperledger.fabric.ip.Port
-auto tests::unit::ip::Fixture::test_Port() -> void {
-  using namespace ::hyperledger::fabric::ip;
-  Port p0;
-  CPPUNIT_ASSERT(0u == (unsigned) p0);
-  Port p1{1};
-  CPPUNIT_ASSERT(1u == (unsigned) p1);
-  p1 = 2u;
-  CPPUNIT_ASSERT(2u == (unsigned) p1);
-}
-#import hyperledger.fabric.ip.Host
-#import hyperledger.fabric.ip.host.Visitor
-auto tests::unit::ip::Fixture::test_Host() -> void {
-  using namespace ::hyperledger::fabric::ip;
-  Host subject;
-  subject = host::Name{"localhost"};
-  auto visitor = host::Visitor{[](host::Uninterpreted const &) -> void { CPPUNIT_ASSERT(false); },
-                               [](host::Name const &) -> void { CPPUNIT_ASSERT(true); },
-                               [](host::Address4 const &) -> void { CPPUNIT_ASSERT(false); },
-                               [](host::Address6 const &) -> void { CPPUNIT_ASSERT(false); }};
-  std::visit(visitor, subject);
-  auto const expected = "localhost"s;
-  {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = buf.str();
-  } {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = to_string(subject);
+#import hyperledger.ip.Port
+#import hyperledger.ip.Host
+#import hyperledger.ip.host.Visitor
+#import hyperledger.ip.Endpoint
+#import hyperledger.ip.Endpoints
+namespace tests::unit::ip::fixture {
+  auto Fixture::test_Port() -> void {
+    library::Port p0;
+    CPPUNIT_ASSERT(0u == (unsigned) p0);
+    library::Port p1{1};
+    CPPUNIT_ASSERT(1u == (unsigned) p1);
+    p1 = 2u;
+    CPPUNIT_ASSERT(2u == (unsigned) p1);
   }
-}
-#import hyperledger.fabric.ip.Endpoint
-auto tests::unit::ip::Fixture::test_Endpoint() -> void {
-  using namespace ::hyperledger::fabric::ip;
-  Endpoint subject{host::Name{"localhost"}, Port{80}};
-  auto const expected = "localhost:80"s;
-  {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = buf.str();
-  } {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = to_string(subject);
+  auto Fixture::test_Host() -> void {
+    library::Host subject;
+    subject = library::host::Name{"localhost"};
+    auto visitor = library::host::Visitor{[](library::host::Uninterpreted const &) -> void { CPPUNIT_ASSERT(false); },
+                                          [](library::host::Name const &) -> void          { CPPUNIT_ASSERT(true); },
+                                          [](library::host::Address4 const &) -> void      { CPPUNIT_ASSERT(false); },
+                                          [](library::host::Address6 const &) -> void      { CPPUNIT_ASSERT(false); }};
+    std::visit(visitor, subject);
+    auto const expected = "localhost"s;
+    {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = buf.str();
+    } {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = to_string(subject);
+    }
   }
-}
-#import hyperledger.fabric.ip.Endpoints
-auto tests::unit::ip::Fixture::test_Endpoints() -> void {
-  using namespace ::hyperledger::fabric::ip;
-  using namespace ::hyperledger::fabric::ip;
-  Endpoints subject{{host::Name{"localhost"}, Port{80}},
-                    {host::Name{"localhost"}, Port{8080}},
-                    {host::Name{"localhost"}, Port{8088}}};
-  auto const expected = "localhost:80,localhost:8080,localhost:8088"s;
-  {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = buf.str();
-  } {
-    std::ostringstream buf;
-    buf << format(subject);
-    auto const actual = to_string(subject);
+  auto Fixture::test_Endpoint() -> void {
+    library::Endpoint subject{library::host::Name{"localhost"}, library::Port{80}};
+    auto const expected = "localhost:80"s;
+    {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = buf.str();
+    } {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = to_string(subject);
+    }
+  }
+  auto Fixture::test_Endpoints() -> void {
+    library::Endpoints subject{{library::host::Name{"localhost"}, library::Port{80}},
+                               {library::host::Name{"localhost"}, library::Port{8080}},
+                               {library::host::Name{"localhost"}, library::Port{8088}}};
+    auto const expected = "localhost:80,localhost:8080,localhost:8088"s;
+    {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = buf.str();
+    } {
+      std::ostringstream buf;
+      buf << format(subject);
+      auto const actual = to_string(subject);
+    }
   }
 }
 #import tests.unit.ip.host.Fixture
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::ip::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("ip");
+  using namespace rigging::suite;
+  auto series = Stream{"ip"};
   series << call("Port", &Fixture::test_Port)
          << call("Host", &Fixture::test_Host)
          << call("Endpoint", &Fixture::test_Endpoint)
          << call("Endpoints", &Fixture::test_Endpoints)
-         << add(host::Fixture::suite());
-    ;
-  return series.release();
+         << add<host::Fixture>()
+         << END;
+  return finalize(series);
 }
 #endiv

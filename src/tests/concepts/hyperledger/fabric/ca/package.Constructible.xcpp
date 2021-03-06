@@ -1,0 +1,18 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <tpp>
+namespace tests::concepts::hyperledger::fabric::ca::package {
+  //
+  // Concept:
+  //
+  //   There cannot be a default constructor to a "package" ... think about it.
+  //   The Package exists solely to bundle up some other things, so thus, it has no default-constructed existence.
+  //
+  // Usage:
+  //
+  //   see hyperledger/fabric/ca/Package.$SOMETHING.xcpp
+  //
+  template<typename PACKAGE> concept bool Constructible = Can<PACKAGE, MOVE> && Not<PACKAGE, DEFAULT> && (Can<PACKAGE, COPY> || Not<PACKAGE, COPY>);
+}
+#endiv

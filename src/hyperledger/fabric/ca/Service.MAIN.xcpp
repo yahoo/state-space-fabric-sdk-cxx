@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Service.template
+namespace hyperledger::fabric::ca {
+  //
+  // Usage:
+  //
+  //   see the documentariat in main/Service.xcpp
+  //
+  template<> struct Service<MAIN>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.main.Service
+namespace hyperledger::fabric::ca {
+  template<> class Service<MAIN> : public main::Service {
+    using Ancestor = main::Service;
+  public:
+    using Ancestor::Service;
+  };
+}
+#endiv

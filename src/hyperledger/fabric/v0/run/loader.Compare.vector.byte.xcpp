@@ -1,0 +1,25 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.v0.run.loader.Compare.template
+#import std.byte
+#import std.vector
+namespace hyperledger::fabric::v0::run::loader {
+  // A comparator; an implementation detail of the loader subsystem
+  template<> struct Compare<std::vector<std::byte>>;
+}
+#endiv
+#divert <hpp>
+template<> struct hyperledger::fabric::v0::run::loader::Compare<std::vector<std::byte>> {
+  using Argument = std::vector<std::byte>;
+  inline auto operator()(Argument const &, Argument const &) const -> bool;
+};
+#endiv
+#divert <ipp>
+#import std.equal
+auto hyperledger::fabric::v0::run::loader::Compare<std::vector<std::byte>>::operator()(Argument const &a, Argument const &b) const -> bool {
+  return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin(), b.end());
+}
+#endiv

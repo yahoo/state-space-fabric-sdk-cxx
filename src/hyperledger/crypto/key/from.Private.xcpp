@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.crypto.key.from.template
+#import hyperledger.crypto.key.Private
+namespace hyperledger::crypto::key {
+  template<> inline auto from<Private>(byte::Span) -> Private;
+  template<> inline auto from<Private>(string::View) -> Private;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.exception.Decode
+#import hyperledger.exception.Unimplemented
+#import openssl.exception.Aspect
+#import openssl.pem.from_byte_span
+#import openssl.pem.from_string_view
+namespace hyperledger::crypto::key {
+  template<> auto from<Private>(byte::Span bytes) -> Private try {
+    auto got = openssl::pem::from_byte_span<openssl::evp::PKey>(bytes);
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+    auto const start = bytes.data();
+    auto const finish = start + bytes.size();
+    return Private{start, finish};
+  } catch (openssl::exception::Aspect const &) {
+    throw exception::Decode{"Private Key"};
+  }
+  template<> auto from<Private>(string::View view) -> Private try {
+    auto got = openssl::pem::from_string_view<openssl::evp::PKey>(view);
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+    auto const start = view.data();
+    auto const finish =  start + view.size();
+    return Private{start, finish};
+  } catch (openssl::exception::Aspect const &) {
+    throw exception::Decode{"Private Key"};
+  }
+}
+#endiv
+#divert <cpp>
+#warning WRITETHIS template<> inline auto from<Private>(byte::Span) -> Private;
+#warning WRITETHIS template<> inline auto from<Private>(string::View) -> Private;
+#endiv

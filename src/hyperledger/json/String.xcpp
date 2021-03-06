@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.char_traits
+namespace hyperledger::json {
+  //
+  // A string that is JSON.
+  //
+  // Concept:
+  //
+  //   Just like std::string, only more jsonie.
+  //
+  // Design:
+  //
+  //   AVOID the one that is ::json::String
+  //   https://en.cppreference.com/w/cpp/string/basic_string
+  //
+  // Usage:
+  //
+  //   It's just like std::string, remember?
+  //
+  namespace traits {
+    struct Character : public std::char_traits<char> { };
+  }
+  class String;
+}
+#endiv
+#divert <hpp>
+#import std.basic_string
+class hyperledger::json::String : public std::basic_string<char, traits::Character> {
+  using Ancestor = std::basic_string<char, traits::Character>;
+public:
+  String() = default;
+  using Ancestor::basic_string;
+  inline explicit String(Ancestor const &);
+  inline explicit String(Ancestor &&);
+  // You can construct an json::String from a regular string without a lot of ceremony
+  inline explicit String(std::string const &);
+};
+#divert <ipp>
+namespace hyperledger::json {
+  String::String(Ancestor const &a) : Ancestor{a} { }
+  String::String(Ancestor &&a) : Ancestor{forward<Ancestor>(a)} { }
+  String::String(std::string const &s) : Ancestor{s.begin(), s.end()} { }
+}
+#endiv

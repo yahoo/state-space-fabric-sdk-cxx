@@ -1,0 +1,19 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_query_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/Query.template.cpp \
+  obj/src/hyperledger/fabric/ca/Query.AFFILIATION.cpp \
+  obj/src/hyperledger/fabric/ca/Query.CERTIFICATE.cpp \
+  obj/src/hyperledger/fabric/ca/Query.cpp \
+  \
+  obj/src/hyperledger/fabric/ca/query/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/query/is_numeric.cpp \
+  obj/src/hyperledger/fabric/ca/query/Actor.template.cpp \
+  obj/src/hyperledger/fabric/ca/query/Actor.EMPTY.cpp \
+  obj/src/hyperledger/fabric/ca/query/Actor.IMPROPER.cpp \
+  obj/src/hyperledger/fabric/ca/query/Actor.ENCODE.cpp \
+  obj/src/hyperledger/fabric/ca/query/Actor.cpp \
+  $(end)
+query-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_query_SUBSOURCES))

@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca::query {
+  //
+  // Is this string shaped like a number?
+  //
+  // The brutest-forcest way to check this is to convert it to a number.
+  //
+  // Usage:
+  //
+  //   auto candidate = ...somehow...
+  //   auto isa = is_numeric(candidate);
+  //
+  inline auto is_numeric(string::Storage const &) -> bool;
+}
+#endiv
+#divert <ipp>
+#import std.strtoul
+#import std.exception
+auto hyperledger::fabric::ca::query::is_numeric(string::Storage const &candidate) -> bool try {
+  auto start = candidate.c_str();
+  char *finish{nullptr};
+  auto const BASE = 10;
+  (void) std::strtoul(start, &finish, BASE);
+  // We don't care what the value is, we just want to know that it is a valid unsigned long (a 64-bit value).
+  return nullptr != finish && candidate.size() == (std::size_t)std::max(0l, finish - start);
+} catch (std::exception const &) {
+  return false;
+}
+#endiv

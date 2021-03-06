@@ -1,0 +1,50 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import tunitas.Outcome
+namespace hyperledger {
+  //
+  // The outcome is either success and a value
+  //             or else error and a failure indication through std::error_code and a std::error_category (descendant).
+  //
+  // Erudition & background, being at least:
+  //   https://ned14.github.io/outcome/
+  //   https://lists.boost.org/Archives/boost/2018/02/241066.php
+  //   http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0762r0.pdf
+  //  
+  // Usage:
+  //
+  //   struct Thing { ... };
+  //   auto function() -> Outcome<Thing>;
+  //   auto called = function();
+  //   if (ok(called)) {
+  //      auto const &thing = value(called); .............................. a.k.a. unwrap(called)
+  //      auto &thing = value(called); .................................... ibidem.
+  //      auto thing = value(std::move(called)); .........................  ibidem.
+  //   } else {
+  //      auto ec = error_code(called);
+  //   }
+  //
+  using tunitas::Outcome;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger {
+  //
+  // If !ok(in)) then throw the std::error_code
+  // else return the unwrapped value.
+  //
+  template<typename TYPE> inline auto unwrap(Outcome<TYPE>) -> TYPE;
+}
+#endiv
+#divert <ipp>
+template<typename TYPE> auto hyperledger::unwrap(Outcome<TYPE> in) -> TYPE {
+  if (!ok(in)) {
+    throw error_code(in);
+  } else {
+    return value(std::move(in));
+  }
+}
+#endiv

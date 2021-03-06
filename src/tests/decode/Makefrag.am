@@ -1,0 +1,27 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+check_bin_decode = check/bin/decode
+check_bin_decode_LDADD = \
+  $(lib_libhyperledger_la) \
+  $(end)
+# Reminder: autotools does not put $(AM_LDFLAGS) into check_bin_decode_LDFLAGS, like it does with CPPFLAGS and CXXFLAGS
+check_bin_decode_LDFLAGS = $(CHECK_LDFLAGS_SET)
+#(check_bin_decode_OBJECTS) : AM_CPPFLAGS+=$(AND_CHECK_CPPFLAGS_SET)
+#(check_bin_decode_OBJECTS) : AM_CXXFLAGS+=$(AND_CHECK_CXXFLAGS_SET)
+check_bin_decode_MODULES = $(call TF_SOURCEStoMODULES, $(check_bin_decode_SOURCES))
+check_bin_decode_SOURCES = \
+  obj/src/tests/decode/main.cpp \
+  obj/src/tests/decode/namespace.cpp \
+  $(end)
+$(check_bin_decode_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/tests/decode/dependencies.mk:
+	$(TF_V_DIS) $(call TF_DEPENDENCIES, $(check_bin_decode_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/tests/decode/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/tests/decode/dependencies.mk

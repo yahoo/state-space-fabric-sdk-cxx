@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.http.json.call.template
+namespace hyperledger::http::json {
+  //
+  // Make a call as HTTP POST
+  //
+  // A POST call nearly always has a body
+  //
+  // Use the default implementation ---> template<> auto call<Method::POST>(tls::Client const &, url::String const &, protocol::Headers const &) -> Response;
+  template<> auto call<Method::POST>(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response;
+}
+#endiv
+#divert <cpp>
+#warning WRITETHIS
+#import hyperledger.http.exception // cascade the namespace exception (unambiguously)
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::http::json {
+  template<> auto call<Method::POST>(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response {
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+  }
+}
+#endiv

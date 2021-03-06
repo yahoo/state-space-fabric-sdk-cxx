@@ -1,0 +1,13 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.net
+namespace hyperledger::net {
+  namespace [[detail]] endpoint {
+    //
+    // These endpoint items are implementation details which are shared between namespaces hyperledger::ip and hyperledger::tls
+    //
+  }
+}
+#endiv

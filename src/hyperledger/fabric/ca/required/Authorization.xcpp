@@ -1,0 +1,49 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Authorization
+#forward hyperledger.fabric.ca.Authorization
+#import hyperledger.fabric.ca.traits.Authorization
+#include <hpp/hyperledger.fabric.ca.traits.Authorization>
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this Authorization<NAME> in the universe of Authorizations, as named??
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Authorization<NAME>
+  //   The concept condition MUST align if-and-only-if with name::Authorization<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Authorization<AUTHORIZATION> ............... required::Authorization<ca::Authorization<MAIN>>;
+  //   required::name::Authorization<NAME> .................. required::name::Authorization<MAIN>;
+  //
+  // Usage:
+  //
+  //   template<required::Authorization AUTHORIZATION> auto get_by_object() -> AUTHORIZATION;
+  //   template<required::name::Authorization NAME> auto get_by_name() -> ca::Authorization<NAME>;
+  //
+  namespace [[eponymous]] authorization {
+    template<typename AUTHORIZATION> concept bool Authorization = requires(AUTHORIZATION) {
+      typename traits::template Authorization<AUTHORIZATION>::Name;
+      requires traits::Authorization<AUTHORIZATION>::value;
+      requires required::name::Authorization<typename traits::template Authorization<AUTHORIZATION>::Name>;
+    };
+  }
+  using authorization::Authorization;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Authorization
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    namespace required = hyperledger::fabric::ca::required;
+    static_assert(required::Authorization<Authorization<PASS>>);
+    static_assert(required::Authorization<Authorization<TOKEN>>);
+  }
+}
+#endiv

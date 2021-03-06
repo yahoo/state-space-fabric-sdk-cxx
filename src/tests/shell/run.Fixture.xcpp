@@ -1,0 +1,85 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import shell.run
+namespace tests::shell::run {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::shell::run;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::shell::run::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Runner() -> void;
+  auto test_Piped_From() -> void;
+  auto test_Piped_To() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Runner;
+  struct Piped_From;
+  struct Piped_To;
+};
+#endiv
+#divert <cpp>
+#import std.cerr
+#import std.getline
+#import tests.shell.run.Fixture.Piped_From
+#import tests.shell.run.Fixture.Piped_To
+#import tests.shell.run.Fixture.Runner
+namespace tests::shell::run::fixture {
+  auto Fixture::test_Runner() -> void {
+    Runner go;
+    auto ran = go.run();
+    CPPUNIT_ASSERT(ok(ran));
+  }
+  auto Fixture::test_Piped_From() -> void {
+    Piped_From go;
+    auto started = go.start();
+    CPPUNIT_ASSERT(ok(started));
+    std::string payload;
+    // WATCHOUT - if you use operator>> to read payload, it will stop at the first whitespace, else use std::noskipws.
+    if (std::getline(go.stream(), payload).eof()) {
+      CPPUNIT_ASSERT(true);
+    } else {
+      std::string lastcall; 
+      if (std::getline(go.stream(), lastcall).eof() && lastcall.empty()) {
+        CPPUNIT_ASSERT(true);
+      } else {
+        std::cerr << "not at eof, but got |" << payload << "|\n";
+        CPPUNIT_ASSERT(false);
+      }
+    }
+    auto waited = go.wait();
+    CPPUNIT_ASSERT(ok(waited));
+  }
+  auto Fixture::test_Piped_To() -> void {
+    Piped_To go;
+    auto started = go.start();
+    CPPUNIT_ASSERT(ok(started));
+    go.stream() << "And on the seventh day the camel died...";
+    if (go.stream().good()) {
+      CPPUNIT_ASSERT(true);
+    } else {
+      CPPUNIT_ASSERT(false);
+    }
+    auto waited = go.wait();
+    CPPUNIT_ASSERT(ok(waited));
+  }
+}
+#import rigging.suite.io
+auto tests::shell::run::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"run"};
+  series << call("Runner", &Fixture::test_Runner)
+         << call("Piped_From", &Fixture::test_Piped_From)
+         << call("Piped_To", &Fixture::test_Piped_To)
+         << END;
+  return finalize(series);
+}
+#endiv

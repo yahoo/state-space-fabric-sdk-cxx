@@ -1,0 +1,14 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.user.packaging.load.Loaded
+namespace hyperledger::fabric::user::packaging::create_implementation {
+  //
+  // The result of creating a user; an Outcome<User> by another name.
+  // ... is the same as loading a user.
+  //
+  using Created = load_implementation::Loaded;
+}
+#endiv

@@ -1,0 +1,75 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::fabric::v0::run::peer {
+  //
+  // The Hyperledger Fabric peer(1) program ... commands other than 'chaincode'
+  // Descendants only.  Everything is set up here to avoid cut & paste in the descendant.
+  //
+  // That Curiously-Recurring Template Pattern!
+  // RUNNER is run::Runner or run::Pipe_From
+  //
+  // Implements:
+  //
+  //   peer <subcommand> ...options... ...arguments...
+  //
+  // Usage:
+  //
+  //   see run.Peer<TYPE>
+  //
+  template<typename RUNNER> class Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.Loader.fabric.Context
+#import hyperledger.fabric.v0.run.Loader.peer.Context
+#import hyperledger.fabric.v0.run.Loader.Orderer
+#import hyperledger.fabric.v0.run.Loader.Client
+#import hyperledger.fabric.v0.peer.Context
+#import std.string
+template<typename RUNNER> class hyperledger::fabric::v0::run::peer::Basis
+  : public RUNNER,
+    private Loader<fabric::v0::Context>,
+    private Loader<fabric::v0::peer::Context>,
+    private Loader<orderer::Contact>,
+    private Loader<tls::Client> {
+  struct Ancestors {
+    using Runner = RUNNER;
+    struct loaders {
+      using Fabric = run::Loader<fabric::v0::Context>;
+      using Peer = run::Loader<fabric::v0::peer::Context>;
+      using Orderer = run::Loader<orderer::Contact>;
+      using Client = run::Loader<tls::Client>;
+    };
+  };
+public:
+  using Context = fabric::v0::peer::Context;
+protected:
+  ~Basis() = default;
+  inline Basis(std::string subcommand, Context const &);
+  struct tests { struct Access; };
+  friend struct tests::Access;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Code
+#import std.error_code
+template<typename _> hyperledger::fabric::v0::run::peer::Basis<_>::Basis(std::string subcommand, Context const &context)
+  : Ancestors::Runner{Ancestors::Runner::EXECP, "peer"} {
+  auto &arguments = Ancestors::Runner::args;
+  using Ld = typename Ancestors::loaders;
+  push_back<1>(arguments) << std::move(subcommand);
+  Ld::Fabric::load(arguments,context);
+  Ld::Peer::load(arguments, context);
+  if (context.orderer) {
+    Ld::Orderer::load(arguments, context.orderer->endpoint);
+    if (context.orderer->client) {
+      Ld::Client::load(arguments, *context.orderer->client);
+    }
+  } else {
+    throw std::error_code{error::Code::CONFIGURATION_ORDERER_CONTACT};
+  }
+}
+#endiv

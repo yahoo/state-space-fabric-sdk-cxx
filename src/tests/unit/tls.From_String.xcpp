@@ -1,0 +1,121 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.tls
+namespace tests::unit::tls {
+  namespace [[eponymous]] eponymous {
+    class From_String;
+    namespace library = ::hyperledger::tls;
+  }
+  using eponymous::From_String;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::tls::eponymous::From_String : public cppunit::test::Fixture {
+  auto test_Endpoint_one() -> void;
+  auto test_Endpoint_many() -> void;
+  auto test_Endpoints_one() -> void;
+  auto test_Endpoints_many() -> void;
+  //
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.tls.from_string
+#import hyperledger.Outcome
+namespace tests::unit::tls::eponymous {
+  using ::hyperledger::Outcome;
+  using library::from_string;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.Outcome
+#import std.cerr
+namespace tests::unit::tls::eponymous {
+  auto From_String::test_Endpoint_one() -> void {
+    using Subject = library::Endpoint;
+    auto from = from_string<Subject>("localhost:80");
+    CPPUNIT_ASSERT(ok(from));
+    CPPUNIT_ASSERT("localhost:80"s == to_string(value(from)));
+  }
+  auto From_String::test_Endpoint_many() -> void {
+    auto all = true;
+    std::cerr << "all: ";
+    using Subject = library::Endpoint;
+    auto const expect = [&all](bool expected, hyperledger::Outcome<Subject> oc) {
+                          auto g = expected == ok(oc);
+                          all &= g;
+                          std::cerr << '(' << g << all << ')';
+                        };
+    expect(false, from_string<Subject>(""));
+    expect(true, from_string<Subject>("localhost"));
+    expect(true, from_string<Subject>("localhost:80"));
+    expect(true, from_string<Subject>(":localhost:80:80")); // OK not checking for valid hostname syntax
+    expect(false, from_string<Subject>(":localhost"));
+    expect(true, from_string<Subject>("127.0.0.1"));
+    expect(true, from_string<Subject>("127.0.0.1:80"));
+    expect(true, from_string<Subject>("::1"));
+    expect(true, from_string<Subject>("2001:db8::1"));
+    expect(true, from_string<Subject>("[2001:db8::1]:80"));
+    expect(true, from_string<Subject>("example.com"));
+    expect(true, from_string<Subject>("example.com:7051"));
+    expect(false, from_string<Subject>("example.com:70051"));
+    std::cerr << '\n';
+    CPPUNIT_ASSERT(all);
+  }
+  auto From_String::test_Endpoints_one() -> void {
+    using Subject = library::Endpoints;
+    auto from = from_string<Subject>("localhost:80,localhost:81");
+    CPPUNIT_ASSERT(ok(from));
+    CPPUNIT_ASSERT("localhost:80,localhost:81"s == to_string(value(from)));
+  }
+  auto From_String::test_Endpoints_many() -> void {
+    auto all = true;
+    std::cerr << "all: ";
+    using Subject = library::Endpoints;
+    using library::from_string;
+    auto const expect = [&all](bool expected, Outcome<Subject> oc) {
+                          auto g = expected == ok(oc);
+                          all &= g;
+                          std::cerr << '(' << g << all << ')';
+                        };
+    expect(false, from_string<Subject>(""));
+    expect(true, from_string<Subject>("localhost"));
+    expect(true, from_string<Subject>("localhost:80"));
+    //
+    expect(false, from_string<Subject>(",a"));
+    expect(false, from_string<Subject>("a,"));
+    expect(false, from_string<Subject>("a,,a"));
+    expect(true, from_string<Subject>("a,b,c,d"));
+    expect(false, from_string<Subject>("a,b,c,example.com:70051,c,d"));
+    expect(true, from_string<Subject>("example1.com:1,example2.com:2,example3.com:3"));
+    std::cerr << '\n';
+    CPPUNIT_ASSERT(all);
+  }
+}
+#import rigging.suite.io
+auto tests::unit::tls::eponymous::From_String::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"from_string"};
+  series << []() {
+              auto en = Stream{"Endpoint"};
+              en << call("one", &From_String::test_Endpoint_one)
+                 << call("many", &From_String::test_Endpoint_many)
+                 << END;
+              return move(en);
+            }()
+         << []() {
+              auto en = Stream{"Endpoints"};
+              en << call("one", &From_String::test_Endpoints_one)
+                 << call("many", &From_String::test_Endpoints_many)
+                 << END;
+              return move(en);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

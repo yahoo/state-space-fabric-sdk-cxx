@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto {
+  //
+  // The Crypto Primitives
+  // This is a factory.
+  // It is a concrete class.
+  //
+  // The type alias gives a _little_ bit of wiggle room about the interface and interchangeability.
+  // However, the Hyperledger family of products is pretty much tuned to Elliptic Curve (EC) and P-256 in particular.
+  // Of course crypto systems have a half life, so we can expect P-256 to fall within the lifetime of fashionable
+  // of using these sorts of distributed database technologies.
+  //
+  // Usage:
+  //
+  //   #import hyperledger.crypto.ecies
+  //   auto primitives = ecies();
+  //
+  struct Primitives;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.curve.Elliptic
+struct hyperledger::crypto::Primitives : public primitives::Interface {
+  inline auto generate_private_key() const -> key::Private override;
+  inline auto encrypt(key::Public const &, Message const &plain_text) const -> Message override;
+  inline auto decrypt(key::Private const &, Message const &cipher_text) const -> Message override;
+  inline auto sign(key::Private const &, Message const &) const -> Signature override;
+  inline auto verify(key::Public const &, Message const &, Signature const &) const -> bool override;
+private:
+  static auto singleton() -> primitives::Interface const &;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::crypto {
+  auto Primitives::generate_private_key() const -> key::Private                                     { return singleton().generate_private_key(); }
+  auto Primitives::encrypt(key::Public const &publick, Message const &plain_text) const -> Message  { return singleton().encrypt(publick, plain_text); }
+  auto Primitives::decrypt(key::Private const &privee, Message const &cipher_text) const -> Message { return singleton().decrypt(privee, cipher_text); }
+  auto Primitives::sign(key::Private const &privee, Message const &message) const -> Signature      { return singleton().sign(privee, message); }
+  auto Primitives::verify(key::Public const &publick, Message const &message, Signature const &signature) const -> bool { return singleton().verify(publick, message, signature); }
+}
+#divert <cpp>
+#import hyperledger.crypto.curve.Elliptic
+#import std.mutex
+#import std.lock_guard
+namespace hyperledger::crypto {
+  auto Primitives::singleton() -> primitives::Interface const & {
+    static std::mutex exclusive;
+    auto guard = std::lock_guard<std::mutex>{exclusive};
+    static crypto::curve::Elliptic const single;
+    return single;
+  }
+}
+#endiv

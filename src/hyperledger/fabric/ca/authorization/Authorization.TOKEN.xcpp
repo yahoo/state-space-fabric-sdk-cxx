@@ -1,0 +1,81 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.authorization.Authorization.template
+namespace hyperledger::fabric::ca::authorization {
+  //
+  // An Token method of Authorization.
+  // A JSON Token on some fields
+  //
+  // https://en.wikipedia.org/wiki/JSON_Web_Token
+  // https://tools.ietf.org/html/rfc7519
+  // https://jwt.io/
+  //   git clone https://github.com/troian/jwtpp
+  //   git clone https://github.com/Thalhammer/jwt-cpp
+  //   git clone https://github.com/arun11299/cpp-jwt
+  //   git clone https://github.com/pokowaka/jwt-cpp
+  //   git clone https://github.com/pocoproject/poco.git
+  //
+  // Origin & Evolution:
+  //
+  //   was: caservice.py
+  //   was: part of client::Driver
+  //   was: part of transport::Driver
+  //
+  // Usage:
+  //
+  //   sure.
+  //
+  template<> struct Authorization<TOKEN>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.authorization.Prototype
+#forward hyperledger.fabric.ca.Configuration
+#import hyperledger.crypto.Primitives
+namespace hyperledger::fabric::ca::authorization {
+  template<> class Authorization<TOKEN> final : public Prototype {
+    using Ancestor = Prototype;
+  public:
+    inline explicit Authorization(Configuration<TOKEN> &&);
+    auto generate(Package<ENROLLMENT> const &) -> Optional<string::Storage> override;
+    auto generate(Package<ENROLLMENT> const &, protocol::Request const &) -> Optional<string::Storage> override;
+  private:
+    crypto::Primitives primitives;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.string.literals
+#import hyperledger.fabric.ca.Configuration.TOKEN
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::authorization {
+  Authorization<TOKEN>::Authorization(Configuration<TOKEN> &&cfg) : primitives{move(cfg.primitives)} { }
+  using namespace string::literals;
+  using protocol::serialize;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.base64.encode
+#import hyperledger.crypto.Message
+#import hyperledger.crypto.ecies
+#import hyperledger.crypto.Primitives
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.Request.REGISTRATION
+namespace hyperledger::fabric::ca::authorization {
+  auto Authorization<TOKEN>::generate(Package<ENROLLMENT> const &registrar) -> Optional<string::Storage> {
+    auto b64Cert = base64::encode(to_string(registrar.certificate));
+    auto sig = primitives.sign(registrar.secret, crypto::Message{"."s + b64Cert});
+    auto b64Sign = base64::encode(sig);
+    return b64Cert + "."s + b64Sign;
+  }
+  auto Authorization<TOKEN>::generate(Package<ENROLLMENT> const &registrar, protocol::Request const &request) -> Optional<string::Storage> {
+    auto b64Cert = base64::encode(to_string(registrar.certificate));
+    auto b64Body = base64::encode(serialize(request)); // [[FIXTHIS]] this means that serialize is alled twice on the same bytes (once to build the auth token, and once to build the payload [[elsewhere]])
+    auto sig = primitives.sign(registrar.secret, crypto::Message{b64Body + "."s + b64Cert});
+    auto b64Sign = base64::encode(sig);
+    return b64Cert + "."s + b64Sign;
+  }
+}
+#endiv

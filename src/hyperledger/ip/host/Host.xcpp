@@ -1,0 +1,71 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import std.variant
+#import hyperledger.string.Storage
+#import std.char_traits
+namespace hyperledger::ip::host {
+  //
+  // An Internet Protocol Host
+  // May be specified by any of a number of naming conventions
+  //   ...Some Uninterpreted Characters...        (e.g. the non-canonical address syntaxes)
+  //   ...Fully-Qualified Domain Name...
+  //   ...IPv4 Address...
+  //   ...IPv6 Address...
+  //
+  // Usage:
+  //
+  //   auto h = Host{host::Uninterpreted{"127.0.0.1"}};
+  //   auto h = Host{host::Uninterpreted{"::0:0:0:1"}};
+  //   auto h = Host{host::Name{"localhost"};
+  //   auto h = Host{host::Address4{...somehow...}};
+  //   auto h = Host{host::Address6{...somehow...}};
+  //
+  //   #import hyperledger.ip.host.Formatter ... for format(...() and to_string(...)
+  //   cerr << format(h);
+  //   auto s = to_string(h);
+  //
+  namespace [[eponymous]] variant {
+    // Uninterpreted host naming syntax
+    // Per glibc, this is either a Domain Name or an IPv4 Address (dotted quad) or an IPv6 Address (those colons)
+    // Whatever glibc does with it is whatever happens.
+    using Uninterpreted = string::Storage;
+    namespace traits {
+      struct Name : public std::char_traits<char> { };
+      // [[REMOVETHIS]] [[FIXTHIS]] is this 'stub'' flourish really warranted?
+      inline namespace stub {
+        struct Address4 : public std::char_traits<char> { };
+        struct Address6 : public std::char_traits<char> { };
+      }
+    }
+    using Name = std::basic_string<char, traits::Name>;
+    using Address4 = std::basic_string<char, traits::Address4>; // [[FIXTHIS]] forthcoming tunitas::ip::Address4
+    using Address6 = std::basic_string<char, traits::Address6>; // [[FIXTHIS]] forthcoming tunitas::ip::Address4
+    using Host = std::variant<Uninterpreted, Name, Address4, Address6>;
+  }
+  using variant::Uninterpreted;
+  using variant::Name;
+  using variant::Address4;
+  using variant::Address6;
+  using variant::Host;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+namespace hyperledger::ip::host {
+  inline auto to_string(Host const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.ip.host.Formatter
+#import std.ostringstream
+namespace hyperledger::ip {
+  auto host::to_string(Host const &hh) -> string::Storage {
+    std::ostringstream buf;
+    buf << format(hh);
+    return buf.str();
+  }
+}
+#endiv

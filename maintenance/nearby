@@ -66,8 +66,12 @@ fi
 : ${with_hypogeal_twilight:=${with_scold_nearby?}/hypogeal-twilight}
 : ${with_temerarious_flagship:=${with_tunitas_nearby?}/temerarious-flagship}
 : ${with_module_json:=${with_scold_nearby?}/module-json}
+: ${with_module_format:=${with_scold_nearby?}/module-format}
 : ${with_module_nonstd:=${with_scold_nearby?}/module-nonstd}
+: ${with_module_openssl:=${with_scold_nearby?}/module-openssl}
 : ${with_module_rigging:=${with_scold_nearby?}/module-rigging}
+: ${with_module_shell:=${with_scold_nearby?}/module-shell}
+: ${with_module_slurp:=${with_scold_nearby?}/module-slurp}
 : ${with_module_std:=${with_scold_nearby?}/module-std}
 : ${with_module_sys:=${with_scold_nearby?}/module-sys}
 : ${with_module_string:=${with_scold_nearby?}/module-string}
@@ -85,10 +89,14 @@ eval \
     ${with_submodules:+--with-submodules=$with_submodules} \
     ${with_hypogeal_twilight:+--with-hypogeal-twilight=$with_hypogeal_twilight} \
     ${with_temerarious_flagship:+--with-temerarious-flagship=$with_temerarious_flagship} \
+    ${with_module_format:+--with-module-format=$with_module_format} \
     ${with_module_json:+--with-module-json=$with_module_json} \
     ${with_module_nonstd:+--with-module-nonstd=$with_module_nonstd} \
+    ${with_module_openssl:+--with-module-openssl=$with_module_openssl} \
     ${with_module_posix:+--with-module-posix=$with_module_posix} \
     ${with_module_rigging:+--with-module-rigging=$with_module_rigging} \
+    ${with_module_shell:+--with-module-shell=$with_module_shell} \
+    ${with_module_slurp:+--with-module-slurp=$with_module_slurp} \
     ${with_module_std:+--with-module-std=$with_module_std} \
     ${with_module_string:+--with-module-string=$with_module_string} \
     ${with_module_sys:+--with-module-sys=$with_module_sys} \

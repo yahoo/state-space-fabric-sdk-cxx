@@ -1,0 +1,72 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.byte
+namespace tests::unit::byte {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::byte;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::byte::Fixture : public cppunit::test::Fixture {
+  auto test_Storage() -> void;
+  auto test_Span() -> void;
+  auto test_literal_bytes() -> void;
+  auto test_literal_bytespan() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.byte.Storage
+#import hyperledger.byte.Span
+#import hyperledger.byte.literals
+#import std.string_view
+#import std.cerr
+namespace tests::unit::byte::fixture {
+  auto Fixture::test_Storage() -> void {
+    using Subject = library::Storage;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_Span() -> void {
+    using Subject = library::Span;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_literal_bytes() -> void {
+    using namespace library::literals;
+    auto subject = "that"_bytes;
+    std::cerr << "DEBUG: size " << subject.size() << '\n';
+    std::cerr << "DEBUG: span " << std::string_view{reinterpret_cast<char const *>(subject.data()), subject.size()} << '\n';
+    CPPUNIT_ASSERT(4 == subject.size());
+  }
+  auto Fixture::test_literal_bytespan() -> void {
+    using namespace library::literals;
+    auto subject = "that"_bytespan;
+    CPPUNIT_ASSERT(4 == subject.size());
+  }
+}
+#import rigging.suite.io
+auto tests::unit::byte::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"byte"};
+  series << call("Storage", &Fixture::test_Storage)
+         << call("Span", &Fixture::test_Span)
+         << []() {
+              auto lit = Stream{"literals"};
+              lit << call("bytes", &Fixture::test_literal_bytes)
+                  << call("bytespan", &Fixture::test_literal_bytespan)
+                  << END;
+              return move(lit);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

@@ -1,0 +1,24 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+check_lib_librigging_hyperledger_la = check/lib/librigging-hyperledger.la
+check_lib_librigging_hyperledger_la_LIBADD = $(nothing)
+check_lib_librigging_hyperledger_la_MODULES = $(call TF_SOURCEStoMODULES, $(check_lib_librigging_hyperledger_la_SOURCES))
+check_lib_librigging_hyperledger_la_SOURCES = \
+  $(nothing ... yet) \
+  $(end)
+rigging-objects : $(patsubst %.cpp, %.lo, $(lib_librigging_hyperledger_la_SOURCES))
+$(check_lib_librigging_hyperledger_la_SOURCES) \
+$(scold_cxxdir)/rigging/hyperledger/dependencies.mk: DC_FLAGS+=--no-insert-namespace
+$(check_lib_librigging_hyperledger_la_SOURCES) \
+$(scold_cxxdir)/rigging/hyperledger/dependencies.mk: bbDC_FLAGS+=--no-insert-namespace
+$(check_lib_librigging_hyperledger_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/rigging/hyperledger/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(check_lib_librigging_hyperledger_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/rigging/hyperledger/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/rigging/hyperledger/dependencies.mk

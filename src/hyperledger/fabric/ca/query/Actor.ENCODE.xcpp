@@ -1,0 +1,64 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.query.Actor.template
+namespace hyperledger::fabric::ca::query {
+  //
+  // A string concatenation operator.
+  // Composes the the  query string associated with the query
+  //
+  // Preconditions:
+  //
+  //    false observed by Actor<EMPTY>
+  //    false observed by Actor<IMPROPER>
+  //
+  // Usage:
+  //
+  //   auto some_function() -> string::Storage {
+  //     Actor<ENCODE> actor;
+  //     return (actor, field1, field2, field3, field4, ..., fieldN);
+  //   }
+  //
+  template<> struct Actor<ENCODE>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+#import std.map
+namespace hyperledger::fabric::ca::query {
+  template<> struct Actor<ENCODE> {
+    inline Actor();
+    inline operator string::Storage &&();
+    inline auto observe(Optional<string::Storage> const &specimen) -> void;
+    inline auto observe(std::map<string::Storage, string::Storage> const &) -> void;
+  protected:
+    char separator;
+    string::Storage accumulator;
+  };
+}
+#endiv
+#divert <ipp>
+#import tunitas.urlsafe.encode
+namespace hyperledger::fabric::ca::query {
+  Actor<ENCODE>::Actor() : separator{'?'} { }
+  Actor<ENCODE>::operator string::Storage &&() { return move(accumulator); }
+  auto Actor<ENCODE>::observe(Optional<string::Storage> const &specimen) -> void {
+    if (specimen) {
+      accumulator += separator;
+      accumulator += tunitas::urlsafe::encode(*specimen);
+      separator = '&';
+    }
+  }
+  auto Actor<ENCODE>::observe(std::map<string::Storage, string::Storage> const &specimen) -> void {
+    for (auto const &[key, value] : specimen) {
+      accumulator += separator;
+      accumulator += tunitas::urlsafe::encode(key);
+      accumulator += '=';
+      accumulator += tunitas::urlsafe::encode(value);
+      separator = '&';
+    }
+  }
+}
+#endiv

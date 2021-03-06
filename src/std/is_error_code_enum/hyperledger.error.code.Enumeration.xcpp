@@ -1,0 +1,14 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.error.code.Enumeration
+#import std.is_error_code_enum
+namespace std {
+  template<> struct is_error_code_enum<hyperledger::error::code::Enumeration>;
+}
+#endiv
+#divert <hpp>
+#import std.true_type
+template<> struct std::is_error_code_enum<hyperledger::error::code::Enumeration> : public std::true_type { };
+#endiv

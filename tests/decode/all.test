@@ -1,0 +1,15 @@
+#!/bin/sh
+__topdir="${0%/*}/../.."
+export PATH="${__topdir?}/check/bin:${__topdir?}/bin:$PATH"
+# echo -n 'hello world' | base64
+#
+# theirs
+echo -n 'aGVsbG8gd29ybGQ=' | base64 -d
+# ours
+echo -n 'aGVsbG8gd29ybGQ=' | decode
+#
+# and show it
+expected="$(echo -n 'aGVsbG8gd29ybGQ=' | base64 -d)"
+actual="$(echo -n 'aGVsbG8gd29ybGQ=' | decode)"
+test "$expected" = "$actual"
+

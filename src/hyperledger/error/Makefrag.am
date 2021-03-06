@@ -1,0 +1,16 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_error_SUBSOURCES = \
+  obj/src/hyperledger/error/namespace.cpp \
+  obj/src/hyperledger/error/Code.cpp \
+  obj/src/hyperledger/error/code.Enumeration.cpp \
+  obj/src/hyperledger/error/code.Package.cpp \
+  obj/src/hyperledger/error/Condition.cpp \
+  obj/src/hyperledger/error/condition.Enumeration.cpp \
+  obj/src/hyperledger/error/condition.Package.cpp \
+  obj/src/hyperledger/error/Category.cpp \
+  obj/src/hyperledger/error/category.cpp \
+  $(end)
+error-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_error_SUBSOURCES))

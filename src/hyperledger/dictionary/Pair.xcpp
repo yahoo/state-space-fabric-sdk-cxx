@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::dictionary {
+  //
+  // A pair of strings, as known to the dictionary system
+  // This type is known to the dictionary::to_json(...) system and must be used there.
+  //
+  // Usage:
+  //
+  //   auto dict = Dictionary{};
+  //   dict["something"] = Pair{"apple", "banana"};
+  //
+  class Pair;
+}
+#endiv
+#divert <hpp>
+#import std.string
+#import std.pair
+class hyperledger::dictionary::Pair : public std::pair<std::string, std::string> {
+  using Ancestor = std::pair<std::string, std::string>;
+public:
+  Pair() = default;
+  using Ancestor::pair;
+};
+#endiv

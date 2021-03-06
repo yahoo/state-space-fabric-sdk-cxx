@@ -1,0 +1,25 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import std.numeric_limits
+#import nonstd.units.Count
+#import hyperledger.string.literals
+#import hyperledger.http.url.String
+#import std.underlying_type
+namespace hyperledger::fabric::ca::defaults {
+  //
+  // Defaults for a service::Configuration
+  //
+  using namespace string::literals;
+  namespace service {
+    inline auto const ENDPOINT = http::url::String{"http://localhost:7054"}; // [[FIXTHIS]] should? this? be a tls::Endpoint{...}
+    inline auto const BASE_URL_PATH = "/api/v1/"s;
+    // [[FIXTHIS]] with a simpler constant
+    namespace enrollment {
+      inline auto const MAX_ENROLLMENT_COUNT = nonstd::units::Count{std::numeric_limits<std::underlying_type_t<nonstd::units::Count>>::max()};
+    }
+    using enrollment::MAX_ENROLLMENT_COUNT;
+  }
+}
+#endiv

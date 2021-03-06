@@ -1,0 +1,40 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Octet
+#import nonstd.required.container.Type
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+namespace hyperledger::http::required::response {
+  //
+  // Is this type worthy to hold an HTTP call response body?
+  // The type must to be some sort of memory-managing container of octets. 
+  // The container does not necessarily have to be continguous;
+  // in principle, a container that managed lines would work.
+  //
+  template<typename BODY> concept bool Body = requires(BODY body) {
+    typename BODY::value_type;
+    requires nonstd::required::Octet<typename BODY::value_type>;
+    requires nonstd::required::container::Type<BODY>;
+    requires std::is_copy_constructible<BODY>::value || std::is_move_constructible<BODY>::value;
+    requires std::is_copy_assignable<BODY>::value || std::is_move_assignable<BODY>::value;
+  };
+}
+#endiv
+#divert <cpp>
+// Of course, this is test code
+#import std.byte
+#import std.vector
+#import std.deque
+#import std.forward_list
+namespace hyperledger::http::required {
+  static_assert(response::Body<std::string>);
+  static_assert(response::Body<std::vector<char>>);
+  static_assert(response::Body<std::vector<std::byte>>);
+  static_assert(response::Body<std::deque<std::byte>>);
+  static_assert(!response::Body<std::forward_list<std::byte>>); // ... turns out these will fail required::container::Type<std::forward_list<std::byte>> ... because they are "not containers"
+}
+#endiv

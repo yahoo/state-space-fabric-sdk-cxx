@@ -1,0 +1,58 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.fabric.peer.Peer
+#forward hyperledger.something_something_dark_side.Endpoint
+#import std.string
+#import std.optional
+#import std.filesystem.path
+#import hyperledger.grpc.something_something_dark_side.Options
+namespace hyperledger::fabric::v0::peer {
+  //
+  // Factory method to construct a peer instance
+  //
+  // Args:
+  //   endpoint: endpoint
+  //   tls_cacerts: pem
+  //   opts: opts
+  //
+  // Returns: a peer instance
+  //
+  extern std::string const DEFAULT_PEER_NAME;
+  extern std::string const DEFAULT_PEER_ENDPOINT;
+  using packaging::create_peer::function {
+    using Name = std::string;
+    using something_something_dark_side::Endpoint;
+    using grpc::something_something_dark_side::Options;
+    inline auto create_peer() -> Peer;
+    inline auto create_peer(Name) -> Peer;
+    inline auto create_peer(Name, Endpoint) -> Peer;
+    inline auto create_peer(Name, Endpoint, std::optional<Filepath> tls_cacerts) -> Peer;
+    inline auto create_peer(Name, Endpoint, std::optional<Filepath> tls_cacerts, std::optional<Options>) -> Peer;
+  }
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::v0::peer::packaging::create_peer {
+  auto function::create_peer() -> Peer {
+    return Peer{DEFAULT_PEER_NAME, DEFAULT_PEER_ENDPOINT, , std::optional<Filepath>{}, std::optional<Options>{});
+  }
+  auto function::create_peer(Name) -> Peer {
+    return Peer{name, DEFAULT_PEER_ENDPOINT, , std::optional<Filepath>{}, std::optional<Options>{});
+  }
+  auto function::create_peer(Name name, Endpoint endpoint) -> Peer {
+    return Peer{name, endpoint, , std::optional<Filepath>{}, std::optional<Options>{});
+  }
+  auto function::create_peer(Name name, Endpoint endpoint, std::optional<Filepath> tls_cacerts) -> Peer {
+    return Peer{name, endpoint, tls_cacerts, std::optional<Options>{});
+  }
+  auto function::create_peer(Name name, Endpoint endpoint, std::optional<Filepath> tls_cacerts, std::optional<Options> grpc) -> Peer {
+    return Peer{name, endpoint, tls_cacerts, grpc};
+  }
+}
+#endiv
+#divert <cpp>
+std::string const DEFAULT_PEER_NAME{"peer"};;
+std::string const DEFAULT_PEER_ENDPOINT{"localhost:7051"};;
+#endiv

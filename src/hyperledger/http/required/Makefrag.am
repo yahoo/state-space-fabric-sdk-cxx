@@ -1,0 +1,8 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_http_required_SUBSOURCES = \
+  obj/src/hyperledger/http/required/namespace.cpp \
+  obj/src/hyperledger/http/required/response.Body.cpp \
+  $(end)

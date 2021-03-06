@@ -1,0 +1,80 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+namespace tests::pki {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::pki;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::pki::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_usage_Authority() -> void;
+  auto test_usage_Triple() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.pki.Authority
+#import hyperledger.pki.Triple
+#import std.byte
+#import std.vector
+#import std.optional
+#import std.string
+#import std.filesystem.path
+namespace tests::pki::fixture {
+  auto Fixture::test_usage_Authority() -> void {
+    using namespace library;
+    auto subject = Authority{};
+    CPPUNIT_ASSERT(subject.empty());
+  }
+  auto Fixture::test_usage_Triple() -> void {
+    using namespace library;
+    Triple<std::vector<std::byte>> vb; // <--------------- test this ... does it compile?
+    Triple<std::vector<char>> vc;
+    Triple<std::string> s;
+    Triple<std::filesystem::path> fp;
+    CPPUNIT_ASSERT(vb.ca.empty() && vc.ca.empty() && s.ca.empty() && fp.ca.empty()); // irrelevant test ... use the variable to shutup the compiler
+    Triple<std::optional<std::vector<std::byte>>> ovb; // <--------------- test this ... does it compile?
+    Triple<std::optional<std::vector<char>>> ovc;
+    Triple<std::optional<std::string>> os;
+    Triple<std::optional<std::filesystem::path>> ofp;
+    CPPUNIT_ASSERT(!ovb.ca && !ovc.ca && !os.ca && !ofp.ca); // irrelevant test ... use the use variable
+  }
+}
+#import tests.pki.Certificate
+#import tests.pki.Certificates
+#import tests.pki.Request
+#import tests.pki.Secret
+#import tests.pki.From
+#import tests.pki.Slurp
+#import tests.pki.Bundle
+#import rigging.suite.io
+auto tests::pki::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"pki"};
+  series << []{
+              auto use = Stream{"usage"};
+              use << call("Authority", &Fixture::test_usage_Authority)
+                  << call("Triple", &Fixture::test_usage_Triple)
+                  << END;
+              return move(use);
+            }()
+         << add<Certificate>()
+         << add<Certificates>()
+         << add<Request>()
+         << add<Secret>()
+         << add<From>()
+         << add<Slurp>()
+         << add<Bundle>()
+         << END;
+  return finalize(series);
+}
+#endiv

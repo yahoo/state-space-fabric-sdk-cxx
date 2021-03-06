@@ -1,0 +1,72 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.string
+namespace tests::unit::string {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::string;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::string::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Sequencen() -> void;
+  auto test_Sequencez() -> void;
+  auto test_Storage() -> void;
+  auto test_View() -> void;
+  auto test_literals() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.string.Sequencen
+#import hyperledger.string.Sequencez
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import hyperledger.string.literals
+namespace tests::unit::string::fixture {
+  auto Fixture::test_Sequencen() -> void {
+    using Subject = library::Sequencen;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_Sequencez() -> void {
+    using Subject = library::Sequencez;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_Storage() -> void {
+    using Subject = library::Storage;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_View() -> void {
+    using Subject = library::View;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_literals() -> void {
+    using namespace library::literals;
+    auto subject = "that"s;
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+}
+#import rigging.suite.io
+auto tests::unit::string::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"string"};
+  series << call("Sequencen", &Fixture::test_Sequencen)
+         << call("Sequencez", &Fixture::test_Sequencez)
+         << call("Storage", &Fixture::test_Storage)
+         << call("View", &Fixture::test_View)
+         << call("literals", &Fixture::test_literals)
+         << END;
+  return finalize(series);
+}
+#endiv

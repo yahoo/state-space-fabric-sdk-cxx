@@ -1,0 +1,12 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media. The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_default_constructible
+namespace nonstd::required::constructible::by {
+  //
+  // The concept version of the traits type
+  // Be fun if this was in module-nonstd or even in ISO C++ 2b, wouldn't it?
+  //
+  template<typename TYPE> concept bool Default = std::is_default_constructible<TYPE>::value;
+}
+#endiv

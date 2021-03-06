@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.query.required.name.Query
+#forward hyperledger.x509.query.Query
+#import hyperledger.x509.query.traits.Query
+#include <hpp/hyperledger.x509.query.traits.Query>
+namespace hyperledger::x509::query::required {
+  //
+  // Is this Query<NAME> in the universe of Querys (sic), as named??
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Query<NAME>
+  //   The concept condition MUST align if-and-only-if with name::Query<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Query<QUERY> ....................... required::Query<query::Query<SUBJECT_KEY_IDENTIFIER>>;
+  //   required::name::Query<NAME> .................. required::name::Query<SUBJECT_KEY_IDENTIFIER>;
+  //
+  // Usage:
+  //
+  //   template<required::Query QUERY> auto get_by_object() -> QUERY;
+  //   template<required::name::Query NAME> auto get_by_name() -> query::Query<NAME>;
+  //
+  template<typename QUERY> concept bool Query = requires(QUERY) {
+    typename traits::template Query<QUERY>::Name;
+    requires traits::template Query<QUERY>::value;
+    requires required::name::Query<typename traits::template Query<QUERY>::Name>;
+  };
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.x509.query.Query
+namespace {
+  namespace tests {
+    using namespace hyperledger::x509::query;
+    namespace required = hyperledger::x509::query::required;
+    static_assert(required::Query<Query<AUTHORITY_KEY_IDENTIFIER>>);
+    static_assert(required::Query<Query<COMMON_NAME>>);
+    static_assert(required::Query<Query<EXPIRES>>);
+    static_assert(required::Query<Query<REVOKED>>);
+    static_assert(required::Query<Query<SERIAL>>);
+    static_assert(required::Query<Query<SUBJECT_KEY_IDENTIFIER>>);
+  }
+}
+#endiv

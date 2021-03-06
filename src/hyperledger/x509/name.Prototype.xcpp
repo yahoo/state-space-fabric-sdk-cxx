@@ -1,0 +1,76 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.required
+#import openssl.x509.Name
+#import openssl.x509.Name0
+#import openssl.x509.field.Named
+namespace hyperledger::x509::name {
+  //
+  // The commonalities among Name<RW> and Name<RO>
+  // Descendants only.
+  // No pasta.
+  //
+  namespace required {
+    using namespace hyperledger::x509::required;
+    using namespace std;
+    template<typename HELD> concept bool Held = is_same_v<HELD, openssl::x509::Name0> || is_same_v<HELD, openssl::x509::Name>;
+  }
+  namespace field {
+    namespace f = openssl::x509::field;
+    using Common_Name = f::Named<f::Name::CN>;
+  }
+  template<required::Held> struct Prototype;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Request
+#import hyperledger.string.Storage
+#forward hyperledger.x509.name.Name.template
+#import hyperledger.x509.name.Hard
+#import std.swap
+namespace hyperledger::x509 {
+  namespace name {
+    using std::move;
+    using std::swap;
+    template<required::Held HELD> inline auto swap(Prototype<HELD> &, Prototype<HELD> &) noexcept -> void;
+  }
+  template<name::required::Held HELD> class name::Prototype : public Hard {
+  protected:
+    ~Prototype() = default;
+    using Held = HELD;
+    friend class pki::Certificate;
+    friend class pki::Request;
+    inline explicit Prototype(Held);
+  public:
+    Prototype() = default;
+    Prototype(Prototype const &) = delete;
+    auto operator=(Prototype const &) -> Prototype & = delete;
+    Prototype(Prototype &&) = default;
+    auto operator=(Prototype &&) -> Prototype & = default;
+    inline auto CN() const -> string::Storage;
+  protected:
+    auto get_name() const -> string::Storage;
+    Held held;
+    template<runtime::Management> friend class name::Name;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.exception.Certificate
+#import openssl.exception.Aspect
+namespace hyperledger::x509::name {
+  template<required::Held _> Prototype<_>::Prototype(Held arg) : held{move(arg)} { }
+  template<required::Held _> auto Prototype<_>::CN() const -> string::Storage try {
+#if 1
+    return Hard::get_name(const_cast<X509_name_st *>(held.get()));
+#else
+    return held.get_text_by_NID<openssl::x509::NID::CN>(); // [[FINISH]] when openssl::x509::NID::CN exists
+#endif
+  } catch (openssl::exception::Aspect const &) {
+    throw exception::Certificate{"no common name"};
+  }
+}
+#endiv

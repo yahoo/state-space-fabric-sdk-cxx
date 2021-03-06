@@ -1,0 +1,59 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.fabric.ca.query.Actor.template
+namespace hyperledger::fabric::ca::query {
+  //
+  // A boolean accumlator.
+  // A conjunction of !empty
+  // This is an AND operator.
+  //
+  // Function:
+  //
+  //   Returns true if all observed quantities are optional-empty.
+  //   It is an IMPROPER condition if the observed quantities are optional-valid but string::Storage::empty()
+  //
+  // Usage:
+  //
+  //   auto some_function() -> bool {
+  //     Actor<EMPTY> actor;
+  //     return (actor, field1, field2, field3, field4, ..., fieldN);
+  //   }
+  //
+  template<> struct Actor<EMPTY>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#import std.map
+namespace hyperledger::fabric::ca::query {
+  template<> struct Actor<EMPTY> {
+    inline Actor();
+    inline operator bool() const;
+    inline auto observe(Optional<string::Storage> const &) -> void;
+    inline auto observe(std::map<string::Storage, string::Storage> const &) -> void;
+  protected:
+    bool accumulator;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::query {
+  Actor<EMPTY>::Actor()
+    : accumulator{true}
+  { }
+  Actor<EMPTY>::operator bool() const { return accumulator; }
+  auto Actor<EMPTY>::observe(Optional<string::Storage> const &specimen) -> void {
+    accumulator &= !specimen;
+  }
+  auto Actor<EMPTY>::observe(std::map<string::Storage, string::Storage> const &specimen) -> void {
+    for (auto const &[key, value] : specimen) {
+      accumulator &= !key.empty();
+      accumulator &= !value.empty();
+    }
+  }
+}
+#endiv

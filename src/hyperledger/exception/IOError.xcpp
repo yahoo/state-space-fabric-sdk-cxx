@@ -1,0 +1,17 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.exception.Serialization
+namespace hyperledger::exception {
+  //
+  // This was called IOError in the python.
+  // In C++ we refer to it after the name of the verb that it complains about: serialization
+  //
+  // Usage:
+  //
+  //   throw IOError{"Cannot serialize user 'root' because 'reasons'"};
+  //
+  using IOError [[deprecated("the name IOError is deprecated; instead use Serialization")]] = Serialization;
+}
+#endiv

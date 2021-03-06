@@ -1,0 +1,89 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto.key
+#import hyperledger.crypto.exception
+namespace tests::crypto::key {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::crypto::key;
+    namespace exception = ::hyperledger::crypto::exception;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::crypto::key::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Asymmetric() -> void;
+  template<typename KEY> auto test_from() -> void;
+  auto test_Private() -> void;
+  auto test_Public() -> void;
+  auto test_Key() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <tpp>
+#import hyperledger.crypto.exception.Aspect
+#import hyperledger.crypto.key.from
+namespace tests::crypto::key::fixture {
+  template<typename KEY> auto Fixture::test_from() -> void try {
+    auto const literal = "something.something.dark_side"s; // ce n'est pas un clef.
+    auto got = library::from<KEY>(literal); // <------------------------------ test this (of course it will throw)
+    CPPUNIT_ASSERT(false); // ... wait, this didn't throw?  That's not what we want
+  } catch (exception::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.crypto.key.Asymmetric
+#import hyperledger.crypto.key.Private
+#import hyperledger.crypto.key.Public
+#import hyperledger.crypto.Key
+namespace tests::crypto::key::fixture {
+  auto Fixture::test_Asymmetric() -> void {
+#warning WRITETHIS auto Fixture::test_Asymmetric() -> void (not clear that this interface is helpful at all)
+    //
+    //   auto aaa = Asymmetric{...};
+    //
+  }
+  auto Fixture::test_Private() -> void {
+    using Subject = library::Private;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_Public() -> void {
+    using Subject = library::Public;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Fixture::test_Key() -> void {
+    auto ref = [](::hyperledger::crypto::Key const &) { }; // <-------------------- test this (the reference binding)
+    ref(library::Public{}); // <-------- ibidem
+    ref(library::Private{}); // <------- ibidem
+  }
+}
+#import rigging.suite.io
+auto tests::crypto::key::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"key"};
+  series << call("Asymmetric", &Fixture::test_Asymmetric)
+         << call("Private", &Fixture::test_Private)
+         << call("Public", &Fixture::test_Public)
+         << call("Key", &Fixture::test_Key)
+         << []() {
+              auto sub = Stream{"from"};
+#warning FIXTHIS ... write a test that does not fail ... test the success path
+              sub << call("Private", &Fixture::test_from<library::Private>)
+                  << call("Public", &Fixture::test_from<library::Public>)
+                  << END;
+              return move(sub);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

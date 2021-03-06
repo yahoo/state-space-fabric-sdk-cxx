@@ -1,0 +1,28 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.pki.revocation.reason.Category
+namespace hyperledger::pki::revocation::reason {
+  //
+  // Recover the Revocation Reason singleon
+  //
+  // Usage:
+  //
+  //   auto const &c = category();
+  //   auto e = nonstd::Enumeration{7, c};
+  //   auto s = e.message();
+  //
+  auto category() -> Category const &;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.revocation.reason.Category
+#endiv
+#divert <cpp>
+auto hyperledger::pki::revocation::reason::category() -> Category const & {
+  // [[FIXTHIS]] this does not use mutex because the construtor doesn't do anything ... nothing to guard (yet)
+  static Category const singleton;
+  return singleton;
+}
+#endiv

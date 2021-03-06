@@ -1,0 +1,62 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Request.template
+namespace hyperledger::fabric::ca {
+  template<> struct Request<ENROLLMENT>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.enrollment.Request
+namespace hyperledger::fabric::ca {
+  template<> class Request<ENROLLMENT> : public enrollment::Request {
+    using Ancestor = enrollment::Request;
+  public:
+    using Ancestor::Request;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.request.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::request;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Request<ENROLLMENT>>);
+  }
+}
+#if 0
+// Of course this is test code
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+#import std.is_move_constructible
+#import std.is_move_assignable
+namespace {
+  namespace tests {
+    using namespace std;
+    namespace explain_why {
+      // because pki::Request isn't
+      namespace pki = hyperledger::pki;
+      static_assert(not is_copy_constructible_v<pki::Request>);
+      static_assert(not is_copy_assignable_v<pki::Request>);
+    }
+    namespace superclass_test {
+      using namespace hyperledger::fabric::ca::enrollment;
+      static_assert(not is_copy_constructible_v<Request>);
+      static_assert(not is_copy_assignable_v<Request>);
+      static_assert(is_move_constructible_v<Request>);
+      static_assert(is_move_assignable_v<Request>);
+    }
+    namespace main_test {
+      using namespace hyperledger::fabric::ca;
+      static_assert(not is_copy_constructible_v<Request<ENROLLMENT>>);
+      static_assert(not is_copy_assignable_v<Request<ENROLLMENT>>);
+      static_assert(is_move_constructible_v<Request<ENROLLMENT>>);
+      static_assert(is_move_assignable_v<Request<ENROLLMENT>>);
+    }
+  }
+}
+#endif
+#endiv

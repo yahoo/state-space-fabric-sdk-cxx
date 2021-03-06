@@ -1,0 +1,40 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.file
+namespace tests::unit::file {
+  namespace fixture {
+    class Fixture;
+    namespace library = hyperledger::file;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::file::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Path() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.file.Path
+namespace tests::unit::file::fixture {
+  auto Fixture::test_Path() -> void {
+    using Subject = library::Path;
+    auto subject = Subject{};
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+}
+#import rigging.suite.io
+auto tests::unit::file::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"file"};
+  series << call("Path", &Fixture::test_Path)
+         << END;
+  return finalize(series);
+}
+#endiv

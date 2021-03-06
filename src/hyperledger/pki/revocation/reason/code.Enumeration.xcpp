@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::revocation::reason::code {
+  //
+  // The revocation reasons, the enumeration series.
+  //
+  // Concept:
+  //
+  //   The enumeration names are somewhat standardized (if idiosyncratic)
+  //
+  //   Oddly there is no defined value for zero.
+  //   It is unknown whether zero means SUCCESS
+  //                      or zero means "null"
+  //                      or zero means "some other reason than UNSPECIFIED"
+  //
+  // Design:
+  //
+  //   Follows the pattern of std::error_code, with a nearby Category
+  //
+  // Usage:
+  //
+  //   <what you need to know how to use an enum class?>
+  //   auto ec = reason::Code{reason::Code::CACOMPROMISE};
+  //   auto ss = ec.message();
+  //
+  enum class Enumeration {
+    UNSPECIFIED = 1,
+    KEYCOMPROMISE = 2,
+    CACOMPROMISE = 3,
+    AFFILIATIONCHANGE = 4,
+    SUPERSEDED = 5,
+    CESSATIONOFOPERATION = 6,
+    CERTIFICATEHOLD = 7,
+    REMOVEFROMCRL = 8,
+    PRIVILEGEWITHDRAWN = 9,
+    AACOMPROMISE = 10,
+  };
+  static_assert(Enumeration::UNSPECIFIED != Enumeration{});
+}
+#endiv

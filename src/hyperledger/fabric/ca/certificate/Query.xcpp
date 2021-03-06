@@ -1,0 +1,64 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.query
+namespace hyperledger::fabric::ca::certificate {
+  //
+  // The Query for a Service<CERTIFICATE>
+  // Descendants only.
+  // You will use Query<CERTIFICATE>
+  //
+  // Usage:
+  //
+  //   auto serv = Service<MAIN>{...somehow...};
+  //   auto query = Query<CERTIFICATE>{...somehow...};
+  //   auto registrar = Package<ENROLLMENT>{...somehow...};
+  //
+  //   auto identity = serv.api<CERTIFICATE>();
+  //
+  //   auto got = identity.getCertificates(registrar, query);
+  //   ...etc...
+  //
+  namespace query {
+    struct Query;
+    using namespace ca::query;
+  }
+  using query::Query;
+}
+#divert <hpp>
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca::certificate {
+  namespace query {
+    inline auto empty(Query const &) -> bool;
+    inline auto improper(Query const &) -> bool;
+    inline auto encode(Query const &) -> string::Storage;
+  }
+  class query::Query {
+  protected:
+    ~Query() = default; // operate via the desdcendant: use Query<CERTIFICATE>
+  public:
+    // Only the fields that we know about, not a general dictionary
+    // And yes, everything is a string.  Yuk.
+    Optional<string::Storage> id, aki, serial, revoked_start, revoked_end, expired_start, expired_end, not_revoked, not_expired, ca;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.query.Actor
+namespace hyperledger::fabric::ca::certificate {
+  auto query::empty(Query const &s) -> bool {
+    Actor<EMPTY> actor;
+    return (actor, s.id, s.aki, s.serial, s.revoked_start, s.revoked_end, s.expired_start, s.expired_end, s.not_revoked, s.not_expired, s.ca);
+  }
+  auto query::improper(Query const &s) -> bool {
+    Actor<IMPROPER> actor;
+    return (actor, s.id, s.aki, s.serial, s.revoked_start, s.revoked_end, s.expired_start, s.expired_end, s.not_revoked, s.not_expired, s.ca);
+  }
+  auto query::encode(Query const &s) -> string::Storage {
+    Actor<ENCODE> actor;
+    return (actor, s.id, s.aki, s.serial, s.revoked_start, s.revoked_end, s.expired_start, s.expired_end, s.not_revoked, s.not_expired, s.ca);
+  }
+}
+#endiv

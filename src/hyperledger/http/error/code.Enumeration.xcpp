@@ -1,0 +1,28 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.error.condition.Enumeration
+#import hyperledger.http.status.Code
+namespace hyperledger::http::error::code {
+  using Enumeration = http::status::Code;
+}
+#endiv
+#divert <hpp>
+#import std.is_error_code_enum.hyperledger.http.error.code.Enumeration
+#forward hyperledger.http.error.Code
+namespace hyperledger::http {
+  namespace error::code {
+    inline auto make_error_code(Enumeration) noexcept -> Code;
+  }
+  namespace status {
+    // inject it this namespace so that ADL will find it (as was inteneded by the scheme)
+    using error::code::make_error_code;
+  }
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.error.Code
+#import hyperledger.http.error.category
+auto hyperledger::http::error::code::make_error_code(Enumeration tion) noexcept -> Code { return {(int) tion, category()}; }
+#endiv

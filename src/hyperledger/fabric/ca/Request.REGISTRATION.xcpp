@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Request.template
+namespace hyperledger::fabric::ca {
+  template<> struct Request<REGISTRATION>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.registration.Request
+namespace hyperledger::fabric::ca {
+  template<> class Request<REGISTRATION> : public registration::Request {
+    using Ancestor = registration::Request;
+  public:
+    using Ancestor::Request;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.request.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::request;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Request<REGISTRATION>>);
+  }
+}
+#if 0
+// Of course this is test code
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+#import std.is_move_constructible
+#import std.is_move_assignable
+namespace {
+  namespace tests {
+    using namespace std;
+    using namespace hyperledger::fabric::ca;
+    static_assert(not is_copy_constructible_v<Request<REGISTRATION>>);
+    static_assert(not is_copy_assignable_v<Request<REGISTRATION>>);
+    static_assert(is_move_constructible_v<Request<REGISTRATION>>);
+    static_assert(is_move_assignable_v<Request<REGISTRATION>>);
+  }
+}
+#endif
+#endiv

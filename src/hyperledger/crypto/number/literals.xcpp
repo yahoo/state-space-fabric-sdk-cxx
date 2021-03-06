@@ -1,0 +1,46 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::number::literals { }
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.Number
+namespace hyperledger::crypto::number::literals {
+  //
+  // number (bignum) literals
+  //
+  // [[FIXTHIS]] - this can all be done at constexpr time, at least with tail recursion
+  //
+  // Usage:
+  //
+  //   auto n = 0_number;
+  //   auto n = 1_number;
+  //   auto n = 2_number;
+  //   auto n = 9804958300143315053086246541997222018837170870330334391224367146_number;
+  //   auto n = 3605937181708002860046510412954433497090670703274854779868781069958751180530856551503256769807513351243148039023827452168879986230364745563676643658800235458252361428024634289713783441893994662208850040894279849431829695233879874075096961436851176216599389_number;
+  //
+  inline auto operator""_number (int long long unsigned) -> Number;
+  inline auto operator""_number (char const *, std::size_t) -> Number;
+}
+#endiv
+#divert <ipp>
+#import std.isdigit
+#import std.invalid_argument
+namespace hyperledger::crypto::number {
+  auto literals::operator""_number (int long long unsigned value) -> Number { return Number{value}; }
+  auto literals::operator""_number (char const *syntax, std::size_t size) -> Number {
+    auto accumulator = Number{};
+    auto const TEN = Number{10u};
+    for (auto *i{&syntax[0]}, *e{&syntax[size]}; e != i; ++i) {
+      auto const character = *i;
+      if (!std::isdigit(character)) {
+        throw std::invalid_argument{"not a number"};
+      }
+      unsigned digit = character - '0';
+      accumulator = TEN * accumulator + Number{digit};
+    }
+    return accumulator;
+  }
+}
+#endiv

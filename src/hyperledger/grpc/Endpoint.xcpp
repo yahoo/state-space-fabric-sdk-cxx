@@ -1,0 +1,36 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::grpc {
+  //
+  // Something about an endpoint
+  // WHAT IS THIS SUPPOSED TO BE DOING?
+  //
+  // Not copyable
+  // Movable
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+class hyperledger::grpc::Endpoint {
+public:
+  Endpoint() = default;
+  Endpoint(Endpoint const &) = delete;
+  auto operator=(Endpoint const &) -> Endpoint & = delete;
+  Endpoint(Endpoint &&) = default;
+  auto operator=(Endpoint &&) -> Endpoint & = default;
+};
+#endiv
+#divert <cpp>
+#import nonstd.required.constructible.by.Default
+#import nonstd.required.constructible.by.Copy
+#import nonstd.required.constructible.by.Move
+namespace hyperledger::grpc {
+  namespace by = nonstd::required::constructible::by;
+  static_assert(by::Default<Endpoint>);
+  static_assert(!by::Copy<Endpoint>);
+  static_assert(by::Move<Endpoint>);
+}
+#endiv

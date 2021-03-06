@@ -1,0 +1,18 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace shell::run {
+  //
+  // Whereas module-shell-devel >= 0.3 is not available to us, yet; requiring Release 05 (Purple Tin Partridge)
+  // and Tunitas does not have a similar feature, yet; being published through Release 01 (Famous Oak)
+  // Here is a "lite" version of the same capability set, but particularized to Hyperledger Fabric.
+  //
+  //   shell::run::Runner
+  //   shell::run::Piped_From
+  //   shell::run::Piped_To    (unused)
+  //   shell::run::Program<PEER>, Program<ORDERER>
+  //
+}
+#endiv

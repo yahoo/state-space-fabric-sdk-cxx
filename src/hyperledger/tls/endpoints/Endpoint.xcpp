@@ -1,0 +1,39 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls::endpoints {
+  //
+  // A tls endpoints(plural) Endpoint is for use in the tls::endpoints::Series<endpoints::Endpoint>
+  // wherein the 'dotls' has been factored out of the tls::endpoints::Endpoints
+  // and lives in the aggregate tls::Endpoints.
+  //
+  // Although this class is final, there is little expectation that you would use it as such
+  //
+  //   order <--> tls::Endpoint
+  //   peer <---> tls::Endpoints (plural)
+  //
+  // Ancillary:
+  //
+  //   The "endpoints::Endpoint" formatter is the basis formatter
+  //   #import hyperledger.tls.endpoint.Formatter
+  //   
+  //
+  // Usage:
+  //
+  //   like tls::endpoint::Basis & which is an ancestor.
+  //   like tls::Endpoint which is unrelated but rhymes.
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.tls.endpoint.Basis
+class hyperledger::tls::endpoints::Endpoint : public endpoint::Basis {
+  using Ancestor = endpoint::Basis;
+public:
+  Endpoint() = default;
+  using Ancestor::Basis;
+};
+#endiv

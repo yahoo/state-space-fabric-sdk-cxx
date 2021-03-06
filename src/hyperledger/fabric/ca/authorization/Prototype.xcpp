@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::authorization {
+  //
+  // The prototype of an authorization scheme.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   The prototype does not do anything at all 
+  //   It provides no authorization at all.
+  //   All authorization is idiosyncratic and managed in the descendants.
+  //
+  //   The authorization activity may fail to produce an authorization.
+  //
+  // Usage:
+  //
+  //   See the Driver
+  //
+  struct Prototype;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+#forward hyperledger.fabric.ca.protocol.Request
+#forward hyperledger.fabric.ca.Package
+class hyperledger::fabric::ca::authorization::Prototype {
+protected:
+  Prototype() = default;
+public:
+  [[key_method]] virtual ~Prototype();
+  /*
+    Generate authorization token required for accessing fabric-ca APIs
+    Arguments:
+    req (dict): request body
+    registrar (Enrollment): Required. The identity of the registrar (i.e. who is performing the request)
+    Returns:
+    The authorization token (something shaped like a JWT)
+  */
+  virtual auto generate(Package<ENROLLMENT> const &) -> Optional<string::Storage> = 0;
+  virtual auto generate(Package<ENROLLMENT> const &, protocol::Request const &) -> Optional<string::Storage> = 0;
+};
+#endiv
+#divert <ipp>
+// All specializations will need these
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.fabric.ca.Package
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::authorization {
+  Prototype::~Prototype() = default;
+}
+#endiv

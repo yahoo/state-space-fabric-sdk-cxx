@@ -1,0 +1,169 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+#import hyperledger.fabric.ca.enrollment
+namespace tests::unit::enrollment {
+  namespace [[eponymous]] package {
+    class Package;
+    namespace library = ::hyperledger::fabric::ca::enrollment;
+    namespace ca = ::hyperledger::fabric::ca;
+    namespace pki = ::hyperledger::pki;
+  }
+  using package::Package;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.pki.Secret
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import std.tuple
+struct tests::unit::enrollment::package::Package : public cppunit::test::Fixture {
+  using Subject = ca::Package<ca::ENROLLMENT>;
+  auto test_constructor_triple() -> void;
+  auto test_constructor_copy() -> void;
+  auto test_constructor_move() -> void;
+  auto test_assignment_copy() -> void;
+  auto test_assignment_move() -> void;
+#if 0 // [[REMOVETHIS]] because the member functions don't exist any more
+  auto test_secret_access() -> void;
+  auto test_secret_set() -> void;
+  auto test_certificate_access() -> void;
+  auto test_certificate_set() -> void;
+  auto test_chain_access() -> void;
+  auto test_chain_set() -> void;
+#endif
+  static auto suite() -> cppunit::Test *;
+protected:
+  using Triple = std::tuple<pki::Secret, pki::Certificate, pki::Certificates>;
+  static auto generate3() -> Triple;
+  static auto generate1() -> Subject;
+};
+#endiv
+#divert <cpp>
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+namespace tests::unit::enrollment::package {
+  auto Package::generate3() -> Triple {
+    auto secret = pki::Secret{};
+    auto certificate = pki::Certificate{};
+    auto certificates = pki::Certificates{};
+    return {move(secret), move(certificate), move(certificates)};
+  }
+  auto Package::generate1() -> Subject {
+    auto got = generate3();
+    auto secret = std::get<0>(move(got));
+    auto certificate = std::get<1>(move(got));
+    auto certificates = std::get<2>(move(got));
+    return Subject{move(secret), move(certificate), move(certificates)};;
+  }
+  auto Package::test_constructor_triple() -> void {
+    auto got = generate3();
+    auto secret = std::get<0>(move(got));
+    auto certificate = std::get<1>(move(got));
+    auto certificates = std::get<2>(move(got));
+    auto subject = Subject{move(secret), move(certificate), move(certificates)}; // <-------------------- test this
+    CPPUNIT_ASSERT(sizeof (subject));
+  }
+  auto Package::test_constructor_copy() -> void {
+    static_assert(not std::is_copy_constructible_v<Subject>);
+#if 0
+    if constexpr(std::is_copy_constructible_v<Subject>) {
+      auto specimen = generate1();
+      auto subject = Subject{specimen); // <-------------------- test this
+      CPPUNIT_ASSERT(sizeof (subject));
+    }
+#endif
+  }
+  auto Package::test_constructor_move() -> void {
+    auto specimen = generate1();
+    auto subject = Subject{move(specimen)}; // <-------------------- test this
+  }
+  auto Package::test_assignment_copy() -> void {
+    static_assert(not std::is_copy_assignable_v<Subject>);
+#if 0
+    if constexpr(std::is_copy_assignable_v<Subject>) {
+      auto specimen = generate1();
+      Subject subject;
+      subject = Subject{specimen); // <-------------------- test this
+      CPPUNIT_ASSERT(sizeof (subject));
+    }
+#endif
+  }
+  auto Package::test_assignment_move() -> void {
+    auto specimen = generate1();
+    Subject subject = generate1();
+    subject = Subject{move(specimen)}; // <-------------------- test this
+  }
+#if 0 // [[REMOVETHIS]] because the member functions don't exist any more
+  auto Package::test_secret_access() -> void {
+#warning WRITETHIS auto Package::test_secret_access() -> void
+  }
+  auto Package::test_secret_set() -> void {
+#warning WRITETHIS auto Package::test_secret_set() -> void
+  }
+  auto Package::test_certificate_access() -> void {
+#warning WRITETHIS auto Package::test_certificate_access() -> void
+  }
+  auto Package::test_certificate_set() -> void {
+#warning WRITETHIS auto Package::test_certificate_set() -> void
+  }
+  auto Package::test_chain_access() -> void {
+#warning WRITETHIS auto Package::test_chain_access() -> void
+  }
+  auto Package::test_chain_set() -> void {
+#warning WRITETHIS auto Package::test_chain_set() -> void
+  }
+#endif
+}
+#import rigging.suite.io
+  auto tests::unit::enrollment::package::Package::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Package"};
+  series << []{
+              auto con = Stream{"constructor"};
+              con << call("triple", &Package::test_constructor_triple)
+                  << call("copy", &Package::test_constructor_copy)
+                  << call("move", &Package::test_constructor_move)
+                  << END;
+              return move(con);
+            }()
+         << []{
+              auto ass = Stream{"assignment"};
+              ass << call("copy", &Package::test_assignment_copy)
+                  << call("move", &Package::test_assignment_move)
+                  << END;
+              return move(ass);
+            }()
+#if 0 // [[REMOVETHIS]] because the member functions don't exist any more
+         << []() {
+              auto sec = Stream("secret");
+              sec << call("access", &Package::test_secret_access)
+                  << call("set", &Package::test_secret_set)
+                  << END;
+              return move(sec);
+            }()
+         << []() {
+              auto sec = Stream{"certificate"};
+              sec << call("access", &Package::test_certificate_access)
+                  << call("set", &Package::test_certificate_set)
+                  << END;
+              return move(sec);
+            }()
+         << []() {
+              auto sec = Stream{"chain"};
+              sec << call("access", &Package::test_chain_access)
+                  << call("set", &Package::test_chain_set)
+                  << END;
+              move(sec);
+            }()
+#endif
+         << END;
+  return finalize(series);
+}
+#endiv

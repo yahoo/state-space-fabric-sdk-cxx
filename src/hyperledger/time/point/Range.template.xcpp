@@ -1,0 +1,22 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::time::point {
+  //
+  // A pair of points forms a range.
+  // Specializations ony
+  // There are only two.
+  //    Range<Point, Point>
+  //    Range<Optional<Point>, Optional<Point>>
+  //
+  // If you need Optional<Range<Point, Point>> then go for it!
+  //
+  // Whether this is an "inside range" or an "outside range" is not specified
+  //
+  //   inside:          low <--- inside ---> high
+  //   outside:   <---- low                  high ---->
+  //
+  template<typename LEFT, typename RIGHT> struct Range;
+}
+#endiv

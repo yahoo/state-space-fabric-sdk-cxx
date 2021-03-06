@@ -1,0 +1,43 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::x509::query::traits::name {
+  template<required::Enumeration> struct Query;
+  template<> struct Query<AUTHORITY_KEY_IDENTIFIER>;
+  template<> struct Query<COMMON_NAME>;
+  template<> struct Query<EXPIRES>;
+  template<> struct Query<REVOKED>;
+  template<> struct Query<SERIAL>;
+  template<> struct Query<SUBJECT_KEY_IDENTIFIER>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::x509::query::traits {
+  template<required::Enumeration> struct name::Query : public False { };
+  namespace name {
+    template<> struct Query<AUTHORITY_KEY_IDENTIFIER> : public True<AUTHORITY_KEY_IDENTIFIER> { };
+    template<> struct Query<COMMON_NAME>              : public True<COMMON_NAME> { };
+    template<> struct Query<EXPIRES>                  : public True<EXPIRES> { };
+    template<> struct Query<REVOKED>                  : public True<REVOKED> { };
+    template<> struct Query<SERIAL>                   : public True<SERIAL> { };
+    template<> struct Query<SUBJECT_KEY_IDENTIFIER>   : public True<SUBJECT_KEY_IDENTIFIER> { };
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.x509.query.required.name.Query
+namespace {
+  namespace tests {
+    using namespace hyperledger::x509::query;
+    // Because these two are defined independently of each other ... are they consistent?
+    static_assert(traits::name::Query<AUTHORITY_KEY_IDENTIFIER>::value == required::name::Query<AUTHORITY_KEY_IDENTIFIER>);
+    static_assert(traits::name::Query<COMMON_NAME>::value == required::name::Query<COMMON_NAME>);
+    static_assert(traits::name::Query<EXPIRES>::value == required::name::Query<EXPIRES>);
+    static_assert(traits::name::Query<REVOKED>::value == required::name::Query<REVOKED>);
+    static_assert(traits::name::Query<SERIAL>::value == required::name::Query<SERIAL>);
+    static_assert(traits::name::Query<SUBJECT_KEY_IDENTIFIER>::value == required::name::Query<SUBJECT_KEY_IDENTIFIER>);
+  }
+}
+#endiv

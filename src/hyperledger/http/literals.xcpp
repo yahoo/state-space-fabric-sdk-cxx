@@ -1,0 +1,14 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.http.status.literals
+#import hyperledger.http.method.literals
+#import hyperledger.http.url.literals
+namespace hyperledger::http::literals {
+  using namespace status::literals;
+  using namespace method::literals;
+  using namespace url::literals;
+}
+#endiv

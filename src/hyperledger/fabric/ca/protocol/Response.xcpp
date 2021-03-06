@@ -1,0 +1,73 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // Something about a response from the server
+  // Something shaped like a JSON Object comes back.
+  //
+  // Counfounding Rhyming Similarities:
+  //
+  //   The outbound request is themed as a Dictionary.
+  //   The returning response is themed as a JSON Object which will be subject to further inspection & processing.
+  //
+  // Usage:
+  //
+  //   auto response = Response{};
+  //   ...work with it like any dictionary...
+  //
+  //   auto response = protocol::deserialize(blob["result"]);
+  //
+  struct Response;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.json.Response
+namespace hyperledger::fabric::ca {
+  namespace protocol {
+    using std::move;
+    using std::swap;
+    inline auto swap(Response &, Response &) noexcept -> void;
+  }
+  class protocol::Response : public http::json::Response {
+    using Ancestor = http::json::Response;
+    friend auto swap(Response &, Response &) noexcept -> void;
+  public:
+    Response() = default;
+    using Ancestor::Response;
+    inline explicit Response(Ancestor &&);
+    inline auto operator=(Ancestor &&) ->  Response &;
+    Response(Response &&) = default;
+    auto operator=(Response &&) ->  Response & = default;
+    // Is there more here?
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca {
+  auto protocol::swap(Response &a, Response &b) noexcept -> void {
+    Response::Ancestor &aa{a}, &bb{b};
+    swap(aa, bb);
+    // [[validate]] there are no new fields here, only the ancestor?
+  }
+  namespace protocol {
+    Response::Response(Ancestor &&a) : Ancestor{forward<Ancestor>(a)} { }
+    auto Response::operator=(Ancestor &&theirs) -> Response & {
+      Ancestor &ours{*this};
+      http::json::swap(ours, theirs);
+      return *this;
+    }
+  }
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.http.protocol.response.Accessors
+namespace {
+  namespace local {
+    namespace subject = hyperledger::fabric::ca::protocol;
+    namespace assertion = tests::concepts::hyperledger::http::protocol::response;
+    static_assert(assertion::Accessors<subject::Response>);
+  }
+}
+#endiv

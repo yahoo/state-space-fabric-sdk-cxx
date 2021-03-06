@@ -1,0 +1,96 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto.number
+namespace tests::crypto::number {
+  namespace expression {
+    class Expression;
+    namespace library = ::hyperledger::crypto::number;
+  }
+  using expression::Expression;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.crypto.Number
+struct tests::crypto::number::expression::Expression : public cppunit::test::Fixture {
+  using Subject = library::Number;
+  auto test_add() -> void;
+  auto test_sub() -> void;
+  auto test_mul() -> void;
+  auto test_div() -> void;
+  auto test_lsh() -> void;
+  auto test_rsh() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+namespace tests::crypto::number::expression {
+#warning WRITETHIS auto Expression::test_add() -> void
+  auto Expression::test_add() -> void {
+  }
+#warning WRITETHIS auto Expression::test_sub() -> void
+  auto Expression::test_sub() -> void {
+  }
+#warning WRITETHIS auto Expression::test_mul() -> void
+  auto Expression::test_mul() -> void {
+  }
+#warning WRITETHIS auto Expression::test_div() -> void
+  auto Expression::test_div() -> void {
+  }
+#warning WRITETHIS auto Expression::test_lsh() -> void
+  auto Expression::test_lsh() -> void {
+  }
+#warning WRITETHIS auto Expression::test_rsh() -> void
+  auto Expression::test_rsh() -> void {
+  }
+}
+#import tests.crypto.number.Number
+#import tests.crypto.number.Expression
+#import rigging.suite.io
+auto tests::crypto::number::expression::Expression::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"expressions"};
+  series << []{
+              auto add = Stream{"add"};
+              add << call("Number,Number", &Expression::test_add)
+                  << END;
+              return move(add);
+            }()
+         << []{
+              auto sub = Stream{"sub"};
+              sub << call("Number,Number", &Expression::test_sub)
+                  << END;
+              return move(sub);
+            }()
+         << []{
+              auto mul = Stream{"mul"};
+              mul << call("Number,Number", &Expression::test_mul)
+                  << END;
+              return move(mul);
+            }()
+         << []{
+              auto div = Stream{"div"};
+              div << call("Number,Number", &Expression::test_div)
+                  << END;
+              return move(div);
+            }()
+         << []{
+              auto lsh = Stream{"lsh"};
+              lsh << call("Number,Number", &Expression::test_lsh)
+                  << END;
+              return move(lsh);
+            }()
+         << []{
+              auto rsh = Stream{"rsh"};
+              rsh << call("Number,Number", &Expression::test_rsh)
+                  << END;
+              return move(rsh);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

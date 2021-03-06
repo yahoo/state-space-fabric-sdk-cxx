@@ -1,0 +1,60 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import std.size_t
+#import hyperledger.crypto.Message
+namespace hyperledger::crypto {
+  //
+  // Generate some bytes of almost-truly random data.
+  // Generate a secure random for cryptographic use.
+  // via /dev/urandom ... or rdrand ... gotta be.
+  //
+  //   Args:
+  //     size: Number of bytes for the nonce
+  //
+  //   Returns: Generated random bytes
+  //
+  //
+  // Usage:
+  //
+  //   auto nonce = crypto::generate_nonce(33);
+  //
+  inline auto generate_nonce(std::size_t size) -> Message;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.crypto.exception.Deterministic
+#import hyperledger.byte.Octet
+#import std.random_device
+namespace hyperledger {
+  auto crypto::generate_nonce(std::size_t size) -> Message {
+    //
+    // There is no language-standard guarantee that this really works.
+    // https://en.cppreference.com/w/cpp/numeric/random/random_device
+    // But now it does work.
+    //
+    // And yet https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/src/c%2B%2B11/random.cc
+    //
+    // And what does Python guarantee here?
+    //
+    //    return Random.get_random_bytes(size)
+    //
+    std::random_device dev;
+    if (0.0 == dev.entropy()) {
+      // The system is unusable because the random number generator is deterministic.
+      throw exception::Deterministic{};
+    }
+    if (dev.entropy() < 0.1) {
+#warning[[FIXTHIS]] entropy < 0.1 good enough?  What's a good value here?  Why?
+      throw exception::Deterministic{"entropy is too low"};
+    }
+    Message ret;
+    using hyperledger::byte::Octet;
+    for (auto i{0lu}, e{size}; e != i; ++i) {
+      ret.push_back(Octet(dev() % 256));
+    }
+    return ret;
+  }
+}
+#endiv

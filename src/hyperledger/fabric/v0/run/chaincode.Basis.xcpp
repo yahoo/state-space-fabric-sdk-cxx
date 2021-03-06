@@ -1,0 +1,134 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.Success
+#import hyperledger.fabric.v0.run.Chaincode
+namespace hyperledger::fabric::v0::run::chaincode {
+  //
+  // The Hyperledger Fabric peer(1) program, chaincode subcommand.
+  // Descendants only.  Everything is set up here to avoid cut & paste in the descendant.
+  //
+  // That Curiously-Recurring Template Pattern!
+  // RUNNER is run::Runner or run::Pipe_From
+  //
+  // Impements:
+  //
+  //   peer chaincode <subcommand> ...options... ...arguments...
+  //
+  // Usage:
+  //
+  //   see run.Chaincode<TYPE>
+  //
+  template<typename RUNNER> class Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.Loader.fabric.Context
+#import hyperledger.fabric.v0.run.Loader.peer.Context
+#import hyperledger.fabric.v0.run.Loader.chaincode.Context
+#import hyperledger.fabric.v0.run.Loader.Call
+#import hyperledger.fabric.v0.run.Loader.Orderer
+#import hyperledger.fabric.v0.run.Loader.Peers
+#import hyperledger.fabric.v0.run.Loader.Client
+#import hyperledger.fabric.v0.peer.chaincode.Call
+#import std.string
+#import shell.run.Piped_From
+template<typename RUNNER> class hyperledger::fabric::v0::run::chaincode::Basis
+  : public RUNNER,
+    private Loader<fabric::v0::Context>,
+    private Loader<peer::Context>,
+    private Loader<peer::chaincode::Context>,
+    private Loader<peers::Contact>,
+    private Loader<orderer::Contact>,
+    private Loader<tls::Client>,
+    private Loader<peer::chaincode::Call> {
+  struct Ancestors {
+    using Runner = RUNNER;
+    struct loaders {
+      using Fabric = run::Loader<peer::chaincode::Context>;
+      using Peer = run::Loader<peer::Context>;
+      using Chaincode = run::Loader<peer::chaincode::Context>;
+      using Call = run::Loader<peer::chaincode::Call>;
+      using Client = run::Loader<tls::Client>;
+      using Peers = run::Loader<peers::Contact>;
+      using Orderer = run::Loader<orderer::Contact>;
+    };
+  };
+public:
+  using Context = peer::chaincode::Call;
+protected:
+  ~Basis() = default;
+  inline Basis(std::string subcommand, Context const &, std::string constructor_args_blob);
+  auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code override;
+  struct tests { struct Access; };
+  friend struct tests::Access;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.error.Code
+#import hyperledger.fabric.v0.run.loader.are_the_same
+#import hyperledger.fabric.v0.run.push_back
+#import std.error_code
+namespace hyperledger::fabric::v0::run::chaincode {
+  template<typename _> Basis<_>::Basis(std::string subcommand, Context const &context, std::string constructor_args_blob)
+    : Ancestors::Runner{Ancestors::Runner::EXECP, "peer"} {
+    auto &arguments = Ancestors::Runner::args;
+    using Ld = typename Ancestors::loaders;
+    push_back<2>(arguments) << "chaincode" << std::move(subcommand);
+    Ld::Fabric::load(arguments, context);
+    Ld::Peer::load(arguments, context);
+    Ld::Chaincode::load(arguments, context);
+    Ld::Call::load(arguments, context);
+    if (!context.peers.endpoints.empty()) {
+      Ld::Peers::load(arguments, context.peers.endpoints);
+    }
+    if (context.peers.client) {
+      Ld::Client::load(arguments, *context.peers.client);
+    }
+    // Confounding is wnen both the orderer and the peers are supplied
+    // This can, at best result in consistency; and at worst in a configuration exception
+    if (context.orderer) {
+      Ld::Orderer::load(arguments, context.orderer->endpoint);
+      // And thus, arguably, the client field should be factored out of orderer::Contact and peers::Contact
+      // ... but then the Contact classes would be "incomplete" in the sense of underspecifying the recipe for contacting the service.
+      // ... but it is also ill-posed to specify the order *and* the peers in the same call.
+      if (!loader::are_the_same(context.orderer->client, context.peers.client)) {
+        throw std::error_code{error::Code::CONFIGURATION_TLS_CLIENT};
+      }
+    }
+    push_back<2>(arguments) << "--ctor" << std::move(constructor_args_blob);
+  }
+}
+#import std.exception
+#import sys.exits.constants
+#import sys.posix.close
+#import sys.posix.dup2
+namespace hyperledger::fabric::v0::run::chaincode {
+  template<typename _> auto Basis<_>::grow_child(int, int writefd) const noexcept -> sys::exits::Code {
+    // We're in the child now, NOTHING ESCAPES
+    try {
+      // Because .../bin/peer writes its emissions to stderr, not stdout, we have to dup2(..., 1), dup2(..., 2)
+      // The ancestor's grow_child(...) will handle the case of stdout.
+      //
+      // Example: (all this appears on stderr, not stdout)
+      //
+      //   2019-03-30 00:03:22.385 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (microphone) orderer endpoint: nervous.clown:7050
+      //   2019-03-30 00:03:22.403 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"5678" 
+      //
+      auto duped = sys::posix::dup2(writefd, 2);
+      if (!ok(duped)) {
+        Ancestors::Runner::dying_utterance(error_code(duped).message());
+      } else {
+        return Ancestors::Runner::grow_child(-1, writefd);
+      }
+    } catch (std::exception const &e) {
+      Ancestors::Runner::dying_utterance(e.what());
+    } catch (...) {
+      Ancestors::Runner::dying_utterance("unknown");
+    }
+    return sys::exits::OSERR;
+  }
+}
+#endiv

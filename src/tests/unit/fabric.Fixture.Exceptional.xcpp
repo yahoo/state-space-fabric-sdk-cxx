@@ -1,6 +1,7 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
 #include <hpp/tests.unit.fabric.Fixture>
 #endiv
@@ -8,27 +9,27 @@
 #import hyperledger.fabric.exception.Aspect
 #import std.runtime_error
 #import std.string
-class tests::unit::fabric::Fixture::Exceptional : public ::hyperledger::fabric::exception::Aspect, public std::runtime_error {
-  struct ancestors {
+class tests::unit::fabric::fixture::Fixture::Exceptional : public library::exception::Aspect, public std::runtime_error {
+  struct Ancestors {
     using Aspect = ::hyperledger::fabric::exception::Aspect;
     using Exception = std::runtime_error;
   };
 public:
   inline Exceptional(std::string const &reason);
-  auto what() const noexcept -> char const * final;
+  auto what() const noexcept -> char const * override final;
 };
 #endiv
 #divert <ipp>
-namespace tests::unit::fabric {
-  inline Fixture::Exceptional::Exceptional(std::string const &reason)
-    : ancestors::Exception{reason}
+namespace tests::unit::fabric::fixture {
+  Fixture::Exceptional::Exceptional(std::string const &reason)
+    : Ancestors::Exception{reason}
   { }
 }
 #endiv
 #divert <cpp>
-namespace tests::unit::fabric {
+namespace tests::unit::fabric::fixture {
   auto Fixture::Exceptional::what() const noexcept -> char const * {
-    return ancestors::Exception::what();
+    return Ancestors::Exception::what();
   }
 }
 #endiv

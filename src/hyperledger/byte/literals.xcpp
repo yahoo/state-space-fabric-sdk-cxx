@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::byte::literals {
+  //
+  // The byte literals
+  //
+  // Concept:
+  //
+  //   The final \0 that the compiler provides in the literalis not represented in byte representation
+  //
+  // Again (in case you didn't read)
+  //
+  //   Always ignore that last byte because it is \0 and we don't want it
+  //
+  // Behavior:
+  //
+  //   https://en.cppreference.com/w/cpp/language/user_literal
+  //   which is unspecific about the contents of the size_t length parameter.
+  //   We observe it ot be the contents between the ""quotes and does NOT entail a latent '\0'
+  //
+  // Usage:
+  //
+  //   #import hyperledger.byte.literals
+  //   using namespace hyperledger::byte::literals;
+  //   auto value = ""_bytes;
+  //   auto value = ""_bytespan;
+  //
+}
+#endiv
+#divert <hpp>
+#import std.size_t
+#import hyperledger.byte.Storage
+#import hyperledger.byte.Span
+namespace hyperledger::byte::literals {
+  inline auto operator "" _bytes(char const *literal, std::size_t length) -> Storage {
+    auto const start  = reinterpret_cast<Octet const *>(&literal[0]);
+    auto const finish = reinterpret_cast<Octet const *>(&literal[length]);
+    return {start, finish};
+  }
+  inline auto operator "" _bytespan(char const *literal, std::size_t length) -> Span {
+    auto const data = reinterpret_cast<Octet const *>(literal);
+    return {data, length};
+  }
+}
+#endiv

@@ -1,0 +1,59 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <hpp>
+#import std.string
+#import hyperledger.ip.Port
+#import hyperledger.Outcome
+namespace hyperledger::net::endpoint {
+  //
+  // Acquire a port number from the syntax.
+  //
+  // An outcome which contains the ip::Port or else the error.
+  //
+  // Does not throw on invalid port syntax.
+  // DOES return an erro routcome.
+  //
+  // Usage:
+  //
+  //   auto syntax = ...somehow...;
+  //   auto got = get_port(syntax);
+  //   if (ok(got)) { ... use it ... }
+  //   else { auto ec = error_code(got); }
+  //
+  namespace packaging::get_port::function {
+    using Result = Outcome<ip::Port>;
+    using Port = ip::Port;
+    auto get_port(std::string const &syntax) -> Result;
+  }
+  using packaging::get_port::function::get_port;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.net.error.Code
+#import std.error_code
+#import std.exception
+#import std.numeric_limits
+#import std.size_t
+#import std.stoi
+auto hyperledger::net::endpoint::packaging::get_port::function::get_port(std::string const &syntax) -> Result {
+  // Whereas std::stoi signals failure both via exception and also via its 2nd inout parameter
+  // we have to put a lot of machinery around it to make it safe and obvious what is occurring.
+  try {
+    std::size_t end{0};
+    auto candidate = std::stoi(syntax, &end);
+    if (end != syntax.size()) {
+      return Result{std::error_code{error::Code::SYNTAX_PORT}};
+    }
+    auto const lo = 1+std::numeric_limits<std::uint16_t>::min();
+    auto const hi = std::numeric_limits<std::uint16_t>::max();
+    if (candidate < 0 || candidate < lo || hi < candidate) {
+      return Result{std::error_code{error::Code::BOUNDS_PORT}};
+    }
+    return Result{ip::Port(candidate)}; // narrowing conversion, but is within bounds
+  } catch (std::exception const &) {
+    return Result{std::error_code{error::Code::SYNTAX_PORT}};
+  }
+}
+#endiv

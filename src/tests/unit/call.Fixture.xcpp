@@ -1,36 +1,34 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
 namespace tests::unit::call { class Fixture; }
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::call::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::call::Fixture : public cppunit::test::Fixture {
   auto test_Function() -> void;
   static auto suite() -> cppunit::Test *;
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.peer.chaincode.Function
+#import hyperledger.fabric.v0.peer.chaincode.Function
 auto tests::unit::call::Fixture::test_Function() -> void {
-  using ::hyperledger::fabric::peer::chaincode::packaging::call::function::Function;
+  using ::hyperledger::fabric::v0::peer::chaincode::packaging::call::function::Function;
   Function heavy = Function::HEAVY;
   CPPUNIT_ASSERT(Function::INVOKE == heavy);
   auto light = Function::LIGHT;
   CPPUNIT_ASSERT(Function::QUERY == light);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::call::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  using ::unit::rigging::suite::call;
-  Stream series("call");
+  using namespace rigging::suite;
+  using rigging::suite::call; // lest namespace call occludes
+  auto series = Stream{"call"};
   series << call("Function", &Fixture::test_Function)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

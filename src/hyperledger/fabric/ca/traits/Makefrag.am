@@ -1,0 +1,18 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_ca_traits_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/traits/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/traits/Authorization.cpp \
+  obj/src/hyperledger/fabric/ca/traits/Configuration.cpp \
+  obj/src/hyperledger/fabric/ca/traits/Query.cpp \
+  obj/src/hyperledger/fabric/ca/traits/Transport.cpp \
+  obj/src/hyperledger/fabric/ca/traits/Service.cpp \
+  obj/src/hyperledger/fabric/ca/traits/name.Authorization.cpp \
+  obj/src/hyperledger/fabric/ca/traits/name.Configuration.cpp \
+  obj/src/hyperledger/fabric/ca/traits/name.Query.cpp \
+  obj/src/hyperledger/fabric/ca/traits/name.Service.cpp \
+  obj/src/hyperledger/fabric/ca/traits/name.Transport.cpp \
+  $(end)
+traits-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ca_traits_SUBSOURCES))

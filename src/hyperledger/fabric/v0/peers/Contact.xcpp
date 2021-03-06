@@ -1,0 +1,23 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::fabric::v0::peers {
+  //
+  // How to contact the peers (one or more peers)
+  //
+  // Used in aggregation in a final Context by descent from the nearby chaincode::Call
+  // e.g. peer::chaincode::Call
+  //
+  struct Contact;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Boolean
+#import hyperledger.fabric.v0.Contact
+#import hyperledger.tls.Endpoints
+struct hyperledger::fabric::v0::peers::Contact : public v0::Contact {
+  tls::Endpoints endpoints; // These are plural; there is a series of endpoints from which to choose.
+};
+#endiv

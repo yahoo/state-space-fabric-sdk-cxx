@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::exception {
+  //
+  // There was a problem with the encryption step.
+  //
+  // Usage:
+  //
+  //   throw Encrypt{};
+  //
+  class Encrypt;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.exception.Operation
+class hyperledger::crypto::exception::Encrypt : public Operation {
+  using Ancestor = Operation;
+public:
+  Encrypt() : Ancestor{"encrypt"} { }
+  using Ancestor::Operation;
+};
+#endiv

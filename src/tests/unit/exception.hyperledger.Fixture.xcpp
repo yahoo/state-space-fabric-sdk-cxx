@@ -1,0 +1,139 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.exception
+namespace tests::unit::exception::hyperledger {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::exception;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::exception::hyperledger::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Aspect() -> void;
+  auto test_Certificate() -> void;
+  auto test_Decode() -> void;
+  auto test_Encode() -> void;
+  auto test_Filepath() -> void;
+  auto test_Invalid() -> void;
+  auto test_IOError() -> void;
+  auto test_Random() -> void;
+  auto test_Serialization() -> void;
+  auto test_Unimplemented() -> void;
+  auto test_Unreachable() -> void;
+  auto test_System() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Runtime;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Aspect
+#import tests.unit.exception.hyperledger.Fixture.Runtime
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Aspect() -> void {
+  try {
+    throw Runtime{};
+  } catch (library::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+    return;
+  }
+  CPPUNIT_ASSERT(false);
+}
+#import hyperledger.exception.Certificate
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Certificate() -> void {
+  using Subject = ::hyperledger::exception::Certificate;
+  Subject subject{"bad cert"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Decode
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Decode() -> void {
+  using Subject = ::hyperledger::exception::Decode;
+  Subject subject{"decoded"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Encode
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Encode() -> void {
+  using Subject = ::hyperledger::exception::Encode;
+  Subject subject{"encoded"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Filepath
+#import std.error_code
+#import std.errc
+#import std.system_category
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Filepath() -> void {
+  using Subject = ::hyperledger::exception::Filepath;
+  Subject subject{"/tmp", std::error_code{(int)std::errc::no_such_file_or_directory, std::system_category()}, "do not do that there"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Invalid
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Invalid() -> void {
+  using Subject = ::hyperledger::exception::Invalid;
+  Subject subject{"that is invalid"};
+  CPPUNIT_ASSERT(nullptr != subject.what()); 
+}
+#import hyperledger.exception.IOError
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_IOError() -> void {
+  // The IOError exception is just a type alias for Serialization
+  test_Serialization();
+}
+#import hyperledger.exception.Random
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Random() -> void {
+  using Subject = ::hyperledger::exception::Random;
+  Subject subject{"arbitrary"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Serialization
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Serialization() -> void {
+  using Subject = ::hyperledger::exception::Serialization;
+  Subject subject{"bad json"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.System
+#import std.system_category
+#import std.errc
+#import std.error_code
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_System() -> void {
+  using Subject = ::hyperledger::exception::System;
+  Subject subject{std::error_code{(int)std::errc::no_such_file_or_directory, std::system_category()}, "failed"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Unimplemented
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Unimplemented() -> void {
+  using Subject = ::hyperledger::exception::Unimplemented;
+  Subject subject{__FUNCTION__, __FILE__, __LINE__};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import hyperledger.exception.Unreachable
+auto tests::unit::exception::hyperledger::fixture::Fixture::test_Unreachable() -> void {
+  using Subject = ::hyperledger::exception::Unreachable;
+  Subject subject{__FUNCTION__, __FILE__, __LINE__};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import rigging.suite.io
+auto tests::unit::exception::hyperledger::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"hyperledger"};
+  series << call("Aspect", &Fixture::test_Aspect)
+         << call("Certificate", &Fixture::test_Certificate)
+         << call("Decode", &Fixture::test_Decode)
+         << call("Encode", &Fixture::test_Encode)
+         << call("Filepath", &Fixture::test_Filepath)
+         << call("Encode", &Fixture::test_Encode)
+         << call("Invalid", &Fixture::test_Invalid)
+         << call("IOError", &Fixture::test_IOError)
+         << call("Random", &Fixture::test_Random)
+         << call("Serialization", &Fixture::test_Serialization)
+         << call("System", &Fixture::test_System)
+         << call("Unimplemented", &Fixture::test_Unimplemented)
+         << call("Unreachable", &Fixture::test_Unreachable)
+         << END;
+  return finalize(series);
+}
+#endiv

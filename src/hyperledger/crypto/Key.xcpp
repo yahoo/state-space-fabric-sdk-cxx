@@ -1,0 +1,22 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.crypto.key.Prototype
+namespace hyperledger::crypto {
+  //
+  // This is only useful if you want the most abstract representation of a key.
+  // Typically you either want key::Public or key::Private
+  //
+  // Usage:
+  //
+  //   auto function(Key const &) -> Result;
+  //
+  //   auto pri = key::Private{...somehow...};
+  //   function(pri);
+  //   auto pub = key::Public{...somehow...};
+  //   function(pub);
+  //
+  using Key = key::Prototype;
+}
+#endiv

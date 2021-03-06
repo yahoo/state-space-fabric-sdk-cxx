@@ -1,0 +1,98 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::text {
+  //
+  // A (text) response, that you might get back from an HTTP text
+  //
+  // Concept:
+  //
+  //   Provides its own storage.
+  //   Any method call can will have a (text) response; that's what goes out "over the wire."
+  //
+  // Lifetimes:
+  //
+  //   Since the Response provides its own storage, there are no obviosu constraints.
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto request = Request{...somehow...};
+  //   auto earl = url::String{...somehow...};
+  //
+  //        /-------------------- Outcome<responses> or such
+  //        |
+  //        v
+  //   auto got = text::call<GET>(client, earl, request);
+  //   auto deleted = text::call<DELETE>(client, earl, request);
+  //   auto posted = text::call<POST>(client, earl, reqwuest);
+  //   auto putted_sic = text::call<PUT>(client, earl, request);
+  //
+  class Response;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.required.response.Body
+namespace hyperledger::http::text {
+  //
+  // Convert the body from the byte-range form into something else.
+  // If you just need the vector<byte> form then you can call value(...)
+  // This interface always copies the body into the new container.
+  //
+  template<required::response::Body BODY> inline auto value_as(Response const &) -> BODY;
+}
+#import hyperledger.http.protocol.Response
+#import std.byte
+#import std.vector
+#import nonstd.required.iterator.Input
+#import nonstd.required.iterator.Producing
+namespace  hyperledger::http {
+  namespace text {
+    using std::move;
+    using std::swap;
+    inline auto swap(Response &, Response &) noexcept -> void;
+  }
+  struct text::Response : public protocol::Response {
+    using Ancestor = protocol::Response;
+    friend auto swap(Response &, Response &) noexcept -> void;
+  public:
+    Response() = default;
+    using Body = std::vector<std::byte>;
+    inline explicit Response(Body);
+    template<nonstd::required::iterator::Input ITERATOR> inline Response(ITERATOR, ITERATOR) requires nonstd::required::iterator::Producing<ITERATOR, typename Body::value_type>;
+  protected:
+    // This is optimized for the littlish bodies that we have here in the Hyperledger world (they being certificates).
+    Body the_body;
+    friend auto ok(Response const &r) -> bool { return good(r); }
+    friend auto good(Response const &r) -> bool { return status::Code{200} == r.the_code; }
+    friend auto status(Response const &r) -> status::Code { return r.the_code; }
+    template<required::response::Body BODY> friend auto value(Response const &r) -> BODY const & { return r.the_body; }
+    template<required::response::Body BODY> friend auto value(Response &r) -> BODY & { return r.the_body; }
+    template<required::response::Body BODY> friend auto value(Response &&r) -> BODY && { return std::move(r.the_body); }
+    template<required::response::Body BODY> friend auto text::value_as(Response const &) -> BODY;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.text.detail.Transformer // [[FIXTHIS]] no need to put this in namespace detail
+namespace hyperledger::http {
+  auto text::swap(Response &a, Response &b) noexcept -> void {
+    Response::Ancestor &aa{a}, &bb{b};
+    swap(a.the_body, b.the_body);
+    swap(aa, bb);
+  }
+  template<required::response::Body RESULT> auto text::value_as(Response const &source) -> RESULT {
+    using Rhs = Response::Body::value_type;
+    detail::Transformer<RESULT, Rhs> constructor;
+    return constructor(source.the_body.begin(), source.the_body.end());
+  }
+  namespace text {
+    Response::Response(Body some_body) : the_body{std::move(some_body)} { }
+    template<nonstd::required::iterator::Input ITERATOR> Response::Response(ITERATOR start, ITERATOR finish)
+      requires nonstd::required::iterator::Producing<ITERATOR, typename Body::value_type>
+      : the_body{detail::Transformer<ITERATOR, typename Body::value_type>{}(start, finish)}
+    { }
+  }
+}
+#endiv

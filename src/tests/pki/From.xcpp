@@ -1,0 +1,70 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.pki
+namespace tests::pki {
+  namespace from {
+    class From;
+    namespace library = ::hyperledger::pki;
+  }
+  using from::From;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::pki::from::From : public cppunit::test::Fixture {
+  auto test_Certificate() -> void;
+  auto test_Certificates() -> void;
+  auto test_Request() -> void;
+  auto test_Secret() -> void;
+  auto test_revocation_Certificates() -> void;
+  auto test_revocation_Names() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.pki.from // we are testing this, all the variants
+#endiv
+#divert <cpp>
+namespace tests::pki::from {
+  auto From::test_Certificate() -> void {
+#warning WRITETHIS auto From::test_Certificate() -> void
+  }
+  auto From::test_Certificates() -> void {
+#warning WRITETHIS auto From::test_Certificates() -> void
+  }
+  auto From::test_Request() -> void {
+#warning WRITETHIS auto From::test_Request() -> void
+  }
+  auto From::test_Secret() -> void {
+#warning WRITETHIS auto From::test_Secret() -> void
+  }
+  auto From::test_revocation_Certificates() -> void {
+#warning WRITETHIS auto From::test_revocation_Certificates() -> void
+  }
+  auto From::test_revocation_Names() -> void {
+#warning WRITETHIS auto From::test_revocation_Names() -> void
+  }
+}
+#import rigging.suite.io
+auto tests::pki::from::From::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"from<...>"};
+  series << call("Certificate", &From::test_Certificate)
+         << call("Certificates", &From::test_Certificates)
+         << call("Request", &From::test_Request)
+         << call("Secret", &From::test_Secret)
+         << []{
+              auto rev = Stream{"revocation"};
+              rev << call("Certificates", &From::test_revocation_Certificates)
+                  << call("Names", &From::test_revocation_Names)
+                  << END;
+              return move(rev);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

@@ -1,0 +1,58 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::exception {
+  //
+  // Declare that there was "some problem" with the random number generation.
+  //
+  // Concept:
+  //
+  //   Whiel this is a full and complete exception, you may want crypto::exception::Deterministic
+  //
+  //   In general catch the mixin feature::Random
+  //
+  // Usage:
+  //
+  //   class my::Problem : public Aspect, public feature::Random, public std::runtime_error {
+  //     using Ancestor::runtime_error;
+  //     auto what() const noexcept -> char const * override;
+  //   };
+  //
+  //   try {
+  //     throw my::Problem{"not random enough"};
+  //   } catch (feature::Random const &e) {
+  //      ...complain...
+  //   }
+  //
+  class Random;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.exception.feature.Random
+#import hyperledger.string.View
+#import std.runtime_error
+class hyperledger::exception::Random : public Aspect,
+                                       public feature::Random,
+                                       public std::runtime_error {
+  struct Ancestors {
+    using Aspect = hyperledger::exception::Aspect;
+    using Feature = hyperledger::exception::feature::Random;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Random(string::View reason);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::exception {
+  Random::Random(string::View reason) : Ancestors::Exception{string::Storage{reason.begin(), reason.end()}} { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::exception {
+  auto Random::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

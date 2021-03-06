@@ -1,0 +1,79 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::ip::port {
+  //
+  // A Internet Protocol Port Number
+  // Default-constructing
+  // In the range 0..65535
+  //
+  // The port number is always in host order; never in network order.
+  //
+  // See also, for parsing arguments & config files:
+  //
+  //    tunitas::app::options::get_port(cfg, step);
+  // 
+  // Usage:
+  //
+  //   rly?  (hint: just like ip::in::port_t or std::uint16_t, only more so)
+  //
+  //   auto p = Port{80u}
+  //   cerr << format(p);
+  //   auto s = to_string(p);
+  //
+  class Port;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import std.swap
+#import std.uint16_t
+namespace hyperledger::ip {
+  namespace port {
+    inline auto operator==(Port const &, Port const &) -> bool;
+    inline auto operator!=(Port const &, Port const &) -> bool;
+    using std::move;
+    using std::swap;
+    inline auto swap(Port &, Port &) noexcept -> void;
+    inline auto to_string(Port const &) -> string::Storage;
+  }
+  class port::Port {
+    // like 'ip::port_t' but default-initializes to '0'
+  public:
+    using Value = std::uint16_t;
+    inline Port();
+    inline explicit Port(Value);
+    Port(Port const &) = default;
+    inline auto operator=(Value) -> Port &;
+    inline auto operator=(Port const &) -> Port & = default;
+    inline operator Value() const;
+  protected:
+    Value value;
+    friend auto port::operator==(Port const &, Port const &) -> bool;
+    friend auto port::swap(Port &, Port &) noexcept -> void;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.ip.port.Formatter // but it is unused in to_string(...)
+#import std.ostringstream
+#import std.to_string
+namespace hyperledger::ip {
+  auto port::operator==(Port const &b, Port const &a) -> bool { return a.value == b.value; }
+  auto port::operator!=(Port const &a, Port const &b) -> bool { return !operator==(a, b); }
+  auto port::swap(Port &a, Port &b) noexcept -> void { swap(a.value, b.value); }
+  auto port::to_string(Port const &pp) -> string::Storage { return std::to_string(pp); }
+  namespace port {
+    Port::Port() : value(Value{}) { }
+    Port::Port(Value value) : value(value) { }
+    auto Port::operator=(Value proposed) -> Port & {
+      Port tmp{proposed};
+      std::swap(tmp, *this);
+      return *this;
+    }
+    Port::operator Value() const { return value; }
+  }
+}
+#endiv

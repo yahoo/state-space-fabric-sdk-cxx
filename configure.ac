@@ -1,5 +1,5 @@
 dnl This is a GNU -*- autoconf -*- specification that is processed by Autoconf.
-dnl Copyright 2019, Oath Inc.
+dnl Copyright Verizon Media.
 dnl Licensed under the terms of the Apache-2.0 license.
 dnl See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 dnl
@@ -44,9 +44,13 @@ TF_WITH_SUBSYSTEM([temerarious-flagship], [], [The Tunitas Build System])
 TF_WITH_SUBSYSTEM([tunitas-basics], [], [The Tunitas Basics])
 
 # And mention these in $(DEVELOPMENT_AREAS) in Makefile.am
-dnl NO DEPENDENCY ON JSON ---> TF_WITH_MODULE([json]) <--- NO DEPENDENCY ON JSON
+TF_WITH_MODULE([format])
+TF_WITH_MODULE([json])
 TF_WITH_MODULE([nonstd])
+TF_WITH_MODULE([openssl])
 TF_WITH_MODULE([posix])
+TF_WITH_MODULE([shell])
+TF_WITH_MODULE([slurp])
 TF_WITH_MODULE([std])
 TF_WITH_MODULE([string]) dnl a.k.a. c-string
 TF_WITH_MODULE([sys])
@@ -56,7 +60,7 @@ TF_WITH_MODULE([rigging]) dnl a.k.a. unit-rigging -> rigging-unit
 
 TF_MSG_VERBOSE([compiler-specific (alphabetical)])
 TF_WITH_NONSTD([cppunit])
-TF_WITH_NONSTD([gcc]) dnl but modern gcc-8.2.0 & beyond is fine
+TF_WITH_NONSTD([gcc]) dnl but modern <strike>gcc-8.2.0</strike> gcc-9.3 & beyond is fine
 TF_WITH_USR_LOCAL
 
 AM_PROG_AR
@@ -66,7 +70,10 @@ AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_CC_C_O
 TF_PROG_DC
-TF_CHECK_CPPUNIT
+TF_PROG_PROTOC dnl   package protobuf-devel protobuf-compiler
+TF_CHECK_CPPUNIT dnl cppunit (but WATCHOUT for the version, >= 1.14 or such
+TF_CHECK_JSONCPP dnl package jsoncpp-devel
+TF_CHECK_OPENSSL dnl package openssl-devel
 TF_WITH_USR_LOCAL
 
 TF_CHECK_STD_FILESYSTEM dnl get @libstd_filesystem@ for Makefile.am

@@ -1,0 +1,37 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#forward hyperledger.pki.Secret
+#forward hyperledger.pki.Certificate
+#forward hyperledger.pki.Request
+#import openssl.evp.PKey // only need #forward but: the use of #forward is the same as #import for the external module <openssl.evp.PKey>
+#import openssl.x509.Crt
+#import openssl.x509.Req
+#import nonstd.same_as
+namespace hyperledger::pki::required::openssl {
+  //
+  // Constrain which Hyperledger PKI types go with which OpenSSL types
+  // There are only three that matter
+  //
+  //   Secret ..................... a.k.a. a private key, which has to be an EC256 for practical size reasons, but hey, it could be RSA 4096, why not?
+  //   Request .................... a.k.a. CSR, Certificate Signing Request
+  //   Certificate ................ that thing.
+  //
+  // Usage:
+  //
+  //   template<required::Slurpable SLURPABLE, typename OPENSSL> requires required::openssl::Pairwise<SLURPABLE, OPENSSL> auto function(...somehow...);
+  //
+  namespace pairwise {
+    using namespace std;
+    using namespace nonstd;
+    template<typename HYPERLEDGER, typename OPENSSL> concept bool Secret      = same_as<HYPERLEDGER, hyperledger::pki::Secret>      && same_as<OPENSSL, ::openssl::evp::PKey>;
+    template<typename HYPERLEDGER, typename OPENSSL> concept bool Request     = same_as<HYPERLEDGER, hyperledger::pki::Request>     && same_as<OPENSSL, ::openssl::x509::Req>;
+    template<typename HYPERLEDGER, typename OPENSSL> concept bool Certificate = same_as<HYPERLEDGER, hyperledger::pki::Certificate> && same_as<OPENSSL, ::openssl::x509::Crt>;
+    template<typename HYPERLEDGER, typename OPENSSL> concept bool Pairwise = (Secret<HYPERLEDGER, OPENSSL> ||
+                                                                              Request<HYPERLEDGER, OPENSSL> ||
+                                                                              Certificate<HYPERLEDGER, OPENSSL>);
+  }
+  using pairwise::Pairwise;
+}
+#endiv

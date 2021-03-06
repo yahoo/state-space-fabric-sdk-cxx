@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::exception {
+  //
+  // Like a std::invalid_argument but is marked as a hyperledger exception by aspect
+  //
+  // Works like https://en.cppreference.com/w/cpp/error/invalid_argument
+  //
+  // Usage:
+  //
+  //   throw Invalid{"below the line"};
+  //
+  class Invalid;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import std.invalid_argument
+class hyperledger::exception::Invalid : public Aspect, public std::invalid_argument {
+  struct Ancestors {
+    using Aspect = hyperledger::exception::Aspect;
+    using Exception = std::invalid_argument;
+  };
+public:
+  using Ancestors::Exception::invalid_argument;
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <cpp>
+auto hyperledger::exception::Invalid::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+#endiv

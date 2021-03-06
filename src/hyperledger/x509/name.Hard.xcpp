@@ -1,0 +1,44 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.x509.required
+namespace hyperledger::x509::name {
+  //
+  // Access Hard C API.
+  // Descendants only.
+  // OpenSSL has difficulty with consty sense.
+  //
+  struct Hard;
+}
+#endiv
+#divert <hpp>
+#import openssl.types
+#import hyperledger.string.Storage
+class hyperledger::x509::name::Hard {
+protected:
+  ~Hard();
+  // [[FIXTHIS]] the static get_name exists because Held is missing -- Held::get_text_by_NID<openssl::x509::NID::CN>()
+  static auto get_name(X509_name_st *dubious_constiness) -> string::Storage;
+};
+#endiv
+#divert <cpp>
+#import openssl.exception.Missing
+#import openssl.functions
+#import openssl.exception.Aspect
+namespace hyperledger::x509::name {
+  Hard::~Hard() = default;
+  auto Hard::get_name(X509_name_st *dubious_constiness) -> string::Storage {
+    // [[FIXTHIS]] all this should be a part of the ancestor's public interface
+    constexpr auto BUF_SIZE = 65; // whereas a Common Prototype can only be 64 characters long, per the RFC
+    char buf[BUF_SIZE];
+    auto ok = X509_NAME_get_text_by_NID(dubious_constiness, NID_commonName, &buf[0], sizeof (buf));
+    if (!ok) {
+      throw openssl::exception::Missing{};
+    }
+    // How do we know that they do this for us?
+    buf[sizeof (buf)-1] = '\0';
+    return buf;
+  }
+}
+#endiv

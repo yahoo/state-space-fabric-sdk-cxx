@@ -1,0 +1,54 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.json.exception
+namespace tests::unit::exception::json {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::json::exception;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::exception::json::Fixture : public cppunit::test::Fixture {
+  auto test_Aspect() -> void;
+  auto test_Missing() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Runtime;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.json.exception.Aspect
+#import tests.unit.exception.json.Fixture.Runtime
+namespace tests::unit::exception::json::fixture {
+  auto Fixture::test_Aspect() -> void try {
+    throw Runtime{};
+  } catch (library::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+    return;
+  }
+}
+#import hyperledger.json.exception.Missing
+namespace tests::unit::exception::json::fixture {
+  auto Fixture::test_Missing() -> void {
+    using Subject = library::Missing;
+    auto subject = Subject{"missingt"};
+    CPPUNIT_ASSERT(nullptr != subject.what());
+  }
+}
+#import rigging.suite.io
+auto tests::unit::exception::json::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"json"};
+  series << call("Aspect", &Fixture::test_Aspect)
+         << call("Missing", &Fixture::test_Missing)
+         << END;
+  return finalize(series);
+}
+#endiv

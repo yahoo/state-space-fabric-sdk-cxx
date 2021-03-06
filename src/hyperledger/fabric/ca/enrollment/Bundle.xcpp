@@ -1,0 +1,89 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::enrollment {
+  //
+  // The bundle of stuff that you need for an enrollment request.
+  // Not quite everything; everything except the Certificate Signing Request (CSR), which is in the Request
+  //
+  // This class provides a separation of the convenience of assembly from the actual request itself.
+  // This simplifies the API signature of the Service
+  //
+  // Usage:
+  //
+  //   auto svc = Service<ENROLLMENT>{...somehow...};
+  //
+  //   auto bun = Bundle{...somehow...};
+  //   auto req = Request{move(bun), ...somehow...};
+  //
+  //   auto enrolled = svc.enroll(req);
+  //
+  namespace [[eponymous]] bundle {
+    class Bundle;
+  }
+  using bundle::Bundle;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#import hyperledger.Dictionary
+namespace hyperledger::fabric::ca::enrollment {
+  namespace bundle {
+    using std::move;
+    using std::swap;
+    inline auto swap(Bundle &, Bundle &) noexcept -> void;
+  }
+  struct bundle::Bundle {
+    Bundle() = default;
+    inline Bundle(string::Storage name, string::Storage secret, Optional<Dictionary>, Optional<string::Storage> profile);
+    string::Storage name; // ................. identifier of the role or user for whom the enrollment will occur
+    string::Storage secret; // ............... which is to be kept secret [[FIXME]] use a "secure string" that erases on destruction
+    Dictionary attr_reqs; // ................. becomes "json" in the package that is sent to the server   Who is this Jason? Is it He that is that Certain Leader of The Argonauts?
+    // [[FIXTHIS]] why is this not just an enumeration?  [[FIXTHIS]] what is affiliation enrollment?
+    Optional<string::Storage> profile; // ... "tls" for TLS certificate enrollment; or NULL for identity enrollment
+    inline auto empty() const -> bool;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::enrollment {
+  auto bundle::swap(Bundle &a, Bundle &b) noexcept -> void {
+    swap(a.name, b.name);
+    swap(a.secret, b.secret);
+    swap(a.attr_reqs, b.attr_reqs);
+    swap(a.profile, b.profile);
+  }
+  namespace bundle {
+    Bundle::Bundle(string::Storage name, string::Storage secret, Optional<Dictionary> attrs, Optional<string::Storage> profile)
+      : name{move(name)}
+      , secret{move(secret)}
+      , profile{move(profile)} {
+        if (attrs) {
+          attr_reqs = move(*attrs);
+        }
+      }
+    auto Bundle::empty() const -> bool {
+      return name.empty() && secret.empty() && attr_reqs.empty() && (!profile || profile->empty());
+    }
+  }
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import std.is_copy_constructible
+#import std.is_copy_assignable
+#import std.is_move_constructible
+#import std.is_move_assignable
+namespace {
+  namespace tests {
+    using namespace std;
+    using namespace hyperledger::fabric::ca::enrollment;
+    static_assert(not is_copy_constructible_v<Bundle>); // because hyperledger::dictionary::Dictionary is not copyable (but is movable)
+    static_assert(not is_copy_assignable_v<Bundle>);
+    static_assert(is_move_constructible_v<Bundle>);
+    static_assert(is_move_assignable_v<Bundle>);
+  }
+}
+#endiv

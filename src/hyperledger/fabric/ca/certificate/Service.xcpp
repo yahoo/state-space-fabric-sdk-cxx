@@ -1,0 +1,116 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.protocol // Force, Spontaneous, Protocol
+namespace hyperledger::fabric::ca::certificate {
+  //
+  // The certificate sub-api
+  // Descendants only.
+  // You will use Service<CERTIFICATE>
+  //
+  // Lifetimes:
+  //
+  //   The lifetime of the Certificate (service) must be longer than that of the Service whence it came.
+  //
+  // Usage:
+  //
+  //   auto main = Service<MAIN>{...somehow...};
+  //   auto certificate = main.api<CERTIFICATE>();
+  //
+  //   auto got = certificate.getCertificates(...somehow...);
+  //
+  namespace [[eponymous]] service {
+    class Service;
+    using namespace ca::protocol;
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.fabric.ca.Package.ENROLLMENT
+#forward hyperledger.fabric.ca.Query.CERTIFICATE
+#import hyperledger.fabric.ca.service.Lightweight
+#import hyperledger.fabric.ca.protocol.Response
+#import hyperledger.Outcome
+class hyperledger::fabric::ca::certificate::service::Service : public ca::service::Lightweight {
+  using Ancestor = ca::service::Lightweight;
+protected:
+  using Ancestor::Lightweight;
+public:
+  //
+  // The caller will be able to view certificates that it owns.
+  // In addition,
+  // if the caller has **hf.Registrar.Roles** or **hf.Revoker** attribute,
+  // it will be able to view certificates for identities that have affiliations equal to or below the caller's affiliation.
+  //
+  /*
+    registrar (Enrollment): Required. The identity of the registrar (i.e. who is performing the revocation) signing certificate, hash algorithm and signature algorithm
+    id (str): The enrollment ID that uniquely identifies an identity
+    aki (str): Authority Key Identifier string, hex encoded, for the specific certificate
+    serial (str): The serial number for a certificate
+    revoked_start (str): Get revoked certificates starting at the specified time, either as timestamp (RFC3339 format) or duration (-30d)
+    revoked_end (str): Get revoked certificates before the specified time, either as timestamp * (RFC3339 format) or duration (-15d)
+    expired_start (str): Get expired certificates starting at the specified time, either as timestamp (RFC3339 format) or duration (-30d)
+    expired_end (str): Get expired certificates before the specified time, either as timestamp (RFC3339 format) or duration (-15d)
+    notexpired (bool): Don't return expired certificates
+    notrevoked (bool): Don't return revoked certificates
+    ca (str): The name of the CA to direct this request to within the server, or the default CA if not specified
+
+    Returns: res (Dict): result
+
+    Raises:
+        <strike>RequestException: errors in requests.exceptions</strike>
+        ValueError: Failed response, json parse error, args missing
+  */
+  auto getCertificates(Package<ENROLLMENT> const &, ca::Query<CERTIFICATE> const &) -> Outcome<Response>;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.Query.CERTIFICATE
+#import hyperledger.string.literals
+#import hyperledger.fabric.ca.protocol.serialize
+#import hyperledger.fabric.ca.certificate.serialize
+namespace hyperledger::fabric::ca::certificate::service {
+  using namespace string::literals;
+  using certificate::serialize;
+  using protocol::serialize;
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::fabric::ca::certificate::service {
+  auto Service::getCertificates(Package<ENROLLMENT> const &registrar, ca::Query<CERTIFICATE> const &query) -> Outcome<Response> {
+    auto path = [&query]() {
+                  auto assembly = "/certificates"s;
+                  if (!empty(query)) {
+                    assembly += serialize(query); // supplies its own leading '?'
+                  }
+                  return Path{assembly.begin(), assembly.end()}; // [[FIXTHIS]] would it not be fun to be able to transfer a string::Storage into a url::String withotu copying?
+                }();
+    auto headers = [&authorizer=this->authorizer, &registrar]() -> protocol::Headers {
+                      auto authorization = authorizer.generate(registrar);
+                      if (authorization) {
+                        return authorizer.standard_headers(move(*authorization));
+                      } else {
+                        return {};
+                      }
+                   }();
+    return driver.call(move(path), move(headers));
+  }
+}
+#warning The original Python definition was-is unworkable ---> inline auto getCertificates(Package<ENROLLMENT> const &registrar, ...lotsa undistinguished optional arguments...)
+#if 0
+  this is unworkable ---> inline auto getCertificates(Enrollment const &registrar,
+                                                      id=None,
+                                                      aki=None,
+                                                      serial=None,
+                                                      revoked_start=None,
+                                                      revoked_end=None,
+                                                      expired_start=None,
+                                                      expired_end=None,
+                                                      notexpired=None,
+                                                      notrevoked=None,
+                                                      ca=None):
+#endif
+#endiv

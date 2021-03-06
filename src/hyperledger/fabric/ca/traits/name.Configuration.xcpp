@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::fabric::ca::traits::name {
+  template<required::Enumeration> struct Configuration;
+  template<> struct Configuration<PASS>;
+  template<> struct Configuration<TOKEN>;
+  template<> struct Configuration<DRIVER>;
+  template<> struct Configuration<FILES>;
+  template<> struct Configuration<HTTP>;
+  template<> struct Configuration<MAIN>;
+  template<> struct Configuration<SOCKET>;
+  template<> struct Configuration<SQLITE>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::ca::traits {
+  template<required::Enumeration> struct name::Configuration : public False { };
+  namespace name {
+    template<> struct Configuration<PASS>   : public True<PASS> { };
+    template<> struct Configuration<TOKEN>  : public True<TOKEN> { };
+    template<> struct Configuration<DRIVER> : public True<DRIVER> { };
+    template<> struct Configuration<FILES>  : public True<FILES> { };
+    template<> struct Configuration<HTTP>   : public True<HTTP> { };
+    template<> struct Configuration<MAIN>   : public True<MAIN> { };
+    template<> struct Configuration<SOCKET> : public True<SOCKET> { };
+    template<> struct Configuration<SQLITE> : public True<SQLITE> { };
+  }
+}
+#endiv

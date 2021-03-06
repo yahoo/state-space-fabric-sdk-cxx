@@ -1,0 +1,71 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.crypto
+namespace tests::crypto {
+  namespace fixture {
+    class Fixture;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::crypto::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Buffer() -> void;
+  auto test_generate_nonce() -> void;
+  auto test_Message() -> void;
+  auto test_Primitives() -> void;
+  auto test_Signature() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.crypto.Buffer
+#import hyperledger.crypto.generate_nonce
+#import hyperledger.crypto.Message
+#import hyperledger.crypto.Primitives
+#import hyperledger.crypto.Signature
+namespace tests::crypto::fixture {
+  auto Fixture::test_Buffer() -> void {
+#warning WRITETHIS auto Fixture::test_Buffer() -> void
+  }
+  auto Fixture::test_generate_nonce() -> void {
+#warning WRITETHIS auto Fixture::test_generate_nonce() -> void
+  }
+  auto Fixture::test_Message() -> void {
+#warning WRITETHIS auto Fixture::test_Message() -> void
+  }
+  auto Fixture::test_Primitives() -> void {
+#warning WRITETHIS auto Fixture::test_Primitives() -> void
+  }
+  auto Fixture::test_Signature() -> void {
+#warning WRITETHIS auto Fixture::test_Signature() -> void
+  }
+}
+#import tests.crypto.curve.Fixture
+#import tests.crypto.ecies.Fixture
+#import tests.crypto.hash.Fixture
+#import tests.crypto.key.Fixture
+#import tests.crypto.number.Fixture
+#import rigging.suite.io
+auto tests::crypto::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"crypto"};
+  series << call("Buffer", &Fixture::test_Buffer)
+         << call("generate_nonce", &Fixture::test_generate_nonce)
+         << call("Message", &Fixture::test_Message)
+         << call("Primitives", &Fixture::test_Primitives)
+         << call("Signature", &Fixture::test_Signature)
+         << add<curve::Fixture>()
+         << add<ecies::Fixture>()
+         << add<hash::Fixture>()
+         << add<key::Fixture>()
+         << add<number::Fixture>()
+         << END;
+  return finalize(series);
+}
+#endiv

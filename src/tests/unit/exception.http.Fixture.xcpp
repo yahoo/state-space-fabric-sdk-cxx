@@ -1,0 +1,74 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.http.exception
+namespace tests::unit::exception::http {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::http::exception;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::exception::http::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Aspect() -> void;
+  auto test_Call_HTTP() -> void;
+  auto test_Call_REST() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Runtime;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.http.literals
+namespace tests::unit::exception::http::fixture {
+  using namespace ::hyperledger::http::literals;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.http.literals
+#import hyperledger.http.exception.Aspect
+#import hyperledger.http.exception.Call.HTTP
+#import hyperledger.http.exception.Call.REST
+#import tests.unit.exception.http.Fixture.Runtime
+namespace tests::unit::exception::http::fixture {
+  using namespace ::hyperledger::http::literals;
+  auto Fixture::test_Aspect() -> void {
+    try {
+      throw Runtime{};
+    } catch (library::Aspect const &) {
+      CPPUNIT_ASSERT(true);
+    }
+  }
+  auto Fixture::test_Call_HTTP() -> void {
+    using Subject = library::Call<library::HTTP>;
+    Subject subject{"bogus"_url, 401_status, "bad"};
+    CPPUNIT_ASSERT(nullptr != subject.what());
+    CPPUNIT_ASSERT_EQUAL("bad"s, subject.message());
+    CPPUNIT_ASSERT(401_status == subject.status());
+  }
+  auto Fixture::test_Call_REST() -> void {
+    using Subject = library::Call<library::REST>;
+    Subject subject{"/bogus"_url, "GET"_method, 401_status, "bad"};
+    CPPUNIT_ASSERT(nullptr != subject.what());
+    CPPUNIT_ASSERT_EQUAL("bad"s, subject.message());
+    CPPUNIT_ASSERT("GET"_method == subject.method());
+    CPPUNIT_ASSERT(401_status == subject.status());
+  }
+}
+#import rigging.suite.io
+auto tests::unit::exception::http::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"http"};
+  series << call("Aspect", &Fixture::test_Aspect)
+         << call("Call<HTTP>", &Fixture::test_Call_HTTP)
+         << call("Call<REST>", &Fixture::test_Call_REST)
+         << END;
+  return finalize(series);
+}
+#endiv

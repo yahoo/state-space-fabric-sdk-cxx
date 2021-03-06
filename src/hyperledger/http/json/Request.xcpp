@@ -1,0 +1,54 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::json {
+  //
+  // A request, with the body being (valid) JSON.
+  //
+  // Concept:
+  //
+  //   These are just unconstrained (and hopeful only) "name value pairs"
+  //   The caller is responsible for linearizing all the values into JSON strings.
+  //
+  //   In all other respects, the json::Request operates like a ::json::Value
+  //
+  // Editorial
+  //
+  //   The Java Script Object Notation sure has captured the imagination of the scriptie world these days, now hasn't it?
+  //
+  // Usage:
+  //
+  //   Request req{{"certificate-request", to_string(some_csr)},
+  //               {"ca_name", some_ca_name},
+  //               {"force", "true"}};
+  //
+  //   auto something = Enrollment{...};
+  //   return client.enroll(req, something);
+  //
+  class Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.json.Object
+#import hyperledger.json.to_string
+class hyperledger::http::json::Request : public Object {
+  using Ancestor = Object;
+public:
+  Request() = default;
+  using Ancestor::Object;
+  Request(Request const &) = delete;
+  auto operator=(Request const &) -> Request & = delete;
+  Request(Request &&) = default;
+  auto operator=(Request &&) -> Request & = default;
+};
+#endiv
+#divert <cpp>
+#import std.declval
+namespace {
+  namespace tests {
+    using namespace hyperledger::http::json;
+    static_assert(sizeof (to_string(std::declval<Request>())));
+  }
+}
+#endiv

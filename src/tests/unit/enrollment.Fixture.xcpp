@@ -1,0 +1,78 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.ca.enrollment
+namespace tests::unit::enrollment {
+  namespace [[eponymous]] fixture {
+    class Fixture;
+    namespace library = ::hyperledger::fabric::ca::enrollment;
+    namespace ca = ::hyperledger::fabric::ca;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::enrollment::Fixture : public cppunit::test::Fixture {
+  auto test_usage_1() -> void;
+  auto test_usage_2() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.fabric.ca.Configuration
+#import hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.Package
+#import hyperledger.fabric.ca.Request
+namespace tests::unit::enrollment::fixture {
+  auto Fixture::test_usage_1() -> void try {
+    using namespace ca;
+    auto srv = []() -> ca::Service<ca::MAIN> {
+                  auto a = Configuration<PASS>{};
+                  auto m = Configuration<MAIN>{};
+                  auto d = Configuration<DRIVER>{};
+                  auto t = Configuration<FILES>{};
+                  return Service<MAIN>{move(a), move(m), move(d), move(t)};
+    }();
+    auto enr = srv.api<ENROLLMENT>();
+    auto req = []{
+                 auto bun = ca::enrollment::Bundle{}; // the secret is empty so ... this will fail
+                 auto pq = ::hyperledger::pki::Request{};
+                 return ca::Request<ENROLLMENT>{move(bun), move(pq)};
+               }();
+    auto subject = enr.enroll(move(req));
+    CPPUNIT_ASSERT(sizeof (subject)); // ...wait this worked?  Why?
+  } catch (::hyperledger::exception::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+  }
+  auto Fixture::test_usage_2() -> void {
+#warning WRITETHIS auto tests::unit::enrollment::Fixture::test_usage_2() -> void  and do something different here
+  }
+}
+#import tests.unit.enrollment.Bundle
+#import tests.unit.enrollment.Package
+#import tests.unit.enrollment.Request
+#import tests.unit.enrollment.Service
+#import rigging.suite.io
+auto tests::unit::enrollment::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"enrollment"};
+  series << []() {
+              auto use = Stream{"usage"};
+              use << call("1", &Fixture::test_usage_1)
+                  << call("2", &Fixture::test_usage_2)
+                  << END;
+              return move(use);
+            }()
+         << add<Bundle>()
+         << add<Package>()
+         << add<Request>()
+         << add<Service>()
+         << END;
+  return finalize(series);
+}
+#endiv

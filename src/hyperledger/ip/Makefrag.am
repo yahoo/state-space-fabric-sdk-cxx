@@ -1,0 +1,29 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_ip_SUBSOURCES = \
+  obj/src/hyperledger/ip/namespace.cpp \
+  obj/src/hyperledger/ip/format.cpp \
+  obj/src/hyperledger/ip/to_string.cpp \
+  \
+  obj/src/hyperledger/ip/Port.cpp \
+  obj/src/hyperledger/ip/port/namespace.cpp \
+  obj/src/hyperledger/ip/port/Formatter.cpp \
+  obj/src/hyperledger/ip/port/Port.cpp \
+  \
+  obj/src/hyperledger/ip/Host.cpp \
+  obj/src/hyperledger/ip/host/namespace.cpp \
+  obj/src/hyperledger/ip/host/Formatter.cpp \
+  obj/src/hyperledger/ip/host/Host.cpp \
+  obj/src/hyperledger/ip/host/Visitor.cpp \
+  \
+  obj/src/hyperledger/ip/Endpoint.cpp \
+  obj/src/hyperledger/ip/endpoint/namespace.cpp \
+  obj/src/hyperledger/ip/endpoint/Endpoint.cpp \
+  obj/src/hyperledger/ip/endpoint/Formatter.cpp \
+  \
+  obj/src/hyperledger/ip/Endpoints.cpp \
+  obj/src/hyperledger/ip/endpoints.Formatter.cpp \
+  $(end)
+ip-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_ip_SUBSOURCES))

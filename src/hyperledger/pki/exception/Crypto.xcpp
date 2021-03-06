@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::exception {
+  //
+  // Declare that there was "some problem" with the pki system.
+  // For example, something was not configured within reasonable bounds.
+  // Or an inappropriate variant of the cryptosystem is being tried (e.g. RSA contra EC)
+  //
+  // Usage:
+  //
+  //   throw Crypto{"Not an Elliptic Curve Cryptosystem"};
+  //
+  class Crypto;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.exception.Aspects
+#import hyperledger.string.View
+#import std.runtime_error
+class hyperledger::pki::exception::Crypto : public Aspects, public std::runtime_error {
+  struct Ancestors {
+    using Aspects = pki::exception::Aspects;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Crypto(string::View reason);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::pki::exception {
+  // [[YUCK]] fix runtime_error to not need that extra gratuitous copy
+  Crypto::Crypto(string::View reason) : Ancestors::Exception{string::Storage{reason.begin(), reason.end()}} { }
+}
+#endiv
+#divert <cpp>
+namespace hyperledger::pki::exception {
+  auto Crypto::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

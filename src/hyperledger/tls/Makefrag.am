@@ -1,0 +1,34 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_tls_SUBSOURCES = \
+  obj/src/hyperledger/tls/namespace.cpp \
+  obj/src/hyperledger/tls/Client.cpp \
+  obj/src/hyperledger/tls/Field.cpp \
+  obj/src/hyperledger/tls/format.cpp \
+  obj/src/hyperledger/tls/to_string.cpp \
+  \
+  obj/src/hyperledger/tls/Endpoint.cpp \
+  obj/src/hyperledger/tls/endpoint/namespace.cpp \
+  obj/src/hyperledger/tls/endpoint/Endpoint.cpp \
+  obj/src/hyperledger/tls/endpoint/Basis.cpp \
+  obj/src/hyperledger/tls/endpoint/Formatter.cpp \
+  \
+  obj/src/hyperledger/tls/Endpoints.cpp \
+  obj/src/hyperledger/tls/endpoints/namespace.cpp \
+  obj/src/hyperledger/tls/endpoints/Endpoints.cpp \
+  obj/src/hyperledger/tls/endpoints/Endpoint.cpp \
+  obj/src/hyperledger/tls/endpoints/Formatter.cpp \
+  obj/src/hyperledger/tls/endpoints/Series.cpp \
+  obj/src/hyperledger/tls/endpoints/series.Series.cpp \
+  obj/src/hyperledger/tls/endpoints/series.Formatter.cpp \
+  \
+  obj/src/hyperledger/tls/from_string.template.cpp \
+  obj/src/hyperledger/tls/from_string.Endpoint.cpp \
+  obj/src/hyperledger/tls/from_string.Endpoints.cpp \
+  obj/src/hyperledger/tls/from_string.endpoints.Endpoint.cpp \
+  obj/src/hyperledger/tls/from_string.Series.cpp \
+  obj/src/hyperledger/tls/from_string.cpp \
+  $(end)
+tls-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_tls_SUBSOURCES))

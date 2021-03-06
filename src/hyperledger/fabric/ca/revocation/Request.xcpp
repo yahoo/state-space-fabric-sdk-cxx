@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::revocation {
+  //
+  // The revocation request.
+  // Descendants only; see Request<REVOCATION>
+  //
+  // Redundant in the interface of Service<REVOCATION>
+  //
+  // Usage:
+  //
+  //   auto registrar = Package<ENROLLMENT>{...somehow...};
+  //   auto query = request<REVOCATION>{...somehow...};
+  //
+  //   auto revoker = Service<REVOCATION>{...somehow...};
+  //
+  //   auto revoked = revoker.revoke(registrar, query);
+  //
+  struct Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Optional
+#import hyperledger.x509.query.Query // ............. n.b. elided as x509::Query
+#import hyperledger.pki.revocation.reason.Code // ... n.b. elided
+struct hyperledger::fabric::ca::revocation::Request {
+protected:
+  ~Request() = default;
+public:
+  Request() = default;
+  Request(Request const &) = delete;
+  auto operator=(Request const &) -> Request & = delete;
+  Request(Request &&) = default;
+  auto operator=(Request &&) -> Request & = default;
+  pki::reason::Code reason;
+  Optional<x509::Query<x509::COMMON_NAME>> common_name;
+  Optional<x509::Query<x509::AUTHORITY_KEY_IDENTIFIER>> authority_key_identifier;
+  Optional<x509::Query<x509::SERIAL>> serial;
+};
+#endiv

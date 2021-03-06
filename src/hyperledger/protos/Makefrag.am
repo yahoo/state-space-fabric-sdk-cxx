@@ -1,0 +1,51 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libhyperledger_protos_la = lib/libhyperledger-protos.la
+lib_libhyperledger_protos_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_protos_la_LIBADD = 
+lib_libhyperledger_protos_la_MODULES = # NOT USED $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_la_SOURCES))
+lib_libhyperledger_protos_la_HEADER_SET = $(patsubst %.cc, %.h, $(lib_libhyperledger_protos_la_SOURCES))
+lib_libhyperledger_protos_la_SOURCES = \
+  obj/src/hyperledger/protos/common/collection.pb.cc \
+  obj/src/hyperledger/protos/common/common.pb.cc \
+  obj/src/hyperledger/protos/common/configtx.pb.cc \
+  obj/src/hyperledger/protos/common/configuration.pb.cc \
+  obj/src/hyperledger/protos/common/ledger.pb.cc \
+  obj/src/hyperledger/protos/common/policies.pb.cc \
+  obj/src/hyperledger/protos/discovery/protocol.pb.cc \
+  obj/src/hyperledger/protos/gossip/message.pb.cc \
+  obj/src/hyperledger/protos/ledger/queryresult/kv_query_result.pb.cc \
+  obj/src/hyperledger/protos/ledger/rwset/kvrwset/kv_rwset.pb.cc \
+  obj/src/hyperledger/protos/ledger/rwset/rwset.pb.cc \
+  obj/src/hyperledger/protos/msp/identities.pb.cc \
+  obj/src/hyperledger/protos/msp/msp_config.pb.cc \
+  obj/src/hyperledger/protos/msp/msp_principal.pb.cc \
+  obj/src/hyperledger/protos/orderer/ab.pb.cc \
+  obj/src/hyperledger/protos/orderer/configuration.pb.cc \
+  obj/src/hyperledger/protos/peer/admin.pb.cc \
+  obj/src/hyperledger/protos/peer/chaincode_event.pb.cc \
+  obj/src/hyperledger/protos/peer/chaincode.pb.cc \
+  obj/src/hyperledger/protos/peer/chaincode_shim.pb.cc \
+  obj/src/hyperledger/protos/peer/configuration.pb.cc \
+  obj/src/hyperledger/protos/peer/events.pb.cc \
+  obj/src/hyperledger/protos/peer/lifecycle/lifecycle.pb.cc \
+  obj/src/hyperledger/protos/peer/peer.pb.cc \
+  obj/src/hyperledger/protos/peer/proposal.pb.cc \
+  obj/src/hyperledger/protos/peer/proposal_response.pb.cc \
+  obj/src/hyperledger/protos/peer/query.pb.cc \
+  obj/src/hyperledger/protos/peer/resources.pb.cc \
+  obj/src/hyperledger/protos/peer/signed_cc_dep_spec.pb.cc \
+  obj/src/hyperledger/protos/peer/transaction.pb.cc \
+  $(end)
+lib_libhyperledger_la_PROTOS = \
+  $(patsubst %.pb.cc,%.proto, \
+             $(patsubst obj/%,%, \
+                        $(lib_libhyperledger_protos_la_SOURCES)))
+$(lib_libhyperledger_protos_la_SOURCES) : obj/%.pb.cc : %.proto
+	mkdir -p obj/src/hyperledger && \
+	$(if $(PROTOC),$(PROTOC),$(error PROTOC is unset)) -Iobj/src -Isrc --cpp_out=obj/src $<
+# all the protos sources must be compiled before compiling any of the proto objects
+$(lib_libhyperledger_protos_la_OBJECTS) : $(lib_libhyperledger_protos_la_SOURCES)

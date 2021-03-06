@@ -1,0 +1,42 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+check_bin_unit_pki = check/bin/unit-pki
+check_bin_unit_pki_LDADD = \
+  $(lib_libhyperledger_la) \
+  $(lib_libhyperledger_fabric_la) \
+  $(lib_libhyperledger_fabric_ca_la) \
+  $(lib_libhyperledger_fabric_user_la) \
+  $(lib_libwant_la) \
+  -ltunitas \
+  -lrigging-bench-module \
+  $(end)
+# Reminder: autotools does not put $(AM_LDFLAGS) into check_bin_unit_pki_LDFLAGS, like it does with CPPFLAGS and CXXFLAGS
+check_bin_unit_pki_LDFLAGS = $(AND_CHECK_LDFLAGS_SET)
+#(check_bin_unit_pki_OBJECTS) : AM_CPPFLAGS+=$(AND_CHECK_CPPFLAGS_SET)
+#(check_bin_unit_pki_OBJECTS) : AM_CXXFLAGS+=$(AND_CHECK_CXXFLAGS_SET)
+check_bin_unit_pki_MODULES = $(call TF_SOURCEStoMODULES, $(check_bin_unit_pki_SOURCES))
+check_bin_unit_pki_SOURCES = \
+  obj/src/tests/pki/main.cpp \
+  obj/src/tests/pki/namespace.cpp \
+  \
+  obj/src/tests/pki/Fixture.cpp \
+  obj/src/tests/pki/Certificate.cpp \
+  obj/src/tests/pki/Certificates.cpp \
+  obj/src/tests/pki/Request.cpp \
+  obj/src/tests/pki/Secret.cpp \
+  obj/src/tests/pki/From.cpp \
+  obj/src/tests/pki/Slurp.cpp \
+  obj/src/tests/pki/Bundle.cpp \
+  $(end)
+$(check_bin_unit_pki_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/tests/pki/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(check_bin_unit_pki_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/tests/pki/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/tests/pki/dependencies.mk

@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.json.object.Reference.template
+namespace hyperledger::json::object {
+  template<> struct Reference<MUTABLE>;
+}
+#endiv
+#divert <hpp>
+#import std.reference_wrapper
+#import std.is_const
+namespace hyperledger::json::object {
+  template<> struct Reference<MUTABLE> : public std::reference_wrapper<::json::Value> {
+    using Ancestor = std::reference_wrapper<::json::Value>;
+  public:
+    using Type [[NewSchool]] = Ancestor::type;
+    static_assert(not std::is_const_v<Type>);
+    using Ancestor::reference_wrapper;
+    auto operator=(Reference const &) -> Reference & = delete;
+    template<typename ANY> inline auto operator=(ANY const &any) -> Reference &;
+    template<typename ANY> inline auto operator=(ANY &&any) -> Reference &;
+    inline operator Reference<CONSTIE>() const;
+  };
+  //
+  // Allow the "move semantics" to behave as nearly as it would with language-level direct references.
+  //
+  // Usage:
+  //
+  //   auto ref = Reference<MUTABLE>{...somehow...}
+  //   json::Value value = move(ref) ;
+  //
+  inline auto move(Reference<MUTABLE> &&) -> Reference<MUTABLE>::Type &&;
+  inline auto move(Reference<MUTABLE> &) -> Reference<MUTABLE>::Type &&;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.json.object.Reference.CONSTIE
+namespace hyperledger::json {
+  auto object::move(Reference<MUTABLE> &&r) -> Reference<MUTABLE>::Type && { return move(r.get()); }
+  auto object::move(Reference<MUTABLE> &r) -> Reference<MUTABLE>::Type &&  { return move(r.get()); }
+  namespace object {
+    template<typename ANY> auto Reference<MUTABLE>::operator=(ANY const &any) -> Reference & {
+      auto &lhs = this->operator Type &();
+      lhs = any;
+      return *this;
+    }
+    template<typename ANY> auto Reference<MUTABLE>::operator=(ANY &&any) -> Reference & {
+      auto &lhs = this->operator Type &();
+      lhs = forward<ANY>(any);
+      return *this;
+    }
+    Reference<MUTABLE>::operator Reference<CONSTIE>() const { return {get()}; }
+  }
+}
+#endiv

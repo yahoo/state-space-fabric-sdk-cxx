@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.json.object.Reference.template
+namespace hyperledger::json::object {
+  template<> struct Reference<CONSTIE>;
+}
+#endiv
+#divert <hpp>
+#import std.reference_wrapper
+#import hyperledger.string.Storage
+namespace hyperledger::json::object {
+  inline auto to_string(Reference<CONSTIE> const &) -> string::Storage;
+  template<> struct Reference<CONSTIE> : public std::reference_wrapper<::json::Value const> {
+    using Ancestor = std::reference_wrapper<::json::Value const>;
+  public:
+    using Type [[NewSchool]] = Ancestor::type;
+    using Ancestor::reference_wrapper;
+    auto operator=(Reference const &) -> Reference & = delete; // can't assign anything to CONSTIE
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.json.object.Object
+namespace hyperledger::json {
+  auto object::to_string(Reference<CONSTIE> const &ref) -> string::Storage { return to_string(ref.get()); }
+}
+#endiv

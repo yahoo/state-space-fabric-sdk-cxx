@@ -1,0 +1,78 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.transport.Transport.template
+#import hyperledger.literals
+#import hyperledger.http
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The HTTP transport up to the Certificate Authority Service.
+  //
+  // was: CAClient, from caservice.py
+  //
+  // Exceptions:
+  //
+  //   yes, as befits the stature of an HTTP client
+  //   Exceptions are thrown if the naive Remote Procedure Call (RPC) paradigm cannot be followed.
+  //
+  // Concept:
+  //
+  //   Captures the mTLS of this client
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<HTTP>{...somehow...};
+  //   auto dri = transport::Driver{HTTP{}, move(cfg)};
+  //
+  namespace [[eponymous]] transport_http {
+    using namespace hyperledger::literals;
+    class Scope { }; // [[very tricky]] a latent ADL hook.
+  }
+  template<> struct Transport<HTTP>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Configuration.HTTP
+#import hyperledger.fabric.ca.transport.Prototype
+#import hyperledger.tls.Client
+namespace hyperledger::fabric::ca::transport {
+  template<> class Transport<HTTP> : public Prototype, private transport_http::Scope, private Configuration<HTTP> {
+    struct Ancestors {
+      using Prototype = transport::Prototype;
+      using Configuration = ca::Configuration<HTTP>;
+    };
+  public:
+    inline explicit Transport(Configuration<HTTP> &&);
+    auto DELETE(Path const &, Headers const &) -> Response override;
+    auto GET(Path const &, Headers const &) -> Response override;
+    auto POST(Path const &, Headers const &, Request const &) -> Response override;
+    auto PUT(Path const &, Headers const &, Request const &) -> Response override;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.literals
+#import hyperledger.http.dictionary.call
+#import hyperledger.http.json.call
+#import hyperledger.dictionary.to_json
+namespace hyperledger::fabric::ca::transport {
+  namespace transport_http {
+    using namespace http::json; // WATCHOUT - there is http::json::call(...) and also http::dictionary::call(...)
+  }
+  Transport<HTTP>::Transport(Configuration<HTTP> &&configuration)
+    : Ancestors::Configuration{forward<Configuration<HTTP>>(configuration)}
+  { }
+}
+#divert <cpp>
+#import hyperledger.literals
+namespace hyperledger::fabric::ca::transport {
+#warning FIXTHIS ... there is a transduction problem
+#if 0
+  auto Transport<HTTP>::DELETE(Path const &path, Headers const &headers) -> Response                       { using namespace transport_http; return Response{call<Method::DELETE>(client, endpoint / path, headers)}; }
+  auto Transport<HTTP>::GET(Path const &path, Headers const &headers) -> Response                          { using namespace transport_http; return Response{call<Method::GET>(client, endpoint / path, headers)}; }
+  auto Transport<HTTP>::POST(Path const &path, Headers const &headers, Request const &request) -> Response { using namespace transport_http; return Response{call<Method::POST>(client, endpoint / path, headers, request)}; }
+  auto Transport<HTTP>::PUT(Path const &path, Headers const &headers, Request const &request) -> Response  { using namespace transport_http; return Response{call<Method::PUT>(client, endpoint / path, headers, request)}; }
+#endif
+}
+#endiv

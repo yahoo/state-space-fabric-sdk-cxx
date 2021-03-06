@@ -1,0 +1,18 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.pki.slurp.template
+#import hyperledger.pki.Request
+namespace hyperledger::pki {
+  template<> inline auto slurp<Request>(file::Path const &) -> Request;
+  template<> inline auto slurp<Request>(Returning, file::Path const &) -> packaging::slurp::Loaded<Request>;
+}
+#endiv
+#divert <ipp>
+#import openssl.x509.Req
+namespace hyperledger {
+  template<> auto pki::slurp<pki::Request>(file::Path const &filepath) -> Request { return packaging::slurp::load<Request, openssl::x509::Req>(filepath); }
+  template<> auto pki::slurp<pki::Request>(Returning returning, file::Path const &filepath) -> packaging::slurp::Loaded<Request> { return packaging::slurp::load<Request, openssl::x509::Req>(returning, filepath); }
+}
+#endiv

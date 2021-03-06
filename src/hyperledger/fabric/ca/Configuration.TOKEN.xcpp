@@ -1,0 +1,44 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.Configuration.template
+namespace hyperledger::fabric::ca {
+  //
+  // Configuration for the creation of the Authorization<TOKEN> of the Certificate Authority (CA)
+  //
+  // Concept
+  //
+  //   The components necessary to synthesize JWT (JSON Web Tokens ... that's basically three stop words in a row, now isn't it?)
+  //
+  // Schema
+  //
+  //   The anchor for the crypto primitives.
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<TOKEN>{...somehow...};
+  //   auto sport = Authorization<TOKEN>{move(cfg)};
+  //
+  template<> struct Configuration<TOKEN>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.crypto.Primitives
+namespace hyperledger::fabric::ca {
+  template<> struct Configuration<TOKEN> {
+    crypto::Primitives primitives;
+  };
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.fabric.ca.configuration.Constructible
+namespace {
+  namespace tests {
+    using namespace ::tests;
+    using namespace concepts::hyperledger::fabric::ca::configuration;
+    using namespace hyperledger::fabric::ca;
+    static_assert(Constructible<Configuration<TOKEN>>);
+  }
+}
+#endiv

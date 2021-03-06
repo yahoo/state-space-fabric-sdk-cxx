@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::detail {
+  namespace [[detail]] reformat { }
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+namespace hyperledger::detail::reformat {
+  //
+  // Reformat something into a string.
+  //
+  // Concept
+  //
+  //   Uses the ADL-available operator<<
+  //
+  // Design:
+  //
+  //   The template argument is unconstrained out of laziness.
+  //   The expectation is that the FORMATTABLE will be a class named Formatter or an instance named Formatter<...>
+  //
+  // Usage:
+  //
+  //   see format(...) for any of the namespace hyperledger::ip or hyperledger::tls endpoints
+  //   e.g.
+  //   auto endpoint::to_string(Formatter const &ff) -> string::Storage { return hyperledger::detail::reformat_to_string(ff); }
+  //
+  template<typename FORMATTABLE> auto to_string(FORMATTABLE const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import std.ostringstream
+namespace hyperledger::detail {
+  template<typename FORMATTABLE> auto reformat::to_string(FORMATTABLE const &able) -> string::Storage {
+    auto buf = std::ostringstream{};
+    buf << able; // the magic happens here
+    return buf.str();
+  }
+}
+#endiv

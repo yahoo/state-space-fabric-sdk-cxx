@@ -1,0 +1,14 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_http_exception_SUBSOURCES = \
+  obj/src/hyperledger/http/exception/namespace.cpp \
+  obj/src/hyperledger/http/exception/Aspect.cpp \
+  obj/src/hyperledger/http/exception/constants.cpp \
+  obj/src/hyperledger/http/exception/call.Prototype.cpp \
+  obj/src/hyperledger/http/exception/Call.template.cpp \
+  obj/src/hyperledger/http/exception/Call.HTTP.cpp \
+  obj/src/hyperledger/http/exception/Call.REST.cpp \
+  obj/src/hyperledger/http/exception/Call.cpp \
+  $(end)

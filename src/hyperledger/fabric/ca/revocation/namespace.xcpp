@@ -1,0 +1,19 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca
+#import hyperledger.pki.revocation
+#import hyperledger.pki.Bundle
+#import hyperledger.x509.query
+namespace hyperledger::fabric::ca::revocation {
+  inline namespace elision_trickery_bundling { }
+  namespace elision_trickery_bundling {
+    namespace pki {
+      using hyperledger::pki::Bundle; // but we want to find this one as pki::Bundle not pki::revocation::Bundle (which does not exist)
+      using namespace hyperledger::pki::revocation;
+    }
+    namespace x509 = hyperledger::x509::query;
+  }
+}
+#endiv

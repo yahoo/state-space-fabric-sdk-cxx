@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // A non-numeric syntax was discovered.
+  //
+  // Concept:
+  //
+  //   "not a" number.
+  //   The python folk called it ValueError
+  //
+  //   Complain that the field is inappropriately-formed.
+  //   Complain that the field is inappropriately formed.
+  //   The exception does not carry forward the badly-formed information. [[TODO]] should we?
+  //   The exception only carries forward the field name.
+  // 
+  // Usage:
+  //
+  //   auto name = ...somehow...;    e.g. 'max_enrollments' or 'enrollment_id' or such.
+  //   throw exception::Not_A_Number{name};
+  //
+  class [[nodiscard]] Number;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.exception.Syntax
+#import hyperledger.string.Storage
+class hyperledger::fabric::ca::protocol::exception::Number final : public Syntax {
+  using Ancestor = Syntax;
+public:
+  inline explicit Number(string::Storage const &name);
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  Number::Number(string::Storage const &name)
+    : Ancestor{name, "not a number"}
+  { }
+}
+#endiv

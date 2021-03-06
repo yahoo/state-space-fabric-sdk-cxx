@@ -1,0 +1,98 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::json {
+  //
+  // An HTTP response, framed around a JSON body.
+  //
+  // Concept:
+  //
+  //   The tree representation is stored.
+  //   So the JSON is necessarily valid; it passed parsing
+  //
+  //   The caller is responsible for acquiring an octet response body.
+  //
+  //   Because sometimes you want the JSON.
+  //   If the JSON cannot be comprehended then 406 Not Acceptable is asserted (assigned) here on the client side,
+  //
+  // Design:
+  //
+  //   Rhymes with dictionary::Response but uses a json::Object instead of the Dictionary.
+  //
+  // Usage:
+  //
+  //   auto client = tls::Client{...somehow...};
+  //   auto earl = url::String{...somehow...};
+  //   auto headeres = .../somehow...
+  //   ...
+  //   auto got = http::json::call<GET>(client, url, headers);
+  //   return json::Response{got};
+  //
+  class Response;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.protocol.Response
+#import hyperledger.json.Object
+#import nonstd.same_as
+namespace hyperledger::http {
+  namespace json {
+    using std::move;
+    using std::swap;
+    inline auto swap(Response &, Response &) noexcept -> void;
+  }
+  struct json::Response : public protocol::Response {
+    using Ancestor = protocol::Response;
+    friend auto swap(Response &, Response &) noexcept -> void;
+    static_assert(nonstd::same_as<json::Object, hyperledger::json::Object>);
+    using Body = json::Object;
+  public:
+    Response() = default;
+    inline explicit Response(status::Code, Body &&);
+  protected:
+    Body the_body;
+    friend auto value(Response const &r) -> Body const & { return r.the_body; }
+    friend auto value(Response &r) -> Body & { return r.the_body; }
+    friend auto value(Response &&r) -> Body && { return move(r.the_body); }
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http {
+  auto json::swap(Response &a, Response &b) noexcept -> void {
+    Response::Ancestor &aa{a}, &bb{b};
+    json::swap(a.the_body, b.the_body);
+    protocol::response::swap(aa, bb);
+  }
+  namespace json {
+    Response::Response(status::Code some_code, Body &&some_body)
+      : Ancestor{some_code}
+      , the_body{forward<Body>(some_body)}
+    { }
+  }
+#if 0
+  // JSON parsing needs to happen outside of the constructor because of all the weird error conditions
+  //
+  // [[FIXTHIS]] _as is forced to copy the bytes.  need a better interface to json::parse(...)
+  Response::Response(request::Response const &original) : Response{request::value_as<json::String>(original)} { }
+  Response::Response(json::String const &body) try : the_code{200_http} {
+    // Either the JSON is parsable or an JSON exception is thrown.
+    // If the JSON exception appears then we assert 406_http and move on.  Other exceptions are passed on ward.
+    the_body = ::json::parse(::json::failure::THROWING, {body.begin(), body.end()});
+  } catch (::json::exception::Generic const &) {
+    the_code = 406_http;
+  }
+#endif
+}
+#endiv
+#divert <cpp>
+#import tests.concepts.hyperledger.http.protocol.response.Accessors
+namespace {
+  namespace local {
+    namespace subject = hyperledger::http::json;
+    namespace assertion = tests::concepts::hyperledger::http::protocol::response;
+    static_assert(assertion::Accessors<subject::Response>);
+  }
+}
+#endiv

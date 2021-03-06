@@ -1,0 +1,69 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.string.Storage
+#import hyperledger.dictionary.Dictionary
+#import hyperledger.json.Object
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Request
+#import hyperledger.pki.revocation.reason.Code
+#forward hyperledger.fabric.ca.protocol.Request
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // The miscellaneous 'serialize' schemes for the various miscellaneous data types.
+  // Import these into the subservice (subapi) context to provide the inventory of overloads.
+  //
+  // Concept:
+  //
+  //   On-the-wire is JSON (JavaScript Object Notation) because that is the Fashion of the Day (FOTD).
+  //   Coulda-been Thrift, Protobuf, YAML, TOML, THISL, THATl, XDR, , ...whatever-l..., CBOR, BIS, or one of the "ON" formats: BSON, HSON.
+  //   Coulda-been, but isn't.  It is Jason's Object Notation (JSON).  "Who is this 'Jason'?"  You might well ask. And what sort of man is he?
+  //
+  // Usage:
+  //
+  //   #import hyperledger.fabric.ca.protocol.serialize
+  //   auto thing = ...somehow...
+  //
+  //   auto clob = serialize(thing);
+  //   ...send the clob off to the server...
+  //
+  auto serialize(std::map<string::Storage, string::Storage> const &) -> string::Storage;
+  auto serialize(dictionary::Dictionary const &) -> string::Storage;
+  auto serialize(json::Object const &) -> string::Storage;
+  auto serialize(pki::Certificate const &) -> string::Storage;
+  auto serialize(pki::Request const &) -> string::Storage;
+  auto serialize(pki::revocation::reason::Code const &) -> string::Storage;
+  auto serialize(Request const &) -> string::Storage;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::fabric::ca {
+  auto protocol::serialize(std::map<string::Storage, string::Storage> const &source) -> string::Storage {
+    auto son = json::Object{};
+    for (auto const &[key, value] : source) {
+      son[key] = value; // yuck!  Lots of copying
+    }
+    return serialize(son);
+  }
+  auto protocol::serialize(json::Object const &object) -> string::Storage           { return to_string(object); }
+  auto protocol::serialize(dictionary::Dictionary const &object) -> string::Storage { return to_string(object); }
+  auto protocol::serialize(pki::Certificate const &object) -> string::Storage       { return to_string(object); }
+  auto protocol::serialize(pki::Request const &object) -> string::Storage           { return to_string(object); }
+  auto protocol::serialize(pki::revocation::reason::Code const &object) -> string::Storage {
+    std::error_code ec = object;
+    return ec.message();
+  }
+  auto protocol::serialize(Request const &object) -> string::Storage {
+    auto son = to_json(object);
+    if (object.tenant) {
+      // Sometimes declare the subservice to whom you are speaking.  Is this the party to whom I am speaking?
+      // [[FIXTHIS]] [[ARGH!]] Wait ... which one is it?  Where is the protocol document that declares which this really really is?
+      son["ca_name"] = son["caname"] = object.tenant.value();
+    }
+    return to_string(son);
+  }
+}
+#endiv

@@ -1,0 +1,255 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::enrollment {
+  //
+  // The (user) Enrollment Subservice
+  // Descendants only.
+  // See Service<ENROLLMENT> for the final class
+  //
+  // from caservice.py
+  //    This is a ca server delegate (whatever that means).
+  //
+  // User Life Cycle:
+  //
+  //                         REGISTER
+  //   {UNKNOWN} ------------------------------------------------------------> {REGISTERED}  (but not yet enrolled)
+  //                   enregister(registration::Request) -> Registered
+  //
+  //                         ENROLL
+  //   {REGISTERED} --------------------------------------------------------> {ENROLLED}
+  //                   enroll(enrollment::Request) -> Enrolled
+  //
+  //                         REENROLL
+  //   {ENROLLED} ----------------------------------------------------------> {ENROLLED}
+  //                   reenroll(Enrolled, enrollment::Request) -> Enrolled
+  //
+  // Usage:
+  //
+  //   auto cfg = ca::Configuration<MAIN>{...somehow...};
+  //   auto srv = ca::Service<MAIN>{move(cfg)};
+  //
+  //   auto enr = srv.api<ENROLLMENT>();
+  //
+  //   auto enrolled = enr.enroll(...arguments...);
+  //   auto reenrolled = enr.reenroll(...arguments...);
+  //
+  namespace service {
+    class Service;
+  }
+  using service::Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.enrollment.Bundle
+#import hyperledger.fabric.ca.Request.ENROLLMENT
+#forward hyperledger.fabric.ca.Package.ENROLLMENT
+#forward hyperledger.fabric.ca.Service.MAIN
+#import hyperledger.fabric.ca.service.Heavyweight
+class hyperledger::fabric::ca::enrollment::service::Service : public ca::service::Heavyweight {
+  using Ancestor = ca::service::Heavyweight;
+protected:
+  using Ancestor::Heavyweight;
+  friend class ca::Service<MAIN>;
+public:
+  //
+  // Enroll a user in order to perform transactinos
+  // Enroll a registered user in order to receive a signed X509 certificate
+  //
+  // Package<REGISTERED> --------------------> enroll(...) --------------------> Package<ENROLLMENT>
+  // { name, secret, ...more... }                                                pki::Certificate, pki::Certificates
+  //                                                                                  ^                 ^
+  //                                                                                  |                 |
+  //                                              your enrollment --------------------/                 |
+  //                                                                                                    |
+  //                                              context (a ca chain) ---------------------------------/
+  //
+  /*
+    Args:
+      enrollment_id (str): The registered ID to use for enrollment
+      enrollment_secret (str): The secret associated with the enrollment ID
+      csr (str): Optional. PEM-encoded PKCS#10 Certificate Signing Request.
+                 The message sent from client side to fabric-ca for the digital identity certificate.
+      profile (str): The profile name.
+                     Specify the 'tls' profile for a TLS certificate; otherwise, an enrollment certificate is issued.
+      attr_reqs (list): An array of AttributeRequest
+    Returns: PEM-encoded X509 certificate
+    Raises:
+      RequestException: errors in requests.exceptions
+      ValueError: Failed response, json parse error, args missing
+  */
+  auto enroll(ca::Request<ENROLLMENT>) -> ca::Package<ENROLLMENT>;
+  // Gak they are all undifferentiated strings, some of which are optional.  Good luck.
+  // If you want reasonable default behavior then use an Request<ENROLLMENT>
+  [[deprecated("instead, prefer enroll(Request<ENROLLMENT>)")]] auto enroll(pki::Secret, pki::Request, enrollment::Bundle) -> ca::Package<ENROLLMENT>;
+  [[deprecated("instead, prefer enroll(Request<ENROLLMENT>)")]] auto enroll(string::Storage enrollment_id, string::Storage enrollment_secret, enrollment::Bundle) -> ca::Package<ENROLLMENT>;
+  [[deprecated("instead, prefer enroll(Request<ENROLLMENT>)")]] auto enroll(string::Storage enrollment_id,
+                                                                            string::Storage enrollment_secret,
+                                                                            Optional<string::Storage> csr = Optional<string::Storage>{},
+                                                                            Optional<string::Storage> profile = Optional<string::Storage>{},
+                                                                            Optional<Dictionary> attr_reqs = Optional<Dictionary>{}) -> ca::Package<ENROLLMENT>;
+  //
+  // Re-enroll the member
+  //
+  // Must have an existing enrollment (certificate, secret)
+  // This reenrollment covers the case when the (enrollment) certificate will expire and is to be refreshed.
+  // This does NOT cover the case where the secret has been compromised and something more aggressive must be attempted to recover.
+  //
+  // Package<REGISTERED> --------------------> reenroll(...) --------------------> Package<ENROLLMENT>
+  // { enrollment, ...more... }                                                    pki::Certificate, pki::Certificates
+  //                                                                                  ^                 ^
+  //                                                                                  |                 |
+  //                                          your NEW enrollment --------------------/                 |
+  //                                                                                                    |
+  //                                              context (a ca chain) ---------------------------------/
+  //
+  /*
+    Args:
+      currentUser (Enrollment): The identity of the current user that holds the existing enrollment certificate
+      attr_reqs (list): Optional. An array of AttributeRequest that indicate attributes to be included in the certificate
+    Returns: PEM-encoded X509 certificate
+    Raises:
+      RequestException: errors in requests.exceptions
+      ValueError: Failed response, json parse error, args missing
+  */
+  auto reenroll(ca::Package<ENROLLMENT> const &current, Optional<Dictionary> = Optional<Dictionary>{}) -> ca::Package<ENROLLMENT>;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::enrollment::service {
+  using protocol::serialize;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.Package.ENROLLMENT
+#import hyperledger.fabric.ca.protocol.Request
+#import hyperledger.pki.Request
+#import hyperledger.pki.Secret
+#import hyperledger.pki.from
+#import hyperledger.base64.decode
+#import std.tuple
+#if 0
+#import std.any // #import std.make_any
+#import std.make_shared
+// [[FIXTHIS]] below this line are the broken abstraction of copying the "secret" which is the "private key".  Gotta be a simpler way to do that.
+#import hyperledger.pki.Secret
+#import hyperledger.crypto.key.Private
+#import nonstsd.span
+#import std.byte
+#import std.is_copy_constructible
+#endif
+namespace hyperledger::fabric::ca::enrollment::service {
+  auto Service::enroll(ca::Request<ENROLLMENT> request) -> ca::Package<ENROLLMENT> {
+#if 1
+    auto secret = [secret=request.secret]() {
+                    // Outside this enroll(...) call you will find key geneation, key encoding and other production of the string syntax that we INVERT here
+                    auto decoded_bytes = base64::decode<string::Storage>(secret);
+                    return pki::from<pki::Secret>({decoded_bytes.data(), decoded_bytes.size()});
+                  }();
+#else
+    auto secret = [&request]() {
+                    // [[FIXTHIS]] ???  So it turns out that copying secrets is hard.  And we want to do that here.  Is that so wrong/
+                    static_assert(!std::is_copy_constructible_v<pki::Secret>);
+                    // yuk.  Have to copy the secret BEFORE sending it off.
+                    auto sp = nonstd::span<std::byte const >{reinterpret_cast<std::byte const *>(request.secret.data()), request.secret.size()};
+                    return pki::Secret{crypto::key::Private{sp}};
+                  }();
+#endif
+    auto [certificate, chain] = core.enroll(move(request));
+    return ca::Package<ENROLLMENT>{move(secret), move(certificate), move(chain)};
+  }
+#warning DEPRECATED #if 0 all the variants of reenroll that are so hard to deal with
+#if 0
+  auto Service::reenroll(ca::Package<ENROLLMENT> const &previous, Optional<Dictionary> additional_request_attributes) -> ca::Package<ENROLLMENT> {
+    auto [new_pki_secret, new_pki_request] = [this, &previous](pki::Certificate const &oldcert) -> std::tuple<pki::Secret, pki::Request> {
+      auto key = core.primitives.generate_private_key(); // [[FIXTHIS]] use pki::Primitives::generate_secret()
+      auto csr = core.primitives.generate_csr(key, oldcert.subject());
+      return {pki::Secret{move(key)}, move(csr)};
+    }(previous.certificate());
+#if 1
+    // WATCHOUT - FIXTHIS - the pki secret is needed in two places, in two different formats.
+    auto document = ca::Request<ENROLLMENT>{"NAME", to_string(new_pki_secret), move(additional_request_attributes), {}, move(new_pki_request)};
+#else
+#warning FIXTHIS ... it is stubbed out
+    auto document = protocol::Request{{"certificate_request", serialize(new_req)}};
+    if (additional_request_attributes) {
+      // [[FIXTHIS]] get this into into the dictionary::Dictionary definition directly
+      auto emplace = [](Dictionary &&candidate) {
+                       using namespace std;
+                       using Pointer = shared_ptr<Dictionary>;
+                       return make_any<Pointer>(make_shared<Dictionary>(forward<Dictionary>(candidate)));
+                     };
+      //
+      // Have to use the shared_ptr trick because std::any requires that the captured type be copy_construcible
+      //
+      // to serialize this dictionary into the request
+      // magic will happen ---------\\\\\\\ (here)
+      //                            |||||||
+      //                            vvvvvvv
+      document.insert({"attr_reqs", emplace(move(*additional_request_attributes))});
+    }
+#endif
+    auto [certificate, chain] = core.reenroll(move(document), previous);
+    return ca::Package<ENROLLMENT>{move(new_key), move(certificate), move(chain)};
+  }
+#endif
+}
+#import hyperledger.pki.from
+#import hyperledger.crypto.key.from
+namespace hyperledger::fabric::ca::enrollment::service {
+#warning DEPRECATED #if 0 all the variants of enroll that are so hard to deal with
+#if 0
+  //
+  // These are deprecated, being syntaxtic flourishes on top of the "real" API calls
+  // As such, they are outlined so we can easily get rid of them when the time is appropriate.
+  //
+  auto Service::enroll(string::Storage enrollment_id,
+                       string::Storage enrollment_secret,
+                       Optional<string::Storage> unsigned_csr_pem, // unsigned as in "not yet signed"
+                       Optional<string::Storage> profile,
+                       Optional<Dictionary> attr_reqs) -> ca::Package<ENROLLMENT> {
+    auto bundle = Bundle{move(enrollment_id), move(enrollment_secret), move(attr_reqs), move(profile)};
+    if (unsigned_csr_pem) {
+      // Yes, we are generating a new CSR, taking just what we think is proper and signing it with a newly-generated key
+      auto unsigned_csr = pki::from<pki::Request>(*unsigned_csr_pem);
+      auto private_key = core.primitives.generate_private_key();
+      auto request = core.primitives.generate_csr(private_key, unsigned_csr.subject(), unsigned_csr.constraints());
+      return enroll(ca::Request<ENROLLMENT>{pki::Secret{move(private_key)}, move(request), move(bundle)});
+    } else {
+      //
+      // There is no CSR here.  No subject name, no constraints.  Good luck to us.
+      //
+      return enroll(ca::Request<ENROLLMENT>{move(bundle}});
+    }
+  }
+  auto Service::enroll(string::Storage private_key_pem, string::Storage request_bytes, Bundle bundle) -> ca::Package<ENROLLMENT> {
+    auto private_key = [](string::Storage const &bytes) {
+                         // [[FIXTHIS]] this is very sloppy typing.  We have no idea whether the string::Storage holds pem-bytes or raw bytes or whether from<...>(...) expects one or the other
+                         auto spanned = nonstd::span<std::byte const>{reinterpret_cast<std::byte const *>(bytes.data()), bytes.size()};
+                         return crypto::key::from<crypto::key::Private>(spanned);
+                       }(private_key_pem);
+    auto request = [](string::Storage const &bytes) -> pki::Request {
+                     // [[FIXTHIS]] this is very sloppy typing.  We have no idea whether the string::Storage holds pem-bytes or raw bytes or whether from<...>(...) expects one or the other
+                     auto spanned = nonstd::span<std::byte const>{reinterpret_cast<std::byte const *>(bytes.data()), bytes.size()};
+                     return pki::from<pki::Request>(spanned);
+                   }(request_bytes);
+    return enroll(ca::Request<ENROLLMENT>{move(private_key), move(specification), move(request)});
+  }
+  auto Service::enroll(pki::Secret secret, pki::Request request, Bundle bundle) -> ca::Package<ENROLLMENT> {
+    auto enreq = RequestENROLLMENT>{move(bundle), move(request)}; // WATCHOUT - the argument order here is reversed ... why?
+    auto [enrollmentCert, caCertChain] = core.enroll(move(enreq));
+    return ca::Package<ENROLLMENT>{move(secret), move(enrollmentCert), move(caCertChain)};
+  }
+#warning FIGURE THIS OUT - auto Service::enroll(Bundle bundle) -> Enrollment
+#if 0
+  auto Service::enroll(Bundle bundle) -> Enrollment {
+    auto private_key = primitives.generate_private_key();
+    auto request = core.primitives.generate_csr(private_key, /*[[FIXTHIS]]*/ x509::Name([x509::NameAttribute(NameOID.COMMON_NAME, six.u(enrollment_id))]));
+    return enroll(move(private_key), move(request), move(specification));
+  }
+#endif
+#endif
+}
+#endiv

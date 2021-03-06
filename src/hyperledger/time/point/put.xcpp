@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import tunitas.time.put
+namespace hyperledger::time::point {
+  //
+  // tunitas::time::put ... format a time point on an ostream
+  // std::put_time ........ format a time point on an ostream
+  //
+  // Specification:
+  //
+  //   https://en.cppreference.com/w/cpp/io/manip/put_time
+  //
+  //   %F   %Y-%m-%d
+  //   %T   %H:%M:%S
+  //
+  // Design:
+  //
+  //   Accept a time::Point rather than a ::tm
+  //   MUST accept a '\0'-terminated string sequence, e.g. string:::Storage or 'char const *'
+  //   CANNOT accept a string::View :sadface:
+  //
+  // Usage:
+  //
+  //   auto then = time::Point{...somehow...};
+  //
+  //   cout << time::put(then, "...format...");
+  //   cout << time::put(then, "%FT%T");
+  //
+  using tunitas::time::put;
+}
+#endiv

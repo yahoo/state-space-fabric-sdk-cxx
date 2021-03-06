@@ -1,0 +1,53 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.exception
+namespace tests::unit::exception::fabric {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::fabric::exception;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::exception::fabric::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Aspect() -> void;
+  auto test_Invalid() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Runtime;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.exception.Aspect
+#import tests.unit.exception.fabric.Fixture.Runtime
+auto tests::unit::exception::fabric::fixture::Fixture::test_Aspect() -> void {
+  try {
+    throw Runtime{};
+  } catch (library::Aspect const &) {
+    CPPUNIT_ASSERT(true);
+    return;
+  }
+  CPPUNIT_ASSERT(false);
+}
+#import hyperledger.fabric.exception.Invalid
+auto tests::unit::exception::fabric::fixture::Fixture::test_Invalid() -> void {
+  using Subject = library::Invalid;
+  Subject subject{"variable"};
+  CPPUNIT_ASSERT(nullptr != subject.what());
+}
+#import rigging.suite.io
+auto tests::unit::exception::fabric::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"fabric"};
+  series << call("Aspect", &Fixture::test_Aspect)
+         << call("Invalid", &Fixture::test_Invalid)
+         << END;
+  return finalize(series);
+}
+#endiv

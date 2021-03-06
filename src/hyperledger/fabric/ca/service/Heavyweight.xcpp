@@ -1,0 +1,50 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::service {
+  //
+  // The "heavyweight" service prototype.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   The "heavyweight" services offer a rich typed interface.
+  //   They operate at a evel of abstraction above the protocol::Response.
+  //   They return pki objects directly: pki::Certificate, pki::Bundle, etc.
+  //
+  // Descendants:
+  //
+  //   See the various Service<NAME> descendants.
+  //
+  // Usage:
+  //
+  //   Of course.
+  //
+  class Heavyweight;
+}
+#endiv
+#divert <hpp>
+#forward hyperledger.fabric.ca.Authorizer
+#forward hyperledger.fabric.ca.Driver
+#forward hyperledger.fabric.ca.Tenant
+#import hyperledger.fabric.ca.service.Core
+struct hyperledger::fabric::ca::service::Heavyweight {
+protected:
+  ~Heavyweight() = default;
+public:
+  inline [[implicit]] Heavyweight(Tenant const &, Authorizer &, Driver &);
+  Heavyweight(Heavyweight const &) = delete;
+  auto operator=(Heavyweight const &) -> Heavyweight & = delete;
+  // Can't move the m either (the Core is immobile)
+protected:
+  Core core;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::service {
+  Heavyweight::Heavyweight(Tenant const &t, Authorizer &a, Driver &d)
+    : core{t, a, d}
+  { }
+}
+#endiv

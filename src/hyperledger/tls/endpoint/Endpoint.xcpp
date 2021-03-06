@@ -1,0 +1,94 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls::endpoint {
+  //
+  // A tls endpoint is like an ip::Endpoint but has an optional Certificate Authority (a file)
+  // That file contains one or more bundle of Certificate Authority root certificates.
+  // The printed format is not different than for an ip::Endpoint
+  // To access other fields, you must use the two-argument form of format
+  //
+  // The Certificate Authority (CA) is used to validate the certificate that *they* offer to us.
+  //
+  // Usage:
+  //
+  //   auto e = Endpoint{"localhost", 80};
+  //   auto s = to_string(e);
+  //   cerr << format(e);
+  //   cerr << format(e, Field::CA);
+  //   cerr << format(e, Field::HOST);
+  //   cerr << format(e, Field::PORT);
+  //   cerr << format(e, Field::ENDPOINT);
+  //
+  class Endpoint;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Boolean
+#import hyperledger.string.Storage
+#import hyperledger.tls.endpoint.Basis
+#import std.swap
+namespace  hyperledger::tls {
+  namespace endpoint {
+    using std::move;
+    using std::swap;
+    inline auto swap(Endpoint &, Endpoint &) noexcept -> void;
+    inline auto to_string(Endpoint const &) -> string::Storage;
+  }
+  class endpoint::Endpoint : public tls::endpoint::Basis {
+    using Ancestor = tls::endpoint::Basis;
+    friend auto swap(Endpoint &, Endpoint &) noexcept -> void;
+  public:
+    Endpoint() = default;
+    inline explicit Endpoint(Host);
+    inline Endpoint(Host, Port);
+    inline Endpoint(Host, Filepath);
+    inline Endpoint(Host, Port, Filepath);
+    Boolean dotls;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.tls.endpoint.Formatter
+#import std.ostringstream
+namespace hyperledger::tls {
+  auto endpoint::swap(Endpoint &a, Endpoint &b) noexcept -> void {
+    Endpoint::Ancestor &aa{a}, &bb{b};
+    swap(aa, bb);
+    swap(a.dotls, b.dotls);
+  }
+  auto endpoint::to_string(Endpoint const &ep) -> string::Storage {
+    std::ostringstream buf;
+    buf << format(ep);
+    return buf.str();
+  }
+  namespace endpoint {
+    Endpoint::Endpoint(Host host) : Ancestor{move(host)} { }
+    Endpoint::Endpoint(Host host, Port port) : Ancestor{move(host), move(port)} { }
+    Endpoint::Endpoint(Host host, Filepath file)
+      : Ancestor{move(host), move(file)}
+      , dotls{true}
+    { }
+    Endpoint::Endpoint(Host host, Port port, Filepath file)
+      : Ancestor{move(host), move(port), move(file)}
+      , dotls{true}
+    { }
+  }
+}
+#endiv
+#divert <cpp>
+namespace {
+  namespace tests {
+    using namespace hyperledger::tls::endpoint;
+    template<typename ENDPOINT> concept Usage = requires(ENDPOINT endpoint, ENDPOINT other) {
+      { ENDPOINT{} };
+      { move(endpoint) };
+      { swap(endpoint, other) };
+      { to_string(endpoint) };
+    };
+    static_assert(Usage<Endpoint>);
+  }
+}
+#endiv

@@ -1,0 +1,46 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.pki.required.Assemblable
+namespace hyperledger::pki {
+  //
+  // Whereas something was (likely) lost when the thing was crushed down to constiguent components...
+  // Specializations only.
+  //
+  // Concept:
+  //
+  //   Assemble it back together.
+  //   Add in the latent policy choices as necessary.
+  //
+  //   The 'assemble<...>(...) verb is distinguished from the 'from<...>(...)' verb as follows:
+  //   The 'assemble' recreates something with policy choices; it is a constructor operation
+  //   the 'from' recovers from a well-known serialization format; e.g. base64-ascii armor, BER, DER, GRR(sic), etc.
+  //
+  // Design:
+  //
+  //   Various arguments for the various assemblies.
+  //   There may be multiple assemblages.  Might there not?
+  //
+  //   But whereas there is nos uch thing as partial function specialization,
+  //   all specializations of assemble<...>(...) are necessarily concrete functions.
+  //
+  // Exceptions:
+  //
+  //   Probably ... Expect them.
+  //   From the underlying parsers and constructors.
+  //
+  // Usage:
+  //
+  //   auto private_span_of_bytes ...somehow...
+  //   auto secret = assemble<Secret>(private_span_of_bytes);
+  //
+  template<required::Assemblable RESULT, typename... ARGUMENTS> auto assemble(ARGUMENTS...) -> RESULT;
+}
+#endiv
+#divert <ipp>
+namespace hyperledger {
+  // Expect that the specializations will have provided something helpful
+  template<pki::required::Assemblable RESULT, typename... ARGUMENTS> auto pki::assemble(ARGUMENTS...) -> RESULT = delete;
+}
+#endiv

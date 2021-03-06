@@ -1,0 +1,157 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.http
+namespace tests::unit::http {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::http;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::unit::http::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_http() -> void;
+  auto test_method() -> void;
+  auto test_status() -> void;
+  auto test_url() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.http.literals
+namespace tests::unit::http::fixture {
+  //
+  // "200"_http
+  // "200"_status
+  // "GET"_method
+  //
+  using namespace library::literals; // buy them all, both the status and the method literals
+}
+#endiv
+#divert <cpp>
+namespace tests::unit::http::fixture {
+#if 0 // REMOVETHIS duplicated below?
+  auto Fixture::test_http() -> void {
+    using Subject = ::hyperledger::http::status::Code;
+    CPPUNIT_ASSERT(Subject::UNDEFINED == 0_status);
+    CPPUNIT_ASSERT(Subject::UNDEFINED == 000_status);
+    // 100-series
+    CPPUNIT_ASSERT(Subject::CONTINUE == "100"_status);
+    CPPUNIT_ASSERT(Subject::SWITCHING_PROTOCOLS == "101"_status);
+    CPPUNIT_ASSERT(Subject::PROCESSING == "102"_status);
+    // 200-series
+    CPPUNIT_ASSERT(Subject::OK == "200"_status);
+    CPPUNIT_ASSERT(Subject::CREATED == "201"_status);
+    CPPUNIT_ASSERT(Subject::ACCEPTED == "202"_status);
+    CPPUNIT_ASSERT(Subject::NON_AUTHORITATIVE == "203"_status);
+    CPPUNIT_ASSERT(Subject::NO_CONTENT == "204"_status);
+    CPPUNIT_ASSERT(Subject::RESET_CONTENT == "205"_status);
+    CPPUNIT_ASSERT(Subject::PARTIAL_CONTENT == "206"_status);
+    CPPUNIT_ASSERT(Subject::MULTI_STATUS == "207"_status);
+    CPPUNIT_ASSERT(Subject::ALREADY_REPORTED == "208"_status);
+    CPPUNIT_ASSERT(Subject::IM_USED == "226"_status);
+    // ... close enough ...
+  }
+#endif
+  auto Fixture::test_method() -> void {
+    using Subject = ::hyperledger::http::method::Name;
+    CPPUNIT_ASSERT(Subject::OPTIONS == "OPTIONS"_method);
+    CPPUNIT_ASSERT(Subject::DELETE == "DELETE"_method);
+    CPPUNIT_ASSERT(Subject::GET == "GET"_method);
+    CPPUNIT_ASSERT(Subject::POST == "POST"_method);
+    CPPUNIT_ASSERT(Subject::PUT == "PUT"_method);
+  }
+  auto Fixture::test_status() -> void {
+    using Subject = ::hyperledger::http::status::Code;
+    CPPUNIT_ASSERT(Subject::SUCCESS == 0_status);
+    CPPUNIT_ASSERT(Subject::SUCCESS == 000_status);
+    // 100-series
+    CPPUNIT_ASSERT(Subject::CONTINUE == 100_status);
+    CPPUNIT_ASSERT(Subject::SWITCHING_PROTOCOLS == 101_status);
+    CPPUNIT_ASSERT(Subject::PROCESSING == 102_status);
+    // 200-series
+    CPPUNIT_ASSERT(Subject::OK == 200_status);
+    CPPUNIT_ASSERT(Subject::CREATED == 201_status);
+    CPPUNIT_ASSERT(Subject::ACCEPTED == 202_status);
+    CPPUNIT_ASSERT(Subject::NON_AUTHORITATIVE == 203_status);
+    CPPUNIT_ASSERT(Subject::NO_CONTENT == 204_status);
+    CPPUNIT_ASSERT(Subject::RESET_CONTENT == 205_status);
+    CPPUNIT_ASSERT(Subject::PARTIAL_CONTENT == 206_status);
+    CPPUNIT_ASSERT(Subject::MULTI_STATUS == 207_status);
+    CPPUNIT_ASSERT(Subject::ALREADY_REPORTED == 208_status);
+    CPPUNIT_ASSERT(Subject::IM_USED == 226_status);
+    // 300-series
+    CPPUNIT_ASSERT(Subject::MULTIPLE_CHOICES == 300_status);
+    CPPUNIT_ASSERT(Subject::MOVED_PERMANENTLY == 301_status);
+    CPPUNIT_ASSERT(Subject::MOVED_TEMPORARILY == 302_status);
+    CPPUNIT_ASSERT(Subject::SEE_OTHER == 303_status);
+    CPPUNIT_ASSERT(Subject::NOT_MODIFIED == 304_status);
+    CPPUNIT_ASSERT(Subject::USE_PROXY == 305_status);
+    CPPUNIT_ASSERT(Subject::TEMPORARY_REDIRECT == 306_status);
+    CPPUNIT_ASSERT(Subject::PERMANENT_REDIRECT == 307_status);
+    // 400-series
+    CPPUNIT_ASSERT(Subject::BAD_REQUEST == 400_status);
+    CPPUNIT_ASSERT(Subject::UNAUTHORIZED == 401_status);
+    CPPUNIT_ASSERT(Subject::PAYMENT_REQUIRED == 402_status);
+    CPPUNIT_ASSERT(Subject::FORBIDDEN == 403_status);
+    CPPUNIT_ASSERT(Subject::NOT_FOUND == 404_status);
+    CPPUNIT_ASSERT(Subject::METHOD_NOT_ALLOWED == 405_status);
+    CPPUNIT_ASSERT(Subject::NOT_ACCEPTABLE == 406_status);
+    CPPUNIT_ASSERT(Subject::PROXY_AUTHENTICATION_REQUIRED == 407_status);
+    CPPUNIT_ASSERT(Subject::REQUEST_TIME_OUT == 408_status);
+    CPPUNIT_ASSERT(Subject::CONFLICT == 409_status);
+    CPPUNIT_ASSERT(Subject::GONE == 410_status);
+    CPPUNIT_ASSERT(Subject::LENGTH_REQUIRED == 411_status);
+    CPPUNIT_ASSERT(Subject::PRECONDITION_FAILED == 412_status);
+    CPPUNIT_ASSERT(Subject::REQUEST_ENTITY_TOO_LARGE == 413_status);
+    CPPUNIT_ASSERT(Subject::REQUEST_URI_TOO_LARGE == 414_status);
+    CPPUNIT_ASSERT(Subject::UNSUPPORTED_MEDIA_TYPE == 415_status);
+    CPPUNIT_ASSERT(Subject::RANGE_NOT_SATISFIABLE == 416_status);
+    CPPUNIT_ASSERT(Subject::EXPECTATION_FAILED == 417_status);
+    CPPUNIT_ASSERT(Subject::IM_A_TEAPOT == 418_status);
+    CPPUNIT_ASSERT(Subject::MISDIRECTED_REQUEST == 421_status);
+    CPPUNIT_ASSERT(Subject::UNPROCESSABLE_ENTITY == 422_status);
+    CPPUNIT_ASSERT(Subject::LOCKED == 423_status);
+    CPPUNIT_ASSERT(Subject::FAILED_DEPENDENCY == 424_status);
+    CPPUNIT_ASSERT(Subject::TOO_EARLY == 425_status);
+    CPPUNIT_ASSERT(Subject::UPGRADE_REQUIRED == 426_status);
+    CPPUNIT_ASSERT(Subject::PRECONDITION_REQUIRED == 428_status);
+    CPPUNIT_ASSERT(Subject::TOO_MANY_REQUESTS == 429_status);
+    CPPUNIT_ASSERT(Subject::REQUEST_HEADER_FIELDS_TOO_LARGE == 431_status);
+    CPPUNIT_ASSERT(Subject::UNAVAILABLE_FOR_LEGAL_REASONS == 451_status);
+    // 500-series
+    CPPUNIT_ASSERT(Subject::INTERNAL_SERVER_ERROR == 500_status);
+    CPPUNIT_ASSERT(Subject::NOT_IMPLEMENTED == 501_status);
+    CPPUNIT_ASSERT(Subject::BAD_GATEWAY == 502_status);
+    CPPUNIT_ASSERT(Subject::SERVICE_UNAVAILABLE == 503_status);
+    CPPUNIT_ASSERT(Subject::GATEWAY_TIME_OUT == 504_status);
+    CPPUNIT_ASSERT(Subject::VERSION_NOT_SUPPORTED == 505_status);
+    CPPUNIT_ASSERT(Subject::VARIANT_ALSO_VARIES == 506_status);
+    CPPUNIT_ASSERT(Subject::INSUFFICIENT_STORAGE == 507_status);
+    CPPUNIT_ASSERT(Subject::LOOP_DETECTED == 508_status);
+    CPPUNIT_ASSERT(Subject::NOT_EXTENDED == 510_status);
+    CPPUNIT_ASSERT(Subject::NETWORK_AUTHENTICATION_REQUIRED == 511_status);
+  }
+  auto Fixture::test_url() -> void {
+    using namespace ::hyperledger::http::url::literals;
+    auto u = "/path"_url;
+    CPPUNIT_ASSERT(5 == u.size());
+  }
+}
+#import rigging.suite.io
+auto tests::unit::http::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"http"};
+  series << call("method", &Fixture::test_method)
+         << call("status", &Fixture::test_status)
+         << call("url", &Fixture::test_url)
+         << END;
+  return finalize(series);
+}
+#endiv

@@ -1,0 +1,117 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::v0::peer {
+  //
+  // A peer node in the network.
+  // Creates the gRPC channel connection to the peer by RAII (you get it or an exception is thrown).
+  //
+  // It has a specific gRPC channel address.
+  //
+  // Threads:
+  //   The object guards against reentrancy.
+  //   The object does not return pointers into itself; values are accepted & return by value.
+  //
+  // Usage:
+  //
+  //   yes, there is usage
+  //   create_peer(...arguments...)
+  //
+  class Peer;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.something_something_dark_side.Channel
+#import hyperledger.fabric.something_something_dark_side.Endpoint
+#import hyperledger.fabric.something_something_dark_side.PropoalResponse
+#import hyperledger.fabric.something_something_dark_side.Proposal
+#import hyperledger.grpc.something_something_dark_side.Options
+#import std.filesystem.path
+#import std.list
+#import std.mutex
+#import std.optional
+#import std.string
+struct hyperledger::fabric::v0::peer::Peer {
+  using Channel = something_something_dark_side::Channel;
+  using Endpoint = something_something_dark_side::Endpoint;
+  using Filepath = std::filesystem::path;
+  using Name = std::string;
+  //
+  // :param endpoint: Endpoint of the peer's gRPC service
+  // :param tls_cacerts: file path of tls root ca's certificate
+  // :param opts: optional params
+  inline Peer(Name, Endpoint, std::optional<Filepath>, std::optional<Options>);
+  //
+  // :param info: Dict including all info, e.g., endpoint, grpc option
+  inline explicit Peer(Bundle);
+  inline auto endpoint() const -> Endpoint;
+  inline auto channels() const -> std::list<Channel>;
+  // Send an endorsement proposal to endorser (sends a proposal, awaits the response)
+  inline auto send_proposal(Proposal) -> ProposalResponse;
+  // Join a channel (merely appends to the local data structure, doesn't send any messages)
+  inline auto join(Channel) -> void;
+  // inline auto get_attrs(self);
+  // inline auto __str__(self);
+protected:
+  Name name;
+  std::mutex mutex;
+  std::list<Channel> _channels;
+  Endpoint _endpoint;
+  std::optional<std::string> eh_url;
+  grpc::Options grpc_options; // [[FIXTHIS]] this is never used
+  std::optional<std::string> ssl_target_name;
+  std::optional<std::filesystem::path> tls_ca_certs_path;
+  using Channel = something_something_dark_side::Channel;
+  using EndorserStub = something_something_dark_side::EndorserStub;
+  Channel channel;
+  EndorserStub endorser_client;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.create_peer
+#import hyperledger.fabric.utility.create_grpc_channel
+#import hyperledger.protos.peer_pb2_grpc.EndorserStub
+namespace hyperledger::fabric::v0::peer {
+  Peer::Peer(Name name, Endpoint endpoint, std::optional<Filepath> tls_cacerts, std::optional<Options> opts)
+    : name{name}
+    , mutex{}
+    , _channels{}
+    , _endpoint{endpoint}
+    , eh_url{}
+    , grpc_options{} // [[FIXTHIS]] this is never used
+    , ssl_target_name{}
+    , tls_ca_certs_path{}
+    , channel{create_grpc_channel(_endpoint, tls_cacerts, opts)}
+    , endorser_client{protos::peer_pb2_grpc::EndorserStub(channel)}
+  { }
+  Peer::Peer(Bundle info)
+    : name{DEFAULT_PEER_NAME}
+    , mutex{}
+    , _channels{}
+    , _endpoint{info["url"]}
+    , eh_url{info["eventUrl"]}
+    , grpc_options{info["grpcOptions"]}
+    , ssl_target_name{grpc_options["grpc.ssl_target_name_override"]}
+    , tls_ca_certs_path{info["tlsCACerts"]["path"]}
+    , channel{create_grpc_channel(_endpoint, tls_ca_certs_path, info["grpcOptions"])}
+    , endorser_client{protos::peer_pb2_grpc::EndorserStub(channel)}
+  { }
+  auto Peer::endpoint() const -> Endpoint {
+    std::lock_guard<std::mutex> guard{mutex};
+    return _endpoint;
+  }
+  auto Peer::channels() const -> std::list<Channel> {
+    std::lock_guard<std::mutex> guard{mutex};
+    return _channels;
+  }
+  auto Peer::join(Channel channel) -> void {
+    std::lock_guard<std::mutex> guard{mutex};
+    _channels.push_back(channel);
+  }
+  auto Peer::send_proposal(Proposal proposal) -> ProposalResponse {
+    _logger.debug("Send proposal={}", proposal);
+    return endorser_client.ProcessProposal(proposal);
+  }
+}
+#endiv

@@ -1,0 +1,33 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.is_same
+#import hyperledger.required.Enumeration
+namespace hyperledger::x509::query::required::name {
+  //
+  // Is this enumeration in the universe of Service names?
+  //
+  namespace [[eponymous]] query {
+    using std::is_same_v;
+    template<typename MATCH, typename... UNIVERSE> concept bool Fold = (is_same_v<MATCH, UNIVERSE> || ... );
+    //                                                                                <----- the universe of available Query<NAME> ----->
+    template<typename MATCH> concept bool Query = Enumeration<MATCH> && Fold<MATCH, AUTHORITY_KEY_IDENTIFIER, SUBJECT_KEY_IDENTIFIER, COMMON_NAME, SERIAL, REVOKED, EXPIRES>;
+  }
+  using query::Query;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+namespace {
+  namespace tests {
+    using namespace hyperledger::x509::query;
+    static_assert(required::name::Query<AUTHORITY_KEY_IDENTIFIER>);
+    static_assert(required::name::Query<SUBJECT_KEY_IDENTIFIER>);
+    static_assert(required::name::Query<COMMON_NAME>);
+    static_assert(required::name::Query<SERIAL>);
+    static_assert(required::name::Query<REVOKED>);
+    static_assert(required::name::Query<EXPIRES>);
+  }
+}
+#endiv

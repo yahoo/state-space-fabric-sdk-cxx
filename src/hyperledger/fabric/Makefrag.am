@@ -1,5 +1,5 @@
 # This is a GNU -*- Makefile -*- fragment that is included by Automake
-# Copyright 2019, Oath Inc.
+# Copyright Verizon Media.
 # Licensed under the terms of the Apache-2.0 license.
 # See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 
@@ -21,9 +21,9 @@
 #       <= 0     if any interfaces were changed
 #       <= AGE   if no interface change, but any other (source code) change
 #
-lib_libhyperledger_fabric_la_CURRENT = 1
-lib_libhyperledger_fabric_la_REVISION = 0
-lib_libhyperledger_fabric_la_AGE = 0
+lib_libhyperledger_fabric_la_CURRENT = $(lib_libhyperledger_la_CURRENT)
+lib_libhyperledger_fabric_la_REVISION = $(lib_libhyperledger_la_REVISION)
+lib_libhyperledger_fabric_la_AGE = $(lib_libhyperledger_la_AGE)
 lib_libhyperledger_fabric_la_CRA = $(lib_libhyperledger_fabric_la_CURRENT):$(lib_libhyperledger_fabric_la_REVISION):$(lib_libhyperledger_fabric_la_AGE)
 
 lib_libhyperledger_fabric_la = lib/libhyperledger-fabric.la
@@ -31,118 +31,33 @@ lib_libhyperledger_fabric_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET) -version-info $(li
 # NOT YET lib_libhyperledger_fabric_la_LIBADD = lib/libhyperledger-fabric-goblob.so)
 # find the subsystem declarations in configure.ac driving the -l and -l*-module mentions
 lib_libhyperledger_fabric_la_LIBADD = \
+  $(lib_libhyperledger_fabric_v0_la) \
+  $(lib_libhyperledger_fabric_utility_la) \
   $(lib_libwant_la) \
   -ltunitas \
+  -ljson-module \
   -lnonstd-module \
+  -lshell-module \
   -lstring-module \
   -lsys-posix-module \
   $(end)
 lib_libhyperledger_fabric_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_la_SOURCES))
 lib_libhyperledger_fabric_la_SOURCES = \
   obj/src/hyperledger/fabric/namespace.cpp \
-  obj/src/hyperledger/fabric/Boolean.cpp \
-  obj/src/hyperledger/fabric/Context.cpp \
-  obj/src/hyperledger/fabric/Contact.cpp \
-  obj/src/hyperledger/fabric/Outcome.cpp \
-  obj/src/hyperledger/fabric/Success.cpp \
-  obj/src/hyperledger/fabric/detail.Formatter.cpp \
-  obj/src/hyperledger/fabric/detail.Endpoints.cpp \
-  obj/src/hyperledger/fabric/detail.get_port.cpp \
-  obj/src/hyperledger/fabric/detail.get_hostport.cpp \
+  obj/src/hyperledger/fabric/required/namespace.cpp \
   \
-  obj/src/hyperledger/fabric/ip.Port.cpp \
-  obj/src/hyperledger/fabric/ip.port.Formatter.cpp \
-  obj/src/hyperledger/fabric/ip.Host.cpp \
-  obj/src/hyperledger/fabric/ip.host.Formatter.cpp \
-  obj/src/hyperledger/fabric/ip.host.Visitor.cpp \
-  obj/src/hyperledger/fabric/ip.Endpoint.cpp \
-  obj/src/hyperledger/fabric/ip.endpoint.Formatter.cpp \
-  obj/src/hyperledger/fabric/ip.Endpoints.cpp \
-  \
-  obj/src/hyperledger/fabric/error.Code.cpp \
-  obj/src/hyperledger/fabric/error.Condition.cpp \
-  obj/src/hyperledger/fabric/error.Category.cpp \
-  obj/src/hyperledger/fabric/error.category.cpp \
-  \
-  obj/src/hyperledger/fabric/exception.Aspect.cpp \
-  \
-  obj/src/hyperledger/fabric/orderer.Contact.cpp \
-  obj/src/hyperledger/fabric/peers.Contact.cpp \
-  \
-  obj/src/hyperledger/fabric/peer.Context.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Call.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.call.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Context.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.Function.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.required.Is_Result.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.required.Result.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.query.cpp \
-  obj/src/hyperledger/fabric/peer.chaincode.invoke.cpp \
-  \
-  obj/src/hyperledger/fabric/pki.required.Triplet.cpp \
-  obj/src/hyperledger/fabric/pki.Triple.cpp \
-  obj/src/hyperledger/fabric/pki.Triple.Compare.cpp \
-  obj/src/hyperledger/fabric/pki.Triple.Compare.vector.byte.cpp \
-  \
-  obj/src/hyperledger/fabric/required.Character.cpp \
-  obj/src/hyperledger/fabric/required.Character_Traits.cpp \
-  obj/src/hyperledger/fabric/required.container.Push_Back.cpp \
-  obj/src/hyperledger/fabric/required.Endpointy.cpp \
-  obj/src/hyperledger/fabric/required.Octet.cpp \
-  \
-  obj/src/hyperledger/fabric/run.Arguments.cpp \
-  obj/src/hyperledger/fabric/run.arguments.Stream.cpp \
-  obj/src/hyperledger/fabric/run.push_back.cpp \
-  obj/src/hyperledger/fabric/run.Loader.cpp \
-  obj/src/hyperledger/fabric/run.loader.Compare.cpp \
-  obj/src/hyperledger/fabric/run.loader.Compare.optional.cpp \
-  obj/src/hyperledger/fabric/run.loader.Compare.ALL.cpp \
-  obj/src/hyperledger/fabric/run.loader.are_the_same.cpp \
-  obj/src/hyperledger/fabric/run.loader.Basis.cpp \
-  obj/src/hyperledger/fabric/run.Loader.fabric.Context.cpp \
-  obj/src/hyperledger/fabric/run.Loader.peer.Context.cpp \
-  obj/src/hyperledger/fabric/run.Loader.chaincode.Context.cpp \
-  obj/src/hyperledger/fabric/run.Loader.Orderer.cpp \
-  obj/src/hyperledger/fabric/run.Loader.Peers.cpp \
-  obj/src/hyperledger/fabric/run.Loader.Client.cpp \
-  obj/src/hyperledger/fabric/run.Loader.Call.cpp \
-  obj/src/hyperledger/fabric/run.Chaincode.cpp \
-  obj/src/hyperledger/fabric/run.Chaincode.Success.cpp \
-  obj/src/hyperledger/fabric/run.Chaincode.string.cpp \
-  obj/src/hyperledger/fabric/run.Chaincode.ALL.cpp \
-  obj/src/hyperledger/fabric/run.chaincode.Basis.cpp \
-  obj/src/hyperledger/fabric/run.Peer.cpp \
-  obj/src/hyperledger/fabric/run.Peer.Success.cpp \
-  obj/src/hyperledger/fabric/run.Peer.string.cpp \
-  obj/src/hyperledger/fabric/run.Peer.ALL.cpp \
-  obj/src/hyperledger/fabric/run.peer.Basis.cpp \
-  \
-  obj/src/hyperledger/fabric/southside.Code.cpp \
-  obj/src/hyperledger/fabric/southside.hack_the_spew.cpp \
-  \
-  obj/src/hyperledger/fabric/time.Clock.cpp \
-  obj/src/hyperledger/fabric/time.Duration.cpp \
-  obj/src/hyperledger/fabric/time.Point.cpp \
-  \
-  obj/src/hyperledger/fabric/tls.Client.cpp \
-  obj/src/hyperledger/fabric/tls.Client.Compare.cpp \
-  obj/src/hyperledger/fabric/tls.Endpoint.cpp \
-  obj/src/hyperledger/fabric/tls.endpoint.Basis.cpp \
-  obj/src/hyperledger/fabric/tls.endpoint.Formatter.cpp \
-  obj/src/hyperledger/fabric/tls.Field.cpp \
-  obj/src/hyperledger/fabric/tls.Endpoints.cpp \
-  obj/src/hyperledger/fabric/tls.endpoints.Endpoint.cpp \
-  obj/src/hyperledger/fabric/tls.endpoints.Series.cpp \
-  obj/src/hyperledger/fabric/tls.endpoints.series.Formatter.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.Endpoint.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.Endpoints.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.endpoints.Endpoint.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.Series.cpp \
-  obj/src/hyperledger/fabric/tls.from_string.ALL.cpp \
+  $(obj_src_hyperledger_fabric_error_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_exception_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_southside_SUBSOURCES) \
   $(end)
+include src/hyperledger/fabric/error/Makefrag.am
+include src/hyperledger/fabric/exception/Makefrag.am
+include src/hyperledger/fabric/southside/Makefrag.am
+$(lib_libhyperledger_fabric_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
 $(scold_cxxdir)/hyperledger/fabric/dependencies.mk:
-	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libhyperledger_fabric_la_SOURCES))
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_fabric_la_SOURCES))
 	$(TF_V_DONE) test -e $@
 include $(scold_cxxdir)/hyperledger/fabric/dependencies.mk
 clean-dependencies::

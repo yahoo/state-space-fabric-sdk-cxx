@@ -1,0 +1,100 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import std
+#import hyperledger.base64
+#import hyperledger.byte
+namespace tests::unit::base64::encode {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::base64;
+    using namespace std;
+    namespace byte = ::hyperledger::byte;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.string.Storage
+struct tests::unit::base64::encode::fixture::Fixture : public cppunit::test::Fixture {
+  template<typename CONTAINER> auto test_container() -> void;
+  auto test_iterator() -> void;
+  auto test_failure() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  template<typename CONTAINER> auto generate() -> CONTAINER;
+  template<typename CONTAINER> auto validate(CONTAINER const &) -> void;
+  static string::Storage const PLAIN, CODED;
+};
+#endiv
+#divert <tpp>
+#import hyperledger.base64.encode
+#import std.back_inserter
+#import std.transform
+namespace tests::unit::base64::encode::fixture {
+  template<typename CONTAINER> auto Fixture::generate() -> CONTAINER {
+    CONTAINER ret;
+    using Octet = typename CONTAINER::value_type;
+    if constexpr(true) {
+        transform(PLAIN.begin(), PLAIN.end(), back_inserter(ret), [](char c) { return Octet(c); });
+    } else {
+      for (auto ch : PLAIN) {
+        auto octet = Octet(ch);
+        ret.push_back(octet);
+      }
+    }
+    return ret;
+  }
+  template<typename CONTAINER> auto Fixture::validate(CONTAINER const &container) -> void {
+    auto compare = [](auto const &left, auto const &right) { return (char)left == (char)right; };
+    auto good = lexicographical_compare(container.begin(), container.end(), CODED.begin(), CODED.end(), compare);
+    CPPUNIT_ASSERT(good);
+  }
+  template<typename CONTAINER> auto Fixture::test_container() -> void {
+    auto got = library::encode(generate<CONTAINER>());// <------------------------------ test this
+    validate(got);
+  }
+}
+#endiv
+#divert <cpp>
+namespace tests::unit::base64::encode::fixture {
+  string::Storage const Fixture::PLAIN{"Hello World="};
+  string::Storage const Fixture::CODED{"aGVsbG8gd29ybGQ="};
+  auto Fixture::test_iterator() -> void {
+    auto got = library::encode(PLAIN.begin(), PLAIN.end());// <------------------------------ test this
+    validate(got);
+  }
+  auto Fixture::test_failure() -> void {
+    auto got = library::encode(PLAIN.begin(), PLAIN.end());// <------------------------------ test this
+    validate(got);
+  }
+}
+#import hyperledger.byte.Octet
+#import std.string
+#import std.int8_t
+#import std.uint8_t
+#import std.vector
+#import rigging.suite.io
+auto tests::unit::base64::encode::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"encode"};
+  series << []() {
+              auto vec = Stream{"vector"};
+              vec << call("byte", &Fixture::test_container<vector<byte::Octet>>)
+                  << call("char", &Fixture::test_container<vector<char>>)
+                  << call("int8", &Fixture::test_container<vector<int8_t>>)
+                  << call("uint8", &Fixture::test_container<vector<uint8_t>>)
+                  << END;
+              return move(vec);
+            }()
+         << call("string", &Fixture::test_container<string::Storage>)
+         << call("iterator", &Fixture::test_iterator)
+         << call("failure", &Fixture::test_failure)
+         << END;
+  return finalize(series);
+}
+#endiv

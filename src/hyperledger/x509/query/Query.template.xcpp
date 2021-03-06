@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::x509::query {
+  //
+  // The queries into the X.509 system.
+  // Specializations only.
+  //
+  // Concept:
+  //
+  //   These are (almost exclusively?) used in Hyperledger Fabric CA for the introspection & revocation subsystems.
+  //   Yet they are general.
+  //
+  // Design:
+  //
+  //   The UNIQUENESS is used to help name the type.
+  //   The UNIQUENESS may also be used as the value parameter of the Query, but that is not required.
+  //
+  // Usage:
+  //
+  //   auto revoked = Query<REVOKED>{...somehow...};
+  //   quto cn = Query<COMMON_NAME>{...somehow...};
+  //
+  template<typename UNIQUENESS> struct Query;
+}
+#endiv

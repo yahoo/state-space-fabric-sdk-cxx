@@ -1,0 +1,111 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.fabric.ca.enrollment
+#import hyperledger.pki
+namespace tests::unit::enrollment {
+  namespace [[eponymous]] request {
+    class Request;
+    namespace library = ::hyperledger::fabric::ca::enrollment;
+    namespace ca = ::hyperledger::fabric::ca;
+    namespace pki = ::hyperledger::pki;
+  }
+  using request::Request;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.fabric.ca.Request.ENROLLMENT
+#import hyperledger.fabric.ca.enrollment.Bundle
+#import hyperledger.pki.Request
+struct tests::unit::enrollment::request::Request : public cppunit::test::Fixture {
+  using Subject = ca::Request<ca::ENROLLMENT>;
+  using Dictionary = ::hyperledger::Dictionary;
+  auto test_constructor_default() -> void;
+  auto test_constructor_copy() -> void;
+  auto test_constructor_move() -> void;
+  auto test_assignment_copy() -> void;
+  auto test_assignment_move() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+namespace tests::unit::enrollment::request {
+  auto Request::test_constructor_default() -> void {
+    static_assert(not std::is_default_constructible_v<Subject>);
+#if 0
+    auto subject = Subject{}; // <------------------------------ test this
+    CPPUNIT_ASSERT(subject.empty());
+    CPPUNIT_ASSERT(subject.secret.empty());
+    CPPUNIT_ASSERT(subject.empty());
+    CPPUNIT_ASSERT(!subject.profile);
+#endif
+  }
+  auto Request::test_constructor_copy() -> void {
+    static_assert(not std::is_copy_constructible_v<Subject>);
+#if 0
+    auto specimen = Subject{library::Bundle{"name"s, "seekrit"s, {}, {}}, pki::Request{}};
+    Subject subject{specimen}; // <------------------------------ test this
+    CPPUNIT_ASSERT_EQUAL("name"s, subject.name);
+    CPPUNIT_ASSERT_EQUAL("seekrit"s, subject.secret);
+    CPPUNIT_ASSERT(subject.attr_reqs.empty());
+    CPPUNIT_ASSERT(false == (bool)subject.profile);
+#endif
+  }
+  auto Request::test_constructor_move() -> void {
+    auto specimen = Subject{library::Bundle{"name"s, "seekrit"s, {}, {}}, pki::Request{}};
+    Subject subject{move(specimen)}; // <------------------------------ test this
+    CPPUNIT_ASSERT_EQUAL("name"s, subject.name);
+    CPPUNIT_ASSERT_EQUAL("seekrit"s, subject.secret);
+    CPPUNIT_ASSERT(subject.attr_reqs.empty());
+    CPPUNIT_ASSERT(false == (bool)subject.profile);
+  }
+  auto Request::test_assignment_copy() -> void {
+    static_assert(not std::is_copy_assignable_v<Subject>);
+#if 0
+    auto specimen = Subject{library::Bundle{"name"s, "seekrit"s, {}, {}}, pki::Request{}};
+    Subject subject;
+    subject = specimen; // <------------------------------ test this
+    CPPUNIT_ASSERT_EQUAL("name"s, subject.name);
+    CPPUNIT_ASSERT_EQUAL("seekrit"s, subject.secret);
+    CPPUNIT_ASSERT(subject.attr_reqs.empty());
+    CPPUNIT_ASSERT(false == (bool)subject.profile);
+#endif
+  }
+  auto Request::test_assignment_move() -> void {
+    auto specimen = Subject{library::Bundle{"no-name-at-all"s, "not-secret-at-all"s, {}, {}}, pki::Request{}};
+    Subject subject{library::Bundle{"name"s, "seekrit"s, {}, {}}, pki::Request{}};
+    subject = move(specimen);
+    CPPUNIT_ASSERT_EQUAL("name"s, subject.name);
+    CPPUNIT_ASSERT_EQUAL("seekrit"s, subject.secret);
+    CPPUNIT_ASSERT(subject.attr_reqs.empty());
+    CPPUNIT_ASSERT(false == (bool)subject.profile);
+  }
+}
+#import rigging.suite.io
+auto
+tests::unit::enrollment::request::Request::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Request"};
+  series << []() {
+              auto con = Stream{"constructor"};
+              con << call("default", &Request::test_constructor_default)
+                  << call("copy", &Request::test_constructor_copy)
+                  << call("move", &Request::test_constructor_move)
+                  << END;
+              return move(con);
+            }()
+         << []() {
+              auto ass = Stream{"assignment"};
+              ass << call("copy", &Request::test_constructor_copy)
+                  << call("move", &Request::test_constructor_move)
+                  << END;
+              return move(ass);
+            }()
+         << END;
+  return finalize(series);
+}
+#endiv

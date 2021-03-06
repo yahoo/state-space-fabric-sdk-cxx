@@ -1,0 +1,113 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::registration {
+  //
+  // A request for the registration of a user.
+  // Descendants only.
+  // You will use hyperledger::fabric::ca::Request<REGISTRATION>
+  //
+  // Origin & Evolution:
+  //   was: caservice.py the function def register(...)
+  //   was: enrollment::Registration
+  //
+  // origin ---> This class is the single-argument package for Service::enregister(Registration) -> Secret
+  // origin ---> It captures and packages all the default and optional argument behavior.
+  // origin ---> There is no analog to it in caservicel.py because the Python has name-based argument passing and handles out-of-order arguments.
+  //
+  // See hyperledger::fabric::ca::service::Service
+  //   auto Service::enregister(enrollment::Registration) -> pki::Secret
+  //   auto Service::enregister(...lots...of...indistinguishable...arguments...with...optionals...) -> pki::Secret
+  //
+  // Concept:
+  //
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  // 
+  //   You need a <name> to be your "digital twin" in the system.
+  //   Your <name> is not you, but it is a convenient handle through which the computers can reference your interests in [their] system.
+  //   Your <name> is not intended to be a substitute for your cultural name.
+  //   Your <name> is a number. You are not a free person, you are a number. Get over it. Obey, and you will be free.
+  //
+  //   You <register> a <name> (also called an enrollmentID in some of the documentation; but we do not use that term for a $USER name)
+  //   A previous user, a <registrar> in the <registration> role performs the <register> activity for you.
+  //   From the <register> act, you get back a <secret>.  [[rly?]] Which means that the <registrar> can see your <secret>
+  //
+  // Design:
+  //
+  //   Name
+  //     You can't not have a name.
+  //     You can't have an empty name.
+  //     All the one-letter names were taken by the cool kids long long ago.  You can't have one.
+  //     All the two, three and four-letter names.  Same.
+  //     The system is big; someone else already got your name and your name+birthday and your name+birthday+birthplace.  Chooose another.
+  //     There may be other "reasonablenes" criteria on names as well (not too big, only ASCII (sic))
+  //     The name-granting service may impose other constraints on names as well.
+  //
+  //   Secret
+  //     If a secret is not given then the server will assign one to you.
+  //
+  // Something About ...
+  //
+  //   TODO, default should be equal to registrar
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  //
+  // Usage:
+  //
+  //   auto svc = Service{...somehow...};
+  //   auto rar = Package<ENROLLMENT>{...somehow...}; .............................. the registrar has the <register> role in their certificate
+  //
+  //   auto req = registration::Request{...somehow...};
+  //
+  //   auto reg = svc.enregister(req, rar);
+  //   ...use the registration...
+  //      e.g. to perform your own enrollment.
+  //
+  class Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.Count
+#import hyperledger.Dictionary
+#import hyperledger.Optional
+#import hyperledger.string.Storage
+#import hyperledger.fabric.ca.defaults
+class hyperledger::fabric::ca::registration::Request {
+protected:
+  ~Request() = default;
+public:
+  inline explicit Request(string::Storage name);
+  inline explicit Request(string::Storage name, Optional<string::Storage> secret, Optional<string::Storage> role, Optional<string::Storage> affiliation, Count max_enrollments = defaults::service::MAX_ENROLLMENT_COUNT, Optional<Dictionary> attrs = {});
+  Request(Request &&) = default;
+  auto operator=(Request &&) -> Request & = default;
+  string::Storage name; // was: enrollmentID.
+  Optional<string::Storage> secret;
+  Optional<string::Storage> role;
+  Optional<string::Storage> affiliation;
+  Count max_enrollments{};
+  Optional<Dictionary> attrs;
+};
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.exception.Request
+namespace hyperledger::fabric::ca::registration {
+  Request::Request(string::Storage name)
+    : name{move(name)} {
+      if (name.empty()) {
+        // This is the programmer's error because the programmer (that would be you, dear reader) forgot to check this prior to constructing the Request.
+        throw exception::Request{"name"};
+      }
+    }
+  Request::Request(string::Storage name, Optional<string::Storage> secret, Optional<string::Storage> role, Optional<string::Storage> affiliation, Count max_enrollments, Optional<Dictionary> attrs)
+    : name{move(name)}
+    , secret{move(secret)}
+    , role{move(role)}
+    , affiliation{move(affiliation)}
+    , max_enrollments{max_enrollments}
+    , attrs{move(attrs)} {
+      if (name.empty()) {
+        throw exception::Request{"name"}; // ibidem.
+      }
+    }
+}
+#endiv

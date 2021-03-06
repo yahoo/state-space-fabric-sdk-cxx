@@ -1,0 +1,80 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.crypto.ecies
+#forward hyperledger.fabric.user.packaging.load.Loaded
+namespace hyperledger::fabric::user::packaging::load_implementation::interface {
+  //
+  // Load a user.
+  //
+  // was: create_user(...)
+  // Args:
+  //   name: user's name
+  //   org: org name
+  //   state_store: user state store
+  //   msp_id: msp id for the user
+  //   crypto_suite: the cryptoSuite used to store crypto and key store settings
+  //   key_path: identity private key path
+  //   cert_path: identity public cert path
+  //
+  // Concept:
+  //
+  //   Load the data structure(s) th at represent a user and their enrolled capabilities.
+  //
+  //   This is easier than you might think.  It's a crude slurper.  Fit for a demo.
+  //   It gets slurped out of a file.  Good luck to you.
+  //
+  //   [[TODO]] a more robust and elegant way of storing all the names and secrets and all that.  Now it's merely stored in files, locally.
+  //
+  //   The user model is documented at
+  //   https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#registering-a-new-identity
+  //
+  // Design:
+  //
+  //   not really.
+  //
+  // Usage:
+  //
+  //   #import hyperledger.fabric.user.load
+  //
+  //   auto loaded = load(...somehow...);
+  //   if (good(loaded)) {
+  //     auto user = value(move(loaded));
+  //     ...use the user to do some transaction-like behaviors...
+  //   } else {
+  //     auto ec = error_code(loaded);
+  //     ...complain...
+  //      ...leave...
+  //   }
+  //
+  auto load(Name, Organization, State_Store, Emespeid, file::Path const &key_path, file::Path const &cert_Path, Crypto_Suite = crypto::ecies()) -> Loaded;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.user.packaging.load.Loaded
+#endiv
+#divert <cpp>
+#import hyperledger.error.Code
+#import hyperledger.pki.slurp
+#import hyperledger.fabric.user.error.Code
+#import hyperledger.fabric.user.validate
+#import std.make_unique
+// [[FIXTHIS]] use the tunitas-supplied version
+#import slurp.Failure
+#import openssl.exception.Aspect
+namespace hyperledger::fabric::user::packaging::load_implementation {
+  auto interface::load(Name name, Organization org, State_Store state_store, Emespeid msp_id, file::Path const &key_path, file::Path const &cert_path, Crypto_Suite crypto_suite) -> Loaded try {
+    auto noob = User{move(name), move(org), move(state_store)};
+    // [[REMOVEWHENEVER]] _logger.debug("Create user with {}:{}:{}:{}:{}:{}", name, org, state_store, msp_id, key_path, cert_path);
+    noob.enrollment = ca::Package<ca::ENROLLMENT>{pki::slurp<pki::Secret>(key_path), pki::slurp<pki::Certificate>(cert_path), {}};
+    noob.msp_id = move(msp_id);
+    noob.crypto_suite = "name-of-crypto_suite"s;  // this MUST be the elliptic curve system at this point
+    return {validate(move(noob))};
+  } catch (slurp::Failure const &) {
+    return {error::Code{error::Code::LOAD}};
+  } catch (openssl::exception::Aspect const &) {
+    return {error::Code{error::Code::LOAD}};
+  }
+}
+#endiv

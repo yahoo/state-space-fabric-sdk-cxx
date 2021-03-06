@@ -1,0 +1,74 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::tls::endpoint {
+  //
+  // A TLS endpoint is like an ip::Endpoint but has an optional Certificate Authority (a file) bundle
+  // Descendants only.
+  // Finalized as such within tls::Endpoint, tls::endpoints::Endpoint
+  //
+  // The printed format is not different than for an ip::Endpoint
+  // The Certificate Authority (CA) is used to validate the certificate that *they* offer to us.
+  //
+  // Usage:
+  //
+  //   auto e = Endpoint{"localhost", 80};
+  //   auto const &b = b;
+  //   cerr << format(b);                    ... ADL will find this because of ancestry in ip::Endpoint
+  //   cerr << format(b, Field::CA);         ... ADL will find this because of CA
+  //   cerr << format(b, Field::HOST);       ... ADL will find this because of HOST
+  //   cerr << format(b, Field::PORT);       ... ADL will find this because of HOST
+  //   cerr << format(b, Field::ENDPOINT);   ... ADL will find this because of HOST
+  //   auto s = to_string(b);
+  //
+  class Basis;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.ip.Endpoint
+#import std.filesystem.path
+namespace hyperledger::tls {
+  namespace endpoint {
+    using std::move;
+    using std::swap;
+    inline auto swap(Basis &, Basis &) noexcept -> void;
+  }
+  class endpoint::Basis : public ip::Endpoint {
+    using Ancestor = ip::Endpoint;
+  protected:
+    ~Basis() = default;
+    friend auto swap(Basis &a, Basis &b) noexcept -> void;
+  public:
+    using Filepath = std::filesystem::path;
+    Basis() = default;
+    inline explicit Basis(Host);
+    inline Basis(Host, Port);
+    inline Basis(Host, Filepath);
+    inline Basis(Host, Port, Filepath);
+    std::optional<Filepath> ca; // reasonably: must be valid if true == dotls so we can verify them
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::tls {
+  auto endpoint::swap(Basis &a, Basis &b) noexcept -> void {
+    using Ancestor = Basis::Ancestor;
+    swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
+    swap(a.ca, b.ca);
+  }
+  namespace endpoint {
+    Basis::Basis(Host host) : Ancestor{move(host)} { }
+    Basis::Basis(Host host, Port port) : Ancestor{move(host),move(port)} { }
+    Basis::Basis(Host host, Filepath file)
+      : Ancestor{move(host)}
+      , ca{move(file)}
+    { }
+    Basis::Basis(Host host, Port port, Filepath file)
+      : Ancestor{move(host),move(port)}
+      , ca{move(file)}
+    { }
+  }
+}
+#endiv

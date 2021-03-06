@@ -1,0 +1,127 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::registration {
+  //
+  // The (user) Registration Subservice
+  // Descendants only.
+  // See Service<REGISTRATION> for the final class.
+  //
+  // from caservice.py
+  //    This is a ca server delegate (whatever that means).
+  //
+  // User Life Cycle:
+  //
+  //                         REGISTER
+  //   {UNKNOWN} ------------------------------------------------------------> {REGISTERED}  (but not yet enrolled)
+  //                   enregister(registration::Request) -> Registered
+  //
+  //                         ENROLL
+  //   {REGISTERED} --------------------------------------------------------> {ENROLLED}
+  //                   enroll(enrollment::Request) -> Enrolled
+  //
+  //                         REENROLL
+  //   {ENROLLED} ----------------------------------------------------------> {ENROLLED}
+  //                   reenroll(Enrolled, enrollment::Request) -> Enrolled
+  //
+  // Usage:
+  //
+  //   auto cfg = ca::Configuration<MAIN>{...somehow...};
+  //   auto srv = ca::Service<MAIN>{move(cfg)};
+  //
+  //   auto reg = srv.api<REGISTRATION>();
+  //
+  //   auto registered = reg.register(....arguments...);
+  //
+  struct Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Request.REGISTRATION
+#forward hyperledger.fabric.ca.Package.ENROLLMENT
+#forward hyperledger.fabric.ca.Package.REGISTRATION
+#forward hyperledger.fabric.ca.Service.MAIN
+#import hyperledger.fabric.ca.service.Heavyweight
+class hyperledger::fabric::ca::registration::Service : public service::Heavyweight {
+  using Ancestor = service::Heavyweight;
+protected:
+  using Ancestor::Heavyweight;
+  friend class ca::Service<MAIN>;
+public:
+  //
+  // Register a user in order to receive a secret (an enrollment secret)
+  //
+  //        NULL --------------------> register(...) --------------------> PACKAGE<REGISTERED>
+  // {name, roles, affiliations }                                            pki::Secret
+  // <registrar>
+  //
+  // The <registrar> is an already-enrolled a-priori user whose enrollment you use to register this new user.
+  // There is a special process for acquiring that first magical (administrative) enrollment.
+  //
+  /*
+    Args:
+      enrollmentID (str): enrollmentID ID which will be used for enrollment
+      enrollmentSecret (str): enrollmentSecret Optional enrollment secret to set for the registered user.
+                              If not provided, the server will generate one.
+                              When not including, use a null for this parameter; i.e. do not use "" (an empty string)
+      role (str): Optional type of role for this user.
+                  When not including, use a null for this parameter; i.e. do not use "" (an empty string)
+      affiliation (str):  Affiliation to which this user will be associated
+      maxEnrollments (number): The maximum number of times the user is permitted to enroll
+      attrs (dict):  Array of key/value attributes to assign to the user
+      registrar (Enrollment): The registrar
+    Returns: secret (str): The enrollment secret to use when this user enrolls
+    Raises:
+      RequestException: errors in requests.exceptions
+      ValueError: Failed response, json parse error, args missing
+  */
+  auto enregister(ca::Package<ENROLLMENT> const &registrar, ca::Request<REGISTRATION>) -> ca::Package<REGISTRATION>;
+  // Gak they are all undifferentiated strings, some of which are optional.  Good luck.
+  // If you want reasonable default behavior then use an enrollment::Configuration
+  [[deprecated("instead, prefer register(Package<ENROLLMENT> const &, Request<REGISTRATION>)")]]
+  auto enregister(ca::Package<ENROLLMENT> const &registrar,
+                  string::Storage enrollmentID,
+                  Optional<string::Storage> enrollmentSecret,
+                  Optional<string::Storage> role,
+                  Optional<string::Storage> affiliation,
+                  Count max_enrollments = defaults::service::MAX_ENROLLMENT_COUNT,
+                  Optional<Dictionary> attrs = Optional<Dictionary>{}) -> ca::Package<REGISTRATION>;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.Package.REGISTRATION
+#import hyperledger.http.json.Request
+#import hyperledger.fabric.ca.registration.Request
+#import hyperledger.fabric.ca.protocol.serialize
+namespace hyperledger::fabric::ca::registration {
+  auto Service::enregister(ca::Package<ENROLLMENT> const &registrar, ca::Request<REGISTRATION> request) -> ca::Package<REGISTRATION> {
+#if 1
+    return ca::Package<REGISTRATION>{core.enregister(move(request), registrar)};
+#else
+    auto document = http::json::Request{{{"id", move(request.name)},
+                                         {"max_enrollments", serialize(request.max_enrollments)}}};
+    if (request.affiliation)                        { document.insert({"affiliation", move(*request.affiliation)}); }
+    if (request.secret && !request.secret->empty()) { document.insert({"secret", std:move(*request.secret)}); }
+    if (request.role)                               { document.insert({"type", move(*request.role)}); }
+    if (request.attrs && request.attrs->size())     { document.insert({"attrs", serialize(*request.attrs)}); }
+    return ca::Package<REGISTRATION>{core.enregister(registrar, move(document), move(request))};
+#endif
+  }
+}
+namespace hyperledger::fabric::ca::registration {
+  //
+  // These are deprecated, being syntatic flourishes on top of the "real" API calls
+  // As such, they are outlined so we can easily get rid of them when the time is appropriate.
+  //
+  auto Service::enregister(ca::Package<ENROLLMENT> const &registrar,
+                           string::Storage enrollmentID,
+                           Optional<string::Storage> enrollmentSecret,
+                           Optional<string::Storage> role,
+                           Optional<string::Storage> affiliation,
+                           Count max_enrollments,
+                           Optional<Dictionary> attrs) -> ca::Package<REGISTRATION> {
+    return enregister(registrar, ca::Request<REGISTRATION>{move(enrollmentID), move(enrollmentSecret), move(role), move(affiliation), max_enrollments, move(attrs)});
+  }
+}
+#endiv

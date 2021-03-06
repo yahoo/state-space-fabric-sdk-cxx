@@ -1,0 +1,58 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // There was a problem with the syntax somehow.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   In that floppy-fluid area between strings and crisp typed values.
+  //   The python folk called it ValueError, which was used for signalling every sort of problem.
+  //
+  //   The constructor accepts a name (variable name, parameter name, attribute name).
+  //
+  //   The exception does not carry forward the bogus value.
+  //   The bogus value is left behind (it would have be a string anyway, and could be odious)
+  //
+  // Usage:
+  //
+  //   See the descendants.
+  //   See at least:
+  //     see Empty
+  //     see Missing
+  //     see (Not A)Number
+  //     see (Not An)Identifier
+  //
+  class Syntax;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.exception.Value
+#import hyperledger.string.Storage
+class hyperledger::fabric::ca::protocol::exception::Syntax : public Value {
+  using Ancestor = Value;
+protected:
+  ~Syntax() = default;
+  inline Syntax(string::Storage const &name, string::Storage const &reason);
+private:
+  inline auto format(string::Storage const &name, string::Storage const &reason) -> std::string;
+};
+#endiv
+#divert <ipp>
+#import std.ostringstream
+#import langu.age.q
+namespace hyperledger::fabric::ca::protocol::exception {
+  Syntax::Syntax(string::Storage const &name, string::Storage const &reason)
+    : Ancestor{format(name, reason)}
+  { }
+  auto Syntax::format(string::Storage const &name, string::Storage const &reason) -> std::string {
+    std::ostringstream buf;
+    // The value of parameter <name> is not exhibited
+    buf << "parameter " << langu::age::q(name) << " is " << reason;
+    return buf.str();
+  }
+}
+#endiv

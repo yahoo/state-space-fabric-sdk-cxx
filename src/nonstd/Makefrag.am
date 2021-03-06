@@ -1,0 +1,32 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libwant_nonstd_la = lib/libwant-nonstd.la
+lib_libwant_nonstd_la_LIBADD = $(nothing)
+lib_libwant_nonstd_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libwant_nonstd_la_SOURCES))
+# WATCHOUT - obj/src/nonstd/namespace.cpp <------------ do not add because that would occlude #import nonstd which DOES contain non-trivialities
+# WATCHOUT - obj/src/nonstd/required/namespace.cpp <--- ibidem
+lib_libwant_nonstd_la_SOURCES = \
+  obj/src/nonstd/filesystem/namespace.cpp \
+  obj/src/nonstd/filesystem/dequote.cpp \
+  \
+  obj/src/nonstd/units.Count.cpp \
+  \
+  obj/src/nonstd/required/Outcomable.cpp \
+  obj/src/nonstd/required/Optionable.cpp \
+  obj/src/nonstd/required/constructible.by.Default.cpp \
+  obj/src/nonstd/required/constructible.by.Copy.cpp \
+  obj/src/nonstd/required/constructible.by.Move.cpp \
+  $(end)
+nonstd-objects : $(patsubst %.cpp, %.lo, $(lib_libwant_nonstd_la_SOURCES))
+$(lib_libwant_nonstd_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/nonstd/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libwant_nonstd_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/nonstd/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/nonstd/dependencies.mk

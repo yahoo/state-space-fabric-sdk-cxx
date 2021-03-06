@@ -1,0 +1,30 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::fabric::v0::peer::chaincode {
+  //
+  // The context for the subcommands
+  //   peer chaincode query
+  //   peer chaincode invoke
+   //
+  class Call;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.peer.chaincode.Context
+#import hyperledger.fabric.v0.peers.Contact
+#import hyperledger.string.Storage
+#import hyperledger.Optional
+class hyperledger::fabric::v0::peer::chaincode::Call : public chaincode::Context {
+  using Ancestor = chaincode::Context;
+public:
+  Call() = default;
+  peers::Contact peers;
+  Optional<string::Storage> profile; // a.k.a. --connectionProfile ... something about how to find peers from a local (yaml) file.
+  string::Storage channelID; //         a.k.a. -C, --channelId
+  string::Storage name; //              a.k.a. -n, --name
+  // -c, -ctor is the "constructor"; it is a stringy thingy passed to query(...) and invoke(...)
+};
+#endiv

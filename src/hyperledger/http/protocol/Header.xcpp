@@ -1,0 +1,39 @@
+x// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::protocol {
+  //
+  // An individual header as a (string) name-value pair.
+  //
+  // Usage:
+  //
+  //   <rly?>
+  //
+  class Header;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.string.Storage
+#import std.pair
+#forward hyperledger.http.protocol.Headers
+namespace hyperledger::http {
+  class protocol::Header : protected std::pair<string::Storage, string::Storage> {
+    using Ancestor = std::pair<string::Storage, string::Storage>;
+    friend class protocol::Headers;
+  public:
+    Header() = default;
+    using Ancestor::pair;
+    using Name = string::Storage;
+    using Value = string::Storage;
+    inline auto name() const -> Name const &;
+    inline auto value() const -> Value const &;
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::http::protocol {
+  auto Header::name() const -> string::Storage const & { return first; }
+  auto Header::value() const -> string::Storage const & { return second; }
+}
+#endiv

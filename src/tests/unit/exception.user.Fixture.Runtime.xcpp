@@ -1,0 +1,14 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#include <hpp/tests.unit.exception.user.Fixture>
+#endiv
+#divert <hpp>
+#import tests.unit.exception.Generic_Runtime
+#import hyperledger.fabric.user.exception.Aspect
+namespace tests::unit::exception::user::fixture {
+  class Fixture::Runtime : public Generic_Runtime<library::Aspect> { };
+}
+#endiv

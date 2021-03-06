@@ -1,0 +1,37 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Enumeration
+namespace hyperledger::fabric::ca::traits::name {
+  template<required::Enumeration> struct Transport;
+  template<> struct Transport<FILES>;
+  template<> struct Transport<HTTP>;
+  template<> struct Transport<SOCKET>;
+  template<> struct Transport<SQLITE>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::fabric::ca::traits {
+  template<required::Enumeration> struct name::Transport : public False { };
+  namespace name {
+    template<> struct Transport<FILES>  : public True<FILES> { };
+    template<> struct Transport<HTTP>   : public True<HTTP> { };
+    template<> struct Transport<SOCKET> : public True<SOCKET> { };
+    template<> struct Transport<SQLITE> : public True<SQLITE> { };
+  }
+}
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.required.name.Transport
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    // Because these two are defined independently of each other ... are they consistent?
+    static_assert(traits::name::Transport<FILES>::value == required::name::Transport<FILES>);
+    static_assert(traits::name::Transport<HTTP>::value == required::name::Transport<HTTP>);
+    static_assert(traits::name::Transport<SOCKET>::value == required::name::Transport<SOCKET>);
+    static_assert(traits::name::Transport<SQLITE>::value == required::name::Transport<SQLITE>);
+  }
+}
+#endiv

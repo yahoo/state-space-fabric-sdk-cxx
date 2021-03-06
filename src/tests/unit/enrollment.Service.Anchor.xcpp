@@ -1,0 +1,27 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#include <hpp/tests.unit.enrollment.Service>
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.Service
+struct tests::unit::enrollment::Service::Anchor {
+  Anchor();
+  auto generate() -> ca::Service<ca::ENROLLMENT>;
+protected:
+  ca::Service<ca::MAIN> anchored;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.Configuration
+namespace tests::unit::enrollment {
+  Service::Anchor::Anchor()
+    : anchored{ca::Configuration<ca::PASS>{}, ca::Configuration<ca::MAIN>{}, ca::Configuration<ca::DRIVER>{}, ca::Configuration<ca::FILES>{}}
+  { }
+  auto Service::Anchor::generate() -> ca::Service<ca::ENROLLMENT> {
+    return anchored.api<ca::ENROLLMENT>();
+  }
+}
+#endiv

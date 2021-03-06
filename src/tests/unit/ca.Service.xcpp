@@ -1,0 +1,16 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import tests.unit.ca.Service.template
+#import tests.unit.ca.Service.AFFILIATION
+#import tests.unit.ca.Service.CERTIFICATE
+#import tests.unit.ca.Service.ENROLLMENT
+#import tests.unit.ca.Service.IDENTITY
+#import tests.unit.ca.Service.INFORMATION
+#import tests.unit.ca.Service.MAIN
+#import tests.unit.ca.Service.REGISTRATION
+#import tests.unit.ca.Service.REVOCATION
+#import tests.unit.ca.Service.REVOCATIONS
+#endiv

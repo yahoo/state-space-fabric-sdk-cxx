@@ -1,0 +1,26 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.grpc.Channel
+#import hyperledger.grpc.Endpoint
+#import hyperledger.grpc.Options
+#import hyperledger.pki.Secret
+#import std.optional
+namespace hyperledger::grpc {
+  //
+  // Something about secure and insecure channel creation.
+  //
+  auto insecure_channel(Endpoint const &, std::optional<Options> const &) -> Channel;
+  auto secure_channel(Endpoint const &, pki::Secret const &, std::optional<Options> const &) -> Channel;
+}
+#endiv
+#divert <cpp>
+#import hyperledger.exception.Unimplemented
+auto hyperledger::grpc::insecure_channel(Endpoint const &, std::optional<Options> const &) -> Channel {
+  throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+}
+auto hyperledger::grpc::secure_channel(Endpoint const &, pki::Secret const &, std::optional<Options> const &) -> Channel {
+  throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+}
+#endiv

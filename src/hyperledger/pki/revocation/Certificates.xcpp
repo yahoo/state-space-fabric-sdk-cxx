@@ -1,0 +1,55 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki::revocation {
+  //
+  // A set of revoked certificates
+  // with the certificates supplied in complete form
+  //
+  // Usage:
+  //
+  //   come on, it's a set (an unordered container)
+  //
+  class Certificates;
+}
+#endiv
+#divert <hpp>
+#import std.set
+#import std.string
+#import hyperledger.pki.Certificate
+class hyperledger::pki::revocation::Certificates : protected std::set<pki::Certificate> {
+  using Ancestor = std::set<pki::Certificate>;
+public:
+  Certificates() = default;
+  Certificates(Certificates const &) = delete;
+  auto operator=(Certificates const &) -> Certificates & = delete;
+  Certificates(Certificates &&) = default;
+  auto operator=(Certificates &&) -> Certificates & = default;
+  using Ancestor::empty;
+  using Ancestor::size;
+  using Iterator = Ancestor::iterator;
+  using Const_Iterator = Ancestor::const_iterator;
+  using Ancestor::begin;
+  using Ancestor::end;
+  // [[FIXTHIS]] there needs to be a 'find' and a 'contains' operation
+  // [[FIXTHIS]] there needs to be an 'insert' and a 'erase'
+};
+#endiv
+#divert <cpp>
+#warning WRITETHIS ... and whatever a Subject Key Indicator turns out to be
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+#import nonstd.required.Outcomable
+  namespace hyperledger::pki::revocation {
+  static_assert(std::is_default_constructible_v<Certificates>);
+  static_assert(!std::is_copy_constructible_v<Certificates>);
+  static_assert(std::is_move_constructible_v<Certificates>);
+  static_assert(!std::is_copy_assignable_v<Certificates>);
+  static_assert(std::is_move_assignable_v<Certificates>);
+  static_assert(nonstd::required::Outcomable<Certificates>);
+}
+#endiv

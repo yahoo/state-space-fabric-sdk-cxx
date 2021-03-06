@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Service
+#forward hyperledger.fabric.ca.Service
+#import hyperledger.fabric.ca.traits.Service
+#include <hpp/hyperledger.fabric.ca.traits.Service>
+namespace hyperledger::fabric::ca::required {
+  //
+  // Is this Service<NAME> in the universe of Services, as named??
+  //
+  // Design:
+  //
+  //   The concept condition MUST be testable at <fpp> without knowing the complete type of Service<NAME>
+  //   The concept condition MUST align if-and-only-if with name::Service<NAME> which is used in the template declaration.
+  //
+  // Contrast:
+  //
+  //   required::Service<SERVICE> ..................... required::Service<ca::Service<MAIN>>;
+  //   required::name::Service<NAME> .................. required::name::Service<MAIN>;
+  //
+  // Usage:
+  //
+  //   template<required::Service SERVICE> auto get_by_object() -> SERVICE;
+  //   template<required::name::Service NAME> auto get_by_name() -> ca::Service<NAME>;
+  //
+  namespace service {
+    template<typename SERVICE> concept bool Service = requires(SERVICE) {
+      typename traits::template Service<SERVICE>::Name;
+      requires traits::template Service<SERVICE>::value;
+      requires required::name::Service<typename traits::template Service<SERVICE>::Name>;
+    };
+  }
+  using service::Service;
+}
+#endiv
+#divert <cpp>
+// Of course this is test code
+#import hyperledger.fabric.ca.Service
+namespace {
+  namespace tests {
+    using namespace hyperledger::fabric::ca;
+    namespace required = hyperledger::fabric::ca::required;
+    static_assert(required::Service<Service<AFFILIATION>>);
+    static_assert(required::Service<Service<CERTIFICATE>>);
+    static_assert(required::Service<Service<ENROLLMENT>>);
+    static_assert(required::Service<Service<IDENTITY>>);
+    static_assert(required::Service<Service<INFORMATION>>);
+    static_assert(required::Service<Service<MAIN>>);
+    static_assert(required::Service<Service<REGISTRATION>>);
+    static_assert(required::Service<Service<REVOCATION>>);
+    static_assert(required::Service<Service<REVOCATIONS>>);
+  }
+}
+#endiv

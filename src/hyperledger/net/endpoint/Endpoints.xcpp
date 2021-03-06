@@ -1,0 +1,62 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+namespace hyperledger::net::endpoint {
+  //
+  // Generically, a series of endpoints.
+  // Some calls allow for a series of endpoints to be used.
+  //
+  // An implementation detail.
+  //  //
+  // Usage:
+  //
+  //   auto es = Endpoints{{"localhost", 80},{"localhost",8080},{"localhost":8088}};
+  //   cerr << format(es);
+  //   auto s = std::to_string(es);
+  //
+  template<typename ENDPOINT> class Endpoints;
+}
+#endiv
+#divert <hpp>
+#import std.list
+#import std.initializer_list
+#import hyperledger.string.Storage
+namespace hyperledger::net {
+  namespace endpoint {
+    using std::move;
+    using std::swap;
+    template<typename ENDPOINT> inline auto to_string(Endpoints<ENDPOINT> const &) -> string::Storage;
+  }
+  template<typename ENDPOINT> class endpoint::Endpoints : protected std::list<ENDPOINT> {
+    using Ancestor = std::list<ENDPOINT>;
+  public:
+    using Value = ENDPOINT; //     New School
+    using Initializer = std::initializer_list<Value>;
+    using Ancestor::value_type; // old_school
+    Endpoints() = default;
+    using Ancestor::list; // the rest of the constructors
+    using Ancestor::empty;
+    using Ancestor::size;
+    using Ancestor::begin;
+    using Ancestor::end;
+    using Ancestor::push_back;
+    using Ancestor::push_front;
+    // omitted, all the erasure and searching
+  protected:
+    friend auto swap(Endpoints &a, Endpoints &b) noexcept -> void { swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b)); }
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.net.endpoint.Formatter
+#import std.ostringstream
+namespace hyperledger::net {
+  template<typename ENDPOINT> auto endpoint::to_string(Endpoints<ENDPOINT> const &es) -> string::Storage {
+    std::ostringstream buf;
+    buf << format(es);
+    return buf.str();
+  }
+}
+#endiv

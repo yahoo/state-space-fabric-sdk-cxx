@@ -1,0 +1,48 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::exception {
+  //
+  // An exceptional impropriety has been observed in the Enrollment; there is no service
+  //
+  // Concept:
+  //
+  //   It is a special variant of "invalid argument".
+  //   There is no service for the Enrollment ... that certain other constructor was used
+  //
+  //   It is not clear that th is is a well-posed exception (what does it mean?)
+  //
+  // Usage:
+  //
+  //   throw exception::Service{};
+  //
+  struct Service;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.exception.Aspects // Aspects (plural) not Aspect (singular)
+#import std.invalid_argument
+class hyperledger::fabric::ca::exception::Service : public Aspects,
+                                                    public std::invalid_argument {
+  struct Ancestors {
+    using Aspects = ca::exception::Aspects;
+    using Exception = std::invalid_argument;
+  };
+public:
+  inline Service();
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::exception {
+  Service::Service()
+    : Ancestors::Exception{"no service"}
+  { }
+}
+#endiv
+#divert <cpp>
+  namespace hyperledger::fabric::ca::exception {
+  auto Service::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+}
+#endiv

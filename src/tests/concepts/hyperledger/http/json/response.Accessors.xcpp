@@ -1,0 +1,13 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <tpp>
+#import hyperledger.http.json.Response
+#import tests.concepts.hyperledger.http.protocol.response.Accessors
+namespace tests::concepts::hyperledger::http::json::response {
+  template<typename RESPONSE> concept bool Accessors = requires(RESPONSE const &response) {
+    requires protocol::response::Accessors<RESPONSE>;
+    { value(response) };
+  };
+}
+#endiv

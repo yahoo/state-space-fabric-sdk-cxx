@@ -1,0 +1,88 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol {
+  //
+  // A request
+  //
+  // Concept:
+  //
+  //   Could be a "dictionary" of arbitrary key-value-pairs.
+  //   But we know just what we want to say to the server.
+  //
+  //   The application-level authorization token is established and managed separately.
+  //   The tls-level triple (tls::Client) is established and managed separately.
+  //
+  // Counfounding Rhyming Similarities:
+  //
+  //   The outbound request is themed as a Dictionary
+  //   The returning response is themed as a JSON Object which will be subject to further inspection & processing.
+  //
+  // Design:
+  //
+  //   The protocol is clear.  There are some fields that we know about.
+  //   There are many other fields that we do not know about.
+  //   However, most of it is unstructured bag-of-name-value-pairs encoded as JavaScript (good luck!)
+  //
+  //   The serialization scheme is separate
+  //
+  // Usage:
+  //
+  //   auto req = Request{tenant, {...pairwise_dictionar5y_initializer_list...}
+  //
+  struct Request;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.http.dictionary.Request
+#import hyperledger.fabric.ca.Tenant
+#import std.swap
+namespace hyperledger::fabric::ca {
+  namespace protocol {
+    using std::move;
+    using std::swap;
+    inline auto swap(Request &, Request &) noexcept -> void;
+  }
+  struct protocol::Request : public http::dictionary::Request {
+    using Ancestor = http::dictionary::Request;
+  public:
+    inline explicit Request(Optional<string::Storage> tenant);
+    inline explicit Request(Optional<string::Storage> tenant, Initializer);
+    // [[VALIDATE]] These are fields because they are on every call up to the server.
+    Tenant tenant;
+#if 0 // [[REMOVETHIS]] it does not belong here anyway
+    inline explicit Request(string::Storage name, Optional<string::Storage> caname);
+    Optional<string::Storage> caname;
+#endif
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca {
+  auto protocol::swap(Request &a, Request &b) noexcept -> void {
+    Request::Ancestor &aa{a}, &bb{b};
+    // Must qualify here because otherwise the this->swap(...) in the ancestor has precedence
+    swap(a.tenant, b.tenant);
+    http::dictionary::swap(aa, bb);
+#if 0
+    std::swap(a.caname, b.caname);
+#endif
+  }
+  namespace protocol {
+    Request::Request(Optional<string::Storage> tenant)
+      : tenant{move(tenant)}
+    { }
+    Request::Request(Optional<string::Storage> tenant, Initializer initializer)
+      : Ancestor{initializer}
+      , tenant{move(tenant)}
+    { }
+#if 0 //[[REMOVETHIS]]
+    Request::Request(string::Storage name, Optional<string::Storage> caname)
+      : name{move(name)}
+      , caname{move(caname)}
+    { }
+#endif
+  }
+}
+#endiv

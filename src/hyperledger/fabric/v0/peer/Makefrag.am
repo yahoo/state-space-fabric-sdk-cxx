@@ -1,0 +1,20 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_fabric_v0_peer_SUBSOURCES = \
+  obj/src/hyperledger/fabric/v0/peer/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/peer/Context.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/Call.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/call.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/Context.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/Function.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/traits/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/traits/Is_Result.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/required/namespace.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/required/Result.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/query.cpp \
+  obj/src/hyperledger/fabric/v0/peer/chaincode/invoke.cpp \
+  $(end)
+peer-objects : $(patsubst %.cpp, %.lo, $(obj_src_hyperledger_fabric_v0_peer_SUBSOURCES))

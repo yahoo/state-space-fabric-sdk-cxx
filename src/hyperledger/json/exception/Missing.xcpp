@@ -1,0 +1,66 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::json::exception {
+  //
+  // A lookup in a JSON Object has failed to find the key.
+  //
+  // Concept:
+  //
+  //   There was no other way to signal the error
+  //   There was another API call nearby that returned a variant or optional as error-or-value
+  //
+  // Design:
+  //
+  //   Accept the key name as a string::Value.
+  //   Accept the (defaultable) reason as a string::Storage as is the usual convention.
+  //
+  // Usage:
+  //
+  //   try {
+  //      auto object = json::Object{...somehow...}
+  //      auto find...fails...
+  //
+  //   auto description = ...somehow...;
+  //
+  //   throw exception::Missing{key, description};
+  //
+  namespace missing {
+    struct Hyperledger;
+    struct Jason;  // that certain Argonaut
+    struct Missing;
+  }
+  using missing::Missing;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.json.exception.Aspect
+#import hyperledger.string.Storage
+#import std.runtime_error
+namespace hyperledger::json::exception {
+  // [[ICK!]] there is no way to shut up this warning except to design it out.
+  // [[ICK!]] src/hyperledger/json/exception/Missing.xcpp:37:37: warning: direct base ‘hyperledger::exception::Aspect’ inaccessible in ‘hyperledger::json::exception::Missing’ due to ambiguity
+  struct missing::Hyperledger : public hyperledger::exception::Aspect { };
+  struct missing::Jason : public json::exception::Aspect { };
+  class missing::Missing : public Hyperledger,
+                           public Jason,
+                           public std::runtime_error {
+    struct Ancestors {
+      struct Aspects {
+        // see the [[ICK!]] above
+        using Hyperledger = missing::Hyperledger;
+        using Jason = missing::Jason;
+      };
+      using Exception = std::runtime_error;
+    };
+  public:
+    using Ancestors::Exception::runtime_error;
+    auto what() const noexcept -> char const * override;
+  };
+}
+#endiv
+#divert <cpp>
+auto hyperledger::json::exception::missing::Missing::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+#endiv

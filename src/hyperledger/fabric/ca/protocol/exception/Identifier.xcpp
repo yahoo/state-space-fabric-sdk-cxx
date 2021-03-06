@@ -1,0 +1,41 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  //
+  // A non-identifier syntax was discovered.
+  //
+  // Concept:
+  //
+  //   "not an" identifier
+  //   The python folk called it ValueError
+  //
+  //   Complain that the field is inappropriately formed.
+  //   The exception does not carry forward the badly-formed information. [[TODO]] should we?
+  //   The exception only carries forward the field name.
+  //
+  // Usage:
+  //
+  //   auto name = ...somehow...;    e.g. "affiliation"
+  //   throw exception::Identifier{name};
+  //
+  class [[nodiscard]] Identifier;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.exception.Syntax
+#import hyperledger.string.Storage
+class hyperledger::fabric::ca::protocol::exception::Identifier final : public Syntax {
+  using Ancestor = Syntax;
+public:
+  inline explicit Identifier(string::Storage const &name);
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::fabric::ca::protocol::exception {
+  Identifier::Identifier(string::Storage const &name)
+    : Ancestor{name, "not an identifier"}
+  { }
+}
+#endiv

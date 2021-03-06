@@ -1,0 +1,55 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import nonstd.required
+namespace tests::nonstd::required {
+  namespace [[eponymous]] fixture {
+    class Fixture;
+    namespace library = ::nonstd::required;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::nonstd::required::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_Outcomeable() -> void; // sic
+  auto test_Outcomable() -> void;
+  auto test_Optionable() -> void;
+  static auto suite() -> cppunit::Test *;
+protected:
+  struct Not_Default_Constructible {
+    Not_Default_Constructible(int);
+  };
+};
+#endiv
+#divert <cpp>
+#import nonstd.required.Outcomable
+#import nonstd.required.Optionable
+namespace tests::nonstd::required::fixture {
+  auto Fixture::test_Outcomeable() -> void {
+    test_Outcomable();
+  }
+  auto Fixture::test_Outcomable() -> void {
+    static_assert(library::Outcomable<int>);
+    static_assert(not library::Outcomable<Not_Default_Constructible>);
+  }
+  auto Fixture::test_Optionable() -> void {
+    static_assert(library::Optionable<int>);
+    static_assert(not library::Optionable<Not_Default_Constructible>);
+  }
+}
+#import rigging.suite.io
+auto tests::nonstd::required::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"required"};
+  series << call("Outcomeable(ick)", &Fixture::test_Outcomeable)
+         << call("Outcomable(prefer)", &Fixture::test_Outcomable)
+         << call("Optionable", &Fixture::test_Optionable)
+         << END;
+  return finalize(series);
+}
+#endiv

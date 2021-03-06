@@ -1,0 +1,62 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.pki.required.Slurpable
+#forward hyperledger.pki.packaging.slurp.Loaded
+#import hyperledger.Returning
+#import hyperledger.file.Path
+namespace hyperledger::pki {
+  //
+  // Slurp an object from the pki world...
+  // These will, of course, be x509 objects.
+  // Specializations only.
+  //
+  // Design:
+  //
+  //   Throws on failure to slurp.
+  //   Returns an Outcome with an error::Code on failure to slurp.
+  //
+  // [[throwing]]
+  //
+  // Usage:
+  //
+  //   try {
+  //     auto some_filepath_somehow = file::Path{...somehow...};
+  //     ...
+  //     auto thing = slurp<THING>(some_filepath_somehow);
+  //     ...use the thing directly...
+  //     ...
+  //   } catch (exception::System const &) { ... but also hyperledger::exception::Aspect could work ...
+  //     ... that was bad...
+  //   }
+  //
+  template<required::Slurpable RESULT> auto slurp(file::Path const &filepath) -> RESULT;
+  //
+  // Design:
+  //
+  //   Returns an Outcome<RESULT>
+  //
+  // [[returning]]
+  //
+  // Usage:
+  //
+  //   auto some_filepath_somehow = file::Path{...somehow...};
+  //   ...
+  //   auto slurped = slurp<THING>(some_filepath_somehow);
+  //   if (ok(slurped)) {
+  //      auto thing = value(move(slurped));
+  //      ... use the thing ...
+  //   } else {
+  //      ... that was bad ...
+  //      auto ec = error_code(slurped);
+  //      cerr << "badness " << ec.message();
+  //   }
+  //
+  template<required::Slurpable RESULT> auto slurp(Returning returning, file::Path const &filepath) -> packaging::slurp::Loaded<RESULT>;
+}
+#endiv
+#divert <ipp>
+// All specializations will need these
+#import hyperledger.pki.packaging.slurp.load
+#endiv

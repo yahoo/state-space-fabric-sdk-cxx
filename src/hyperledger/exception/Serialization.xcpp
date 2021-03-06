@@ -1,0 +1,42 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::exception {
+  //
+  // Declare that there was "some problem" with the serialization system.
+  // For example, there was no way to convert the data structure to or from JSON.
+  // This was called IOError in the python.
+  //
+  // Usage:
+  //
+  //   throw Serialization{"Cannot serialize user 'root' because 'reasons'"};
+  //
+  class Serialization;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import std.runtime_error
+class hyperledger::exception::Serialization : public Aspect, public std::runtime_error {
+  struct Ancestors {
+    using Aspect = hyperledger::exception::Aspect;
+    using Exception = std::runtime_error;
+  };
+public:
+  inline explicit Serialization(std::string const &);
+  auto what() const noexcept -> char const * override;
+};
+#endiv
+#divert <ipp>
+namespace hyperledger::exception {
+  Serialization::Serialization(std::string const &reason)
+    : Ancestors::Exception{reason}
+  { }
+}
+#endiv
+#divert <cpp>
+auto hyperledger::exception::Serialization::what() const noexcept -> char const * {
+  return Ancestors::Exception::what();
+}
+#endiv

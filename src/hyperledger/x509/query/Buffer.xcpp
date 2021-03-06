@@ -1,0 +1,56 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.required.Octet
+#import std.byte // because this is frequently the octet
+namespace hyperledger::x509::query {
+  //
+  // A buffer, with a limit, for the query
+  //
+  // Design:
+  //
+  //   The octet is meaningfully either 'char' 'byte'
+  //
+  //   [[TODO,FIXTHIS]] make the buffer actually respect the declared limit (capacity).
+  //   
+  // Usage:
+  //
+  //   Buffer<COMMON_NAME>
+  //   Buffer<SERIAL>
+  //   Buffer<AUTHORITY_KEY_IDENTIFIER>
+  //   ...and so on...
+  //
+  using std::byte;
+  template<required::Octet OCTET, unsigned MAXIMUM_LENGTH> struct Buffer;
+}
+#endiv
+#divert <hpp>
+#import std.vector
+#import std.byte
+#import std.size_t
+#import nonstd.span
+namespace hyperledger::x509 {
+  template<required::Octet OCTET, unsigned N> class query::Buffer : public std::vector<OCTET> {
+    using Ancestor = std::vector<OCTET>;
+    inline static std::size_t const CAPACITY = N;
+  public:
+    Buffer() = default;
+    using Ancestor::vector;
+    inline explicit Buffer(Ancestor &&a);
+    inline explicit Buffer(Ancestor const &a);
+    // New School
+    using Value = OCTET;
+    // old_school (is visible by default from the inheritance)
+    inline constexpr auto capacity() const -> std::size_t { return CAPACITY; }
+    inline auto span() const -> nonstd::span<Value>;
+    // [[FIXTHIS]] amke push_back(...) throw an exception if the capacity is exceeded
+  };
+}
+#endiv
+#divert <ipp>
+namespace hyperledger::x509::query {
+  template<required::Octet O, unsigned N> Buffer<O,N>::Buffer(Ancestor &&a) : Ancestor{forward<Ancestor>(a)} { }
+  template<required::Octet O, unsigned N> Buffer<O,N>::Buffer(Ancestor const &a) : Ancestor{a} { }
+}
+#endiv

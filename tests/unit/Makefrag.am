@@ -1,3 +1,8 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-user-sdk-c++/blob/master/LICENSE for terms.
+tests_unit_XFAIL_TESTS = 
 tests_unit_TESTS = \
   tests/unit/list.test \
   \
@@ -8,11 +13,9 @@ tests_unit_TESTS = \
   tests/unit/orderer.test \
   tests/unit/peer.test \
   tests/unit/peers.test \
-  tests/unit/pki.test \
   tests/unit/run.test \
   tests/unit/southside.test \
   tests/unit/tls.test \
-  tests/unit/want.test \
   \
   tests/unit/all.test \
   $(end)

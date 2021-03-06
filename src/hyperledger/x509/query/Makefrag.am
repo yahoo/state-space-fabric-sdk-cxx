@@ -1,0 +1,26 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+obj_src_hyperledger_x509_query_SUBSOURCES = \
+  obj/src/hyperledger/x509/query/namespace.cpp \
+  obj/src/hyperledger/x509/query/Buffer.cpp \
+  \
+  obj/src/hyperledger/x509/query/Query.template.cpp \
+  obj/src/hyperledger/x509/query/Query.COMMON_NAME.cpp \
+  obj/src/hyperledger/x509/query/Query.AUTHORITY_KEY_IDENTIFIER.cpp \
+  obj/src/hyperledger/x509/query/Query.SUBJECT_KEY_IDENTIFIER.cpp \
+  obj/src/hyperledger/x509/query/Query.SERIAL.cpp \
+  obj/src/hyperledger/x509/query/Query.REVOKED.cpp \
+  obj/src/hyperledger/x509/query/Query.EXPIRES.cpp \
+  obj/src/hyperledger/x509/query/Query.Optional.time.Point.cpp \
+  obj/src/hyperledger/x509/query/Query.cpp \
+  \
+  obj/src/hyperledger/x509/query/traits/namespace.cpp \
+  obj/src/hyperledger/x509/query/traits/name.Query.cpp \
+  obj/src/hyperledger/x509/query/traits/Query.cpp \
+  \
+  obj/src/hyperledger/x509/query/required/namespace.cpp \
+  obj/src/hyperledger/x509/query/required/name.Query.cpp \
+  obj/src/hyperledger/x509/query/required/Query.cpp \
+  $(end)

@@ -1,0 +1,47 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.runtime.Management
+namespace hyperledger::runtime {
+  inline namespace constants { }
+  namespace constants {
+    //
+    // Some project-wide constants for The Hyperledger Projects (all of them).
+    //
+    // Concept
+    //
+    //   Make it easy to have template specializations that are
+    //   READONLY or READWRITE
+    //   MANAGED or BORROWD
+    //   CONSTIE or MUTABLE.
+    //
+    // Usage:
+    //
+    //   #import hyperledger.runtime.constants
+    //   using hyperledger::runtime::constants;
+    //
+    //   template<runtime::Management> struct Something;
+    //   template<> struct Something<RO>;
+    //   template<> struct Something<RW>;
+    //
+    //   auto ro = RO;
+    //   auto rw = RW;
+    //
+    inline constexpr auto RO = Management{Ownership::BORROWED, Mutability::CONSTIE};
+    inline constexpr auto RW = Management{Ownership::MANAGED, Mutability::MUTABLE};
+    //
+    // Make it easy to reference these at namespace hyperledger scope
+    //
+#if 10 <= __GNUC__
+    using enum Ownership;
+    using enum Mutability;
+#else
+    inline constexpr auto BORROWED = Ownership::BORROWED;
+    inline constexpr auto MANAGED = Ownership::MANAGED;
+    inline constexpr auto CONSTIE = Mutability::CONSTIE;
+    inline constexpr auto MUTABLE = Mutability::MUTABLE;
+#endif
+  }
+}
+#endiv

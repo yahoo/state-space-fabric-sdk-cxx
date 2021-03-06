@@ -1,0 +1,26 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.fabric.ca.protocol.serialize
+#forward hyperledger.fabric.ca.identity.Query
+#forward hyperledger.string.Storage
+namespace hyperledger::fabric::ca::identity {
+  //
+  // Just what it says on the label (serialize some stuff).
+  //
+  // was: 'encode' in the Python.
+  //
+  // We prefer to call this (serialize(...)
+  //
+  using ca::protocol::serialize;
+  inline auto serialize(Query const &) -> string::Storage;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.fabric.ca.identity.Query
+#import hyperledger.string.Storage
+namespace hyperledger::fabric::ca {
+  auto identity::serialize(Query const &que) -> string::Storage { return encode(que); }
+}
+#endiv

@@ -1,0 +1,90 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::pki {
+  //
+  // A (single) certificate; an x509-type certificate
+  //
+  // Concept:
+  //
+  //   Is usable in Outcome<Certificate>; i.e. required::Outcomeable<Certificates>
+  //   It is write once at construction, and read only.
+  //
+  // Design:
+  //
+  //   Just wrap it.
+  //
+  //
+  class Certificate;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.pki.from.Certificate
+#import hyperledger.pki.packaging.slurp.load.template
+#import hyperledger.string.Storage
+#forward hyperledger.x509.Name
+#forward hyperledger.x509.Constraints
+#import openssl.x509.Crt
+namespace hyperledger {
+  namespace pki {
+    using std::move;
+    using std::swap;
+    inline auto swap(Certificate &, Certificate &) noexcept -> void;
+    inline auto to_string(Certificate const &) -> string::Storage;
+  }
+  class pki::Certificate {
+    using Crt = openssl::x509::Crt;
+    friend auto pki::from<Certificate>(std::vector<std::byte> const &) -> Certificate;
+    friend auto pki::packaging::slurp::load<Certificate, Crt>(file::Path const &) -> Certificate;
+    friend auto pki::packaging::slurp::load<Certificate, Crt>(Returning, file::Path const &) -> Loaded<Certificate>;
+    friend auto to_string(Certificate const &) -> string::Storage;
+    friend auto swap(Certificate &, Certificate &) noexcept -> void;
+    inline explicit Certificate(Crt);
+  public:
+    Certificate() = default; // needed to allow Certificate to be used in Outcome<Certificate>
+    Certificate(Certificate const &) = delete;
+    auto operator=(Certificate const &) -> Certificate & = delete;
+    Certificate(Certificate &&) = default;
+    auto operator=(Certificate &&) -> Certificate & = default;
+    using Subject = x509::Name<RO>;
+    inline auto subject() const -> Subject;
+    using Constraints = x509::Constraints<RO>;
+    inline auto constraints() const -> Constraints;
+  private:
+    Crt crt;
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.x509.Name
+#import hyperledger.x509.Constraints
+#import openssl.pem.to_string
+namespace hyperledger {
+  auto pki::swap(Certificate &a, Certificate &b) noexcept -> void { swap(a.crt, b.crt); }
+  auto pki::to_string(Certificate const &certificate) -> string::Storage { return openssl::pem::to_string(certificate.crt); }
+  namespace pki {
+    Certificate::Certificate(Crt crt)  : crt{move(crt)}  { }
+    auto Certificate::subject() const -> Subject { return Subject{crt.get_subject_name()}; }
+    auto Certificate::constraints() const -> Constraints { return Constraints{crt.get_extensions()}; }
+  }
+}
+#endiv
+#divert <cpp>
+#warning WRITETHIS ... is not this just the same as openssl::x509::Crt
+#import std.is_default_constructible
+#import std.is_copy_constructible
+#import std.is_move_constructible
+#import std.is_copy_assignable
+#import std.is_move_assignable
+#import nonstd.required.Outcomable
+namespace hyperledger::pki {
+  // This is NOT std::semiregular<Certificate>
+  static_assert(std::is_default_constructible_v<Certificate>);
+  static_assert(!std::is_copy_constructible_v<Certificate>);
+  static_assert(std::is_move_constructible_v<Certificate>);
+  static_assert(!std::is_copy_assignable_v<Certificate>);
+  static_assert(std::is_move_assignable_v<Certificate>);
+  static_assert(nonstd::required::Outcomable<Certificate>);
+}
+#endiv

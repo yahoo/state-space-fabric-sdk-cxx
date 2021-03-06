@@ -1,0 +1,152 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::crypto::number {
+  //
+  // Something about a big number.
+  //
+  // Design:
+  //
+  //   Necessarily follows the design of gmp++
+  //   The expressions return an unspecified exprssion type.
+  //   Lazy evaluation is used to defer evaluation until assignment.
+  //
+  //   <quote>
+  //     Results of operators and functions are instances of __gmp_expr<T, U>.
+  //     T determines the numerical type of the expression: it can be either mpz_t, mpq_t, or mpf_t.
+  //     When the arguments of a binary expression have different numerical types, __gmp_resolve_expr is used to determine the "larger" type.
+  //     U is either __gmp_unary_expr<V, Op> or __gmp_binary_expr<V, W, Op>, where V and W are the arguments' types.
+  //     They can in turn be expressions, thus allowing to build compound expressions to any degree of complexity.
+  //     Op is a function object that must have an eval() method accepting appropriate arguments.
+  //     Actual evaluation of a __gmp_expr<T, U> object is done when it gets assigned to an mp*_class
+  //     ("lazy" evaluation): this is done by calling its eval() method. */
+  //   </quote>
+  //
+  // Usage:
+  //
+  //   auto n0 = Number{0};
+  //   auto n1 = Number{1};
+  //   auto n2a = n1 + n0;
+  //   auto n2b = n1 * n0;
+  //
+  class Number;
+}
+#endiv
+#divert <hpp>
+#include <gmpxx.h>
+namespace hyperledger::crypto {
+  namespace number {
+    using std::move;
+    using std::swap;
+    inline auto swap(Number &, Number &) noexcept -> void;
+  }
+  class number::Number {
+    template<typename UNEVALUATED> using Expression = __gmp_expr<mpz_t, UNEVALUATED>;
+  public:
+    Number() = default;
+    inline explicit Number(unsigned char);
+    inline explicit Number(int short unsigned);
+    inline explicit Number(int unsigned);
+    inline explicit Number(int long unsigned);
+    inline explicit Number(int long long unsigned);
+    // no signed sense at all
+    Number(int long signed) = delete;
+    Number(int long long signed) = delete;
+    Number(Number const &) = default;
+    auto operator=(Number const &) -> Number & = default; // because there are other operator op=(...)
+    Number(Number &&) = default;
+    template<typename UNEVALUATED> auto operator=(Expression<UNEVALUATED> const &) -> Number &;
+    auto operator=(Number &&) -> Number & = default;
+    inline auto operator+=(Number const &) -> Number &;
+    inline auto operator-=(Number const &) -> Number &;
+    inline auto operator*=(Number const &) -> Number &;
+    inline auto operator/=(Number const &) -> Number &;
+    inline auto operator<<=(unsigned) -> Number &;
+    auto operator<<=(signed) -> Number & = delete;
+    inline auto operator>>=(unsigned) -> Number &;
+    auto operator>>=(signed) -> Number & = delete;
+  private:
+    inline [[implicit]] Number(mpz_class &&);
+    mpz_class impl;
+    // Why yes, we do have to declare-declare-define this thrice.
+    // All because we don't want the declaration-definition body right here in the class definition.
+    friend auto swap(Number &, Number &) noexcept -> void;
+    //
+    // [[FIXTHIS]] use operator<=> when GCC 10 is here
+    friend auto operator==(Number const &a, Number const &b) -> bool { return a.impl == b.impl; }
+    friend auto operator!=(Number const &a, Number const &b) -> bool { return a.impl != b.impl; }
+    friend auto operator<(Number const &a, Number const &b) -> bool  { return a.impl < b.impl; }
+    friend auto operator<=(Number const &a, Number const &b) -> bool { return a.impl <= b.impl; }
+    friend auto operator>(Number const &a, Number const &b) -> bool  { return a.impl > b.impl; }
+    friend auto operator>=(Number const &a, Number const &b) -> bool { return a.impl >= b.impl; }
+    //
+    friend auto operator+(Number const &a) { return move(a); }
+    friend auto operator-(Number const &a) { return -a.impl; }
+    //
+    friend auto operator+(Number const &a, Number const &b) { return a.impl + b.impl; }
+    template<typename UNEVALUATED> friend auto operator+(Number const &a, Expression<UNEVALUATED> const &b) { return a.impl + b; }
+    template<typename UNEVALUATED> friend auto operator+(Expression<UNEVALUATED> const &a, Number const &b) { return a + b.impl; }
+    //
+    friend auto operator-(Number const &a, Number const &b) { return a.impl - b.impl; }
+    template<typename UNEVALUATED> friend auto operator-(Number const &a, Expression<UNEVALUATED> const &b) { return a.impl - b; }
+    template<typename UNEVALUATED> friend auto operator-(Expression<UNEVALUATED> const &a, Number const &b) { return a - b.impl; }
+    //
+    friend auto operator*(Number const &a, Number const &b) { return a.impl * b.impl; }
+    template<typename UNEVALUATED> friend auto operator*(Number const &a, Expression<UNEVALUATED> const &b) { return a.impl * b; }
+    template<typename UNEVALUATED> friend auto operator*(Expression<UNEVALUATED> const &a, Number const &b) { return a * b.impl; }
+    //
+    friend auto operator/(Number const &a, Number const &b) { return a.impl / b.impl; }
+    template<typename UNEVALUATED> friend auto operator/(Number const &a, Expression<UNEVALUATED> const &b) { return a.impl / b; }
+    template<typename UNEVALUATED> friend auto operator/(Expression<UNEVALUATED> const &a, Number const &b) { return a / b.impl; }
+    // because nobody trusts division
+    friend auto operator>>(Number const &a, unsigned b) { return a.impl << b; }
+    friend auto operator<<(Number const &a, unsigned b) { return a.impl >> b; }
+  };
+}
+#endiv
+#divert <ipp>
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::crypto {
+  auto number::swap(Number &a, Number &b) noexcept -> void { swap(a.impl, b.impl); }
+}
+namespace hyperledger::crypto::number {
+  Number::Number(mpz_class &&impl) : impl{forward<mpz_class>(impl)} { }
+  Number::Number(unsigned char value) : Number{(int long unsigned) value} { }
+  Number::Number(int short unsigned value) : Number{(int long unsigned) value} { }
+  Number::Number(int unsigned value) : Number{(int long  unsigned) value} { }
+  Number::Number(int long unsigned value) : impl{value} { }
+  Number::Number(int long long unsigned value) {
+    static_assert(sizeof (value) <= sizeof (int long unsigned)); // because mpz does not have a long 'long'  variant constructor
+    impl = mpz_class{(int long unsigned) value};
+  }
+  template<typename UNEVALUATED> auto Number::operator=(Expression<UNEVALUATED> const &expression) -> Number & {
+    impl = expression; // the magic of evaluation happens right here
+    return *this;
+  }
+  auto Number::operator+=(Number const &b) -> Number & {
+    impl += b.impl;
+    return *this;
+  }
+  auto Number::operator-=(Number const &b) -> Number & {
+    impl -= b.impl;
+    return *this;
+  }
+  auto Number::operator*=(Number const &b) -> Number & {
+    impl *= b.impl;
+    return *this;
+  }
+  auto Number::operator/=(Number const &b) -> Number & {
+    impl /= b.impl;
+    return *this;
+  }
+  auto Number::operator<<=(unsigned b) -> Number & {
+    impl <<= b;
+    return *this;
+  }
+  auto Number::operator>>=(unsigned b) -> Number & {
+    impl >>= b;
+    return *this;
+  }
+}
+#endiv

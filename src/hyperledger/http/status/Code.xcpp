@@ -1,0 +1,119 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::http::status {
+  //
+  // The HTTP status codes.
+  // These are well enough defined that they are published in RFCs and in books and in explainers,
+  // and yet they are not well enough defined that there is a single standard place where the definitions reside.
+  // Herein lies yettanother copy.
+  //
+  // See the user-defined literals nearby.
+  // For a cogent summary of the number-to-name assignments
+  // See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+  //
+  // Usage:
+  //
+  //    oh come on.
+  //
+  enum class Code {
+    SUCCESS = 0, // n.b. this is not an HTTP code per se; rather it is an internal application status (convert to 200 on outbound)
+    FAILURE = 1, // n.b. this is not an HTTP code per se; rather it is an internal application status (convert to 500 on outbound)
+    // 100-series
+    CONTINUE = 100,
+    SWITCHING_PROTOCOLS = 101,
+    PROCESSING = 102,
+    // 200-series
+    OK = 200,
+    CREATED = 201,
+    ACCEPTED = 202,
+    NON_AUTHORITATIVE = 203,
+    NO_CONTENT = 204,
+    RESET_CONTENT = 205,
+    PARTIAL_CONTENT = 206,
+    MULTI_STATUS = 207,
+    ALREADY_REPORTED = 208,
+    IM_USED = 226,
+    // 300-series
+    MULTIPLE_CHOICES = 300,
+    MOVED_PERMANENTLY = 301,
+    MOVED_TEMPORARILY = 302,
+    SEE_OTHER = 303,
+    NOT_MODIFIED = 304,
+    USE_PROXY = 305,
+    TEMPORARY_REDIRECT = 306,
+    PERMANENT_REDIRECT = 307,
+    // 400-series
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401,
+    PAYMENT_REQUIRED = 402,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    METHOD_NOT_ALLOWED = 405,
+    NOT_ACCEPTABLE = 406,
+    PROXY_AUTHENTICATION_REQUIRED = 407,
+    REQUEST_TIME_OUT = 408,
+    CONFLICT = 409,
+    GONE = 410,
+    LENGTH_REQUIRED = 411,
+    PRECONDITION_FAILED = 412,
+    REQUEST_ENTITY_TOO_LARGE = 413,
+    REQUEST_URI_TOO_LARGE = 414,
+    UNSUPPORTED_MEDIA_TYPE = 415,
+    RANGE_NOT_SATISFIABLE = 416,
+    EXPECTATION_FAILED = 417,
+    IM_A_TEAPOT = 418, // you're kidding me, this is a real code? (yes I read the erudition)
+    // 419 unused
+    // 420 unused
+    MISDIRECTED_REQUEST = 421,
+    UNPROCESSABLE_ENTITY = 422,
+    LOCKED = 423,
+    FAILED_DEPENDENCY = 424,
+    TOO_EARLY = 425,
+    UPGRADE_REQUIRED = 426,
+    // 427 unused
+    PRECONDITION_REQUIRED = 428,
+    TOO_MANY_REQUESTS = 429,
+    // 430 unused
+    REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
+    UNAVAILABLE_FOR_LEGAL_REASONS = 451,
+    // 500-series
+    INTERNAL_SERVER_ERROR = 500,
+    NOT_IMPLEMENTED = 501,
+    BAD_GATEWAY = 502,
+    SERVICE_UNAVAILABLE = 503,
+    GATEWAY_TIME_OUT = 504,
+    VERSION_NOT_SUPPORTED = 505,
+    VARIANT_ALSO_VARIES = 506,
+    INSUFFICIENT_STORAGE = 507,
+    LOOP_DETECTED = 508,
+    NOT_EXTENDED = 510,
+    NETWORK_AUTHENTICATION_REQUIRED = 511
+  };
+}
+#endiv
+#divert <hpp>
+#import std.underlying_type
+#import std.error_code
+namespace hyperledger::http::status {
+  //
+  // The palette here is patterned aftr Outcome<...> from namespace hyperledger
+  // which in turn is patterned after sys::call::result::Value<...> of posix++
+  //
+  inline constexpr auto u(Code c) { return std::underlying_type_t<Code>(c); }
+  inline auto ok(Code) -> bool;
+  inline auto good(Code) -> bool;
+  inline auto fail(Code) -> bool;
+  inline auto error_code(Code) -> std::error_code;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.http.error.Code
+namespace hyperledger::http {
+  auto status::ok(Code c) -> bool   { return Code::SUCCESS == c || Code::OK == c; }
+  auto status::good(Code c) -> bool { return Code::SUCCESS == c || (200 <= u(c) && u(c) < 300); }
+  auto status::fail(Code c) -> bool { return !good(c); }
+  auto status::error_code(Code c) -> std::error_code { return error::Code{c}; }
+}
+#endiv

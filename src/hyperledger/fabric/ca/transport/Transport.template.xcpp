@@ -1,0 +1,19 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.fabric.ca.required.name.Transport
+namespace hyperledger::fabric::ca::transport {
+  //
+  // The transports that the driver can use.
+  // Specializations only.
+  // A few are built as of today.  There may be others built in the future
+  //
+  // Usage:
+  //
+  //   auto cfg = Configuration<HTTP>{...somehow...}
+  //   auto driver = Driver{HTTP, move(cfg)};
+  //
+  template<required::name::Transport> struct Transport;
+}
+#endiv

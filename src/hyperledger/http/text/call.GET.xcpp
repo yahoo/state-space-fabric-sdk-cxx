@@ -1,0 +1,24 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#import hyperledger.http.text.call.template
+namespace hyperledger::http::text {
+  //
+  // Make a call as HTTP GET
+  //
+  // GET is bodyless by definition and actual practice
+  //
+  template<> auto call<Method::GET>(tls::Client const &, url::String const &, protocol::Headers const &) -> Response;
+  template<> auto call<Method::GET>(tls::Client const &, url::String const &, protocol::Headers const &, Request const &) -> Response = delete;
+}
+#endiv
+#divert <cpp>
+#warning WRITETHIS
+#import hyperledger.exception.Unimplemented
+namespace hyperledger::http::text {
+  template<> auto call<Method::GET>(tls::Client const &, url::String const &, protocol::Headers const &) -> Response {
+    throw exception::Unimplemented{__FUNCTION__, __FILE__, __LINE__};
+  }
+}
+#endiv

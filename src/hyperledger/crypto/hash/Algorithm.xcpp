@@ -1,0 +1,29 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import std.char_traits
+#import std.basic_string
+namespace hyperledger::crypto::hash {
+  enum class Algorithm {
+    NONE = 0,
+    SHA0 = NONE, // that's a joke.  it doesn't do anything
+    SHA1,
+    SHA2,
+    SHA3,
+  };
+  namespace algorithm {
+    struct Traits : public std::char_traits<char> { };
+    using Name = std::basic_string<char, Traits>;
+  }
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::crypto::hash::algorithm {
+  // These are hash algorithm names of our own provincial invention,
+  // they don't follow any authority or (decentralized) naming convention
+  inline Name const SHA1 = Name{"SHA1"};
+  inline Name const SHA2 = Name{"SHA2"};
+  inline Name const SHA3 = Name{"SHA3"};
+}
+#endiv

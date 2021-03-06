@@ -1,0 +1,33 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <hpp>
+#import hyperledger.Outcome
+#import hyperledger.tls.from_string.template
+#import hyperledger.tls.Endpoint
+namespace hyperledger::tls {
+  //
+  // The singleton endpoint, with dotls
+  // The documentariat is with net::get_hostport(...)
+  //
+  template<> inline auto from_string<Endpoint>(std::string const &) -> Outcome<Endpoint>;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.net.endpoint.get_hostport
+namespace hyperledger {
+  template<> auto tls::from_string<tls::Endpoint>(std::string const &syntax) -> Outcome<Endpoint> {
+    using Result = Outcome<Endpoint>;
+    auto got = net::endpoint::get_hostport(syntax);
+    if (!ok(got)) {
+      return Result{error_code(got)};
+    } else {
+      auto &val = value(got);
+      auto &host = std::get<0>(val);
+      auto &port = std::get<1>(val);
+      return Result{Endpoint{std::move(host), std::move(port)}};
+    }
+  }
+}
+#endiv

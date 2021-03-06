@@ -1,0 +1,63 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::exception {
+  //
+  // An exceptional problem has been observed in some value.
+  //
+  // Concept:
+  //
+  //   The python folk called it ValueError.
+  //   But then the python folk use ValueError for nearly everything.
+  //   Think of this as "Generic Error"
+  //
+  // Design:
+  //
+  //   It's difficult to name things "Value" becuase there is value(...) that needs to be visible by ADL.
+  //   So we rename this to be a C++-culture friendly name as "Invalid"
+  //
+  // Usage:
+  //
+  //   auto description = ...somehow...;
+  //   throw exception::Invalid{description};
+  //
+  namespace [[eponymous]] invalid {
+    struct Hyperledger;
+    struct Fabric;
+    class Invalid;
+  }
+  using invalid::Invalid;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.fabric.exception.Aspect
+#import hyperledger.string.Storage
+#import std.invalid_argument
+namespace hyperledger::fabric::exception {
+  //
+  // [[YUK]] there is no other way to shut this up?  No compiler option?
+  // src/hyperledger/fabric/exception/Invalid.xcpp:33:39: warning: direct base ‘hyperledger::exception::Aspect’ inaccessible in ‘hyperledger::fabric::exception::Invalid’ due to ambiguity
+  // 33 | class hyperledger::fabric::exception::Invalid : public hyperledger::exception::Aspect,
+  struct invalid::Hyperledger : public hyperledger::exception::Aspect { };
+  struct invalid::Fabric : public fabric::exception::Aspect { };
+  class invalid::Invalid : public Hyperledger,
+                           public Fabric,
+                           public std::invalid_argument {
+    struct Ancestors {
+      struct Aspects {
+        using Hyperledger = hyperledger::exception::Aspect;
+        using Fabric = fabric::exception::Aspect;
+      };
+      using Exception = std::invalid_argument;
+    };
+  public:
+    using Ancestors::Exception::invalid_argument;
+    auto what() const noexcept -> char const * override;
+  };
+}
+#endiv
+#divert <cpp>
+auto hyperledger::fabric::exception::invalid::Invalid::what() const noexcept -> char const * { return Ancestors::Exception::what(); }
+#endiv

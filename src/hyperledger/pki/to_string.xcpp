@@ -1,0 +1,16 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+//
+// Strictly to_string(...) is part of the interface of each one of these
+// However, it is convenient to have some symmetry between to_string(...) and from<TYPE>(...)
+// wherein there is an #import module for each one, independently.  And some day... it may change.
+//
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Certificates
+#import hyperledger.pki.Request
+#import hyperledger.pki.Secret
+#import hyperledger.pki.revocation.Certificates
+#import hyperledger.pki.revocation.Names
+#endiv

@@ -1,0 +1,32 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <hpp>
+#forward hyperledger.pki.error.Category
+namespace hyperledger::pki::error {
+  //
+  // Acquire the pki error category singleton
+  //
+  // Is thread-safe
+  //
+  // Usage:
+  //
+  //   auto &c = category();
+  //   cout << c.name();
+  //
+  auto category() -> Category const &;
+}
+#endiv
+#divert <ipp>
+#import hyperledger.pki.error.Category
+#endiv
+#divert <cpp>
+#import std.mutex
+#import std.lock_guard
+auto hyperledger::pki::error::category() -> Category const & {
+  static std::mutex mutex;
+  std::lock_guard<std::mutex> guard{mutex};
+  static Category const singleton;
+  return singleton;
+}
+#endiv

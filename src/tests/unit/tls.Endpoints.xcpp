@@ -1,0 +1,74 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.tls
+#import hyperledger.ip.host
+namespace tests::unit::tls {
+  namespace [[eponymous]] endpoints {
+    class Endpoints;
+    namespace library = ::hyperledger::tls;
+    namespace ip = ::hyperledger::ip;
+    namespace host = ::hyperledger::ip::host;
+  }
+  using endpoints::Endpoints;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+#import hyperledger.tls.Endpoints
+struct tests::unit::tls::endpoints::Endpoints : public cppunit::test::Fixture {
+  using Subject = library::Endpoints;
+  auto test_constructor() -> void;
+  auto test_format() -> void;
+  auto test_to_string() -> void;
+  //
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.tls.format
+#import hyperledger.tls.to_string
+#import hyperledger.tls.Endpoints
+#import std.ostringstream
+namespace tests::unit::tls::endpoints {
+  auto Endpoints::test_constructor() -> void {
+    auto subject = Subject{{host::Name{"localhost"}, ip::Port{80}, "/etc/hypeledger/fabric/tls/ca.crt"},
+                           {host::Name{"localhost"}, ip::Port{8080}},
+                           {host::Name{"localhost"}, ip::Port{8088}}};
+    CPPUNIT_ASSERT(3 == subject.size());
+  }
+  auto Endpoints::test_format() -> void {
+    auto subject = Subject{{host::Name{"localhost"}, ip::Port{80}, "/etc/hypeledger/fabric/tls/ca.crt"},
+                           {host::Name{"localhost"}, ip::Port{8080}},
+                           {host::Name{"localhost"}, ip::Port{8088}}};
+    auto const expected = "localhost:80,localhost:8080,localhost:8088"s;
+    auto const actual = [&subject]{
+                          std::ostringstream buf;
+                          buf << format(subject);
+                          return buf.str();
+                        }();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+  }
+  auto Endpoints::test_to_string() -> void {
+    auto subject = Subject{{host::Name{"localhost"}, ip::Port{80}, "/etc/hypeledger/fabric/tls/ca.crt"},
+                           {host::Name{"localhost"}, ip::Port{8080}},
+                           {host::Name{"localhost"}, ip::Port{8088}}};
+    auto const expected = "localhost:80,localhost:8080,localhost:8088"s;
+    auto const actual = to_string(subject);
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+  }
+}
+#import rigging.suite.io
+auto tests::unit::tls::endpoints::Endpoints::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"Endpoints"};
+  series << call("constructor", &Endpoints::test_constructor)
+         << call("format", &Endpoints::test_format)
+         << call("to_string", &Endpoints::test_to_string)
+         << END;
+  return finalize(series);
+}
+#endiv

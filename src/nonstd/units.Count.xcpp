@@ -1,0 +1,77 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import std.underlying_type
+namespace nonstd::units {
+  //
+  // [[FIXTHIS]] this is a provisional implementation.  Unify it with the "standard" dimensional system.
+  //
+  // A count, an increment, a decrement.
+  // Positive integers.
+  // To be combinable with the other units: Length(Meters), Mass(Grams), Information(Shannons), etc,
+  //
+  enum Count : int unsigned long;
+  namespace count {
+    using Underlying = std::underlying_type<Count>::type;
+  }
+}
+#endiv
+#divert <hpp>
+namespace nonstd::units {
+  inline auto operator++(Count &) -> Count &;
+  inline auto operator++(Count &, int) -> Count;
+  inline auto operator--(Count &) -> Count &;
+  inline auto operator--(Count &, int) -> Count;
+}
+#import std.string
+#import std.basic_ostream
+#import nonstd.required.Character
+#import nonstd.required.Character_Traits
+namespace nonstd::units {
+  inline auto to_string(Count) -> std::string;
+  template<nonstd::required::Character CHAR, nonstd::required::Character_Traits TRAITS> inline auto operator<<(std::basic_ostream<CHAR, TRAITS> &, Count) -> std::basic_ostream<CHAR, TRAITS> &;
+}
+#endiv
+#divert <ipp>
+#import std.invalid_argument
+#import std.numeric_limits
+namespace nonstd {
+  auto units::operator++(Count &lhs) -> Count & {
+    if (std::numeric_limits<count::Underlying>::max() == lhs) {
+      throw std::invalid_argument{"decrement max"};
+    }
+    lhs = Count{count::Underlying{lhs} + 1};
+    return lhs;
+  }
+  auto units::operator++(Count &rhs, int) -> Count {
+    Count old{rhs};
+    ++rhs;
+    return old;
+  }
+  auto units::operator--(Count &lhs) -> Count & {
+    if (Count{0} == lhs) {
+      throw std::invalid_argument{"decrement zero"};
+    }
+    lhs = Count{count::Underlying{lhs} - 1};
+    return lhs;
+  }
+  auto units::operator--(Count &rhs, int) -> Count {
+    Count old{rhs};
+    --rhs;
+    return old;
+  }
+}
+#import std.ostringstream
+namespace nonstd {
+  auto units::to_string(Count value) -> std::string {
+    std::ostringstream buf;
+    buf << (std::underlying_type<Count>::type) value;
+    return buf.str();
+  };
+  template<nonstd::required::Character CHAR, nonstd::required::Character_Traits TRAITS> auto units::operator<<(std::basic_ostream<CHAR, TRAITS> &o, Count c) -> std::basic_ostream<CHAR, TRAITS> & {
+    return o << (typename std::underlying_type<Count>::type) c;
+  }
+}
+#endiv

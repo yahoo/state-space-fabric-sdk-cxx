@@ -1,0 +1,21 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import tunitas.outcome.Visitor
+namespace hyperledger::variant {
+  //
+  // The visitor pattern for variants.
+  //
+  // See the 2-liner definition:
+  // https://en.cppreference.com/w/cpp/utility/variant/visit
+  //
+  // Usage: (e.g. for Outcome<Something>)
+  //
+  //   auto v = outcome::Visitor{[](Error const &) { return false; },
+  //                             [](Something const &) { return true; }};
+  //   return std::visit(v, a);
+  // 
+  using tunitas::outcome::Visitor;
+}
+#endiv

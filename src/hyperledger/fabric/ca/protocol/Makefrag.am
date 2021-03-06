@@ -1,0 +1,39 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-ca-protocol-sdk-c++/blob/master/LICENSE for terms.
+#
+lib_libhyperledger_fabric_ca_protocol_la = lib/libhyperledger-fabric-ca-protocol.la
+lib_libhyperledger_fabric_ca_protocol_la_LDFLAGS = $(PACKAGE_LDFLAGS_SET)
+lib_libhyperledger_fabric_ca_protocol_la_LIBADD = \
+  -ltunitas \
+  -lnonstd-module \
+  $(end)
+lib_libhyperledger_fabric_ca_protocol_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libhyperledger_fabric_ca_protocol_la_SOURCES))
+lib_libhyperledger_fabric_ca_protocol_la_SOURCES = \
+  $(obj_src_hyperledger_fabric_ca_protocol_SUBSOURCES) \
+  $(obj_src_hyperledger_fabric_ca_protocol_exception_SUBSOURCES) \
+  $(end)
+obj_src_hyperledger_fabric_ca_protocol_SUBSOURCES = \
+  obj/src/hyperledger/fabric/ca/protocol/namespace.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Headers.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Header.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Request.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Response.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/deserialize.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/serialize.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/is.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Triplet.cpp \
+  obj/src/hyperledger/fabric/ca/protocol/Doublet.cpp \
+  $(end)
+include src/hyperledger/fabric/ca/protocol/exception/Makefrag.am
+protocol-objects : $(patsubst %.cpp, %.lo, $(lib_libhyperledger_fabric_ca_protocol_la_SOURCES))
+$(lib_libhyperledger_fabric_ca_protocol_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/hyperledger/fabric/ca/protocol/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libhyperledger_fabric_ca_protocol_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/hyperledger/fabric/ca/protocol/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/hyperledger/fabric/ca/protocol/dependencies.mk

@@ -1,0 +1,24 @@
+# This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright Verizon Media.
+# Licensed under the terms of the Apache-2.0 license.
+# See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+
+lib_libwant_shell_la = lib/libwant-shell.la
+lib_libwant_shell_la_LIBADD = $(nothing)
+lib_libwant_shell_la_MODULES = $(call TF_SOURCEStoMODULES, $(lib_libwant_shell_la_SOURCES))
+lib_libwant_shell_la_SOURCES = \
+  obj/src/shell/run/namespace.cpp \
+  obj/src/shell/run/Piped_From.cpp \
+  obj/src/shell/run/Piped_To.cpp \
+  obj/src/shell/run/Runner.cpp \
+  $(end)
+shell-objects : $(patsubst %.cpp, %.lo, $(lib_libwant_shell_la_SOURCES))
+$(lib_libwant_shell_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_DISAGGREGATE, $<)
+	$(TF_V_DONE) test -e $@
+$(scold_cxxdir)/shell/dependencies.mk:
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $(lib_libwant_shell_la_SOURCES))
+	$(TF_V_DONE) test -e $@
+include $(scold_cxxdir)/shell/dependencies.mk
+clean-dependencies::
+	rm -f $(scold_cxxdir)/shell/dependencies.mk

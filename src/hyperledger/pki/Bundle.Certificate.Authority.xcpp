@@ -1,0 +1,20 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+#import hyperledger.pki.Bundle.template
+#import hyperledger.pki.Certificate
+#import hyperledger.pki.Authority
+namespace hyperledger::pki {
+  //
+  template<> struct Bundle<Certificate, Authority>;
+}
+#endiv
+#divert <hpp>
+namespace hyperledger::pki {
+  template<> struct Bundle<Certificate, Authority> {
+    Certificate certificate;
+    Authority authority;
+  };
+}
+#endiv

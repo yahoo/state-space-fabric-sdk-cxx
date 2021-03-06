@@ -1,0 +1,93 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::error {
+  //
+  // The (internal) error categories of the Hyperledger Fabric.
+  // these are distinct from the taxonomy of
+  // - Hyperledger (Runtime) in namespace hyperledger::error
+  // - Hyperledger PKI in namespace hyperledger::pki::errior
+  // - (external) errors of the HTTP status codes.
+  // - operating system errors of system_error or generic_error
+  // - C++ runtime errors of future_error, etc.
+  //
+  class Category;
+}
+#endiv
+#divert <hpp>
+#import std.error_category
+#import std.error_condition
+#import std.string
+class hyperledger::fabric::error::Category : public std::error_category {
+  using Ancestor = std::error_category;
+  Category() = default;
+  friend auto category() -> Category const &;
+public:
+  auto name() const noexcept -> char const *;
+  auto default_error_condition(int code) const noexcept -> std::error_condition;
+  auto message(int code) const -> std::string;
+};
+#endiv
+#divert <cpp>
+#import hyperledger.fabric.error.Condition
+#import hyperledger.fabric.error.Code
+#import std.to_string
+namespace hyperledger::fabric::error {
+  auto Category::name() const noexcept -> char const * { return "fabric"; }
+  auto Category::default_error_condition(int code) const noexcept -> std::error_condition {
+    auto condy = 0 != code ? Condition::FAILURE : Condition::SUCCESS;
+    return {condy};
+  }
+  auto Category::message(int codint) const -> std::string {
+    switch (code::Enumeration{codint}) {
+    case Code::SUCCESS:
+      return "success";
+    case Code::FAILURE:
+      return "failure";
+    case Code::CONFIGURATION_TLS_SERVER:
+      return "the configuration of tls for server-to-client authorization is inconsistent or incomplete";
+    case Code::CONFIGURATION_TLS_CLIENT:
+      return "the configuratoin of tls for client-to-server authorization is inconsistent or incomplete";
+    case Code::CONFIGURATION_ORDERER_CONTACT:
+      return "the orderer contact configuration is inconsistent or incomplete";
+    case Code::CONFIGURATION_PEERS_CONTACT:
+      return "the peers contact configuration is inconsistent or incomplete";
+    case Code::CONFIGURATION_CHAINCODE:
+      return "the chaincode subcommand is inconsistent or incomplete";
+    case Code::TLS_CLIENT:
+      return "failure of tls from the client"; // e.g. our client crt was refused by their server.
+    case Code::TLS_SERVER:
+      return "failure of tls from the server"; // e.g. the server's crt didn't verify into our ca
+    case Code::CONTACT_ORDERER:
+      return "could not contact any orderer";
+    case Code::CONTACT_PEERS:
+      return "could not contact any peer";
+    case Code::RUN_CONFIGTXGEN:
+      return "could not run .../configtxgen";
+    case Code::RUN_CONFIGTXLATOR:
+      return "could not run .../configtxlator";
+    case Code::RUN_CRYPTOGEN:
+      return "could not run .../cryptogen";
+    case Code::RUN_ORDERER:
+      return "could not run .../orderer";
+    case Code::RUN_PEER:
+      return "could not run .../peer";
+    case Code::TRANSMISSION_INCOMPLETE:
+      return "transmission incomplete"; // short read?  interrupted system call?
+    case Code::TRANSMISSION_GARBLED:
+      return "transmission garbled"; // cannot find southbound meta-protocol; e.g. status=%d, payload="..."
+    case Code::PAYLOAD_TOO_SHORT:
+      return "payload is too short"; // short read?  internal length check botch?
+    case Code::PAYLOAD_TOO_LONG:
+      return "payload is too long"; // surprising extra junk found
+    case Code::PAYLOAD_ENCODE:
+      return "payload could not be encoded";
+    case Code::PAYLOAD_DECODE:
+      return "payload could not be decoded";
+    default:
+      return "error #" + std::to_string(codint);
+    }
+  }
+}
+#endiv

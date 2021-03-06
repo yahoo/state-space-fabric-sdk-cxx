@@ -1,0 +1,31 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <cpp>
+#import c.argv
+#import c.rest
+#import hyperledger.base64.decode
+#import hyperledger.string.Storage
+#import hyperledger.string.View
+#import std.getline
+#import std.cin
+#import std.cout
+auto main(int cc, char *vv[]) -> int {
+  using hyperledger::base64::decode;
+  namespace string = hyperledger::string;
+  auto av = c::argv(cc, vv);
+  if (1 == av.size()) {
+    for (string::Storage word; getline(std::cin, word); ) {
+      auto decoded = decode<string::Storage>(word);
+      std::cout << decoded << '\n';
+    }
+  } else {
+    for (std::string word : c::rest(av)) {
+      auto decoded = decode<string::Storage>(word);
+      std::cout << decoded << '\n';
+    }
+  }
+  return 0;
+}
+#endiv

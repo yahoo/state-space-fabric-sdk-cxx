@@ -1,0 +1,42 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import langu.ish.python.binascii.hexlify // in lieu of the simplified namespace
+namespace tests::langu::ish::python::binascii {
+  namespace [[eponymous]] fixture {
+    namespace library = ::langu::ish::python::binascii;
+    class Fixture;
+  }
+  using fixture::Fixture;
+}
+#endiv
+#divert <hpp>
+#import cppunit.Test
+#import cppunit.test.Fixture
+struct tests::langu::ish::python::binascii::fixture::Fixture : public cppunit::test::Fixture {
+  auto test_hexlify() -> void;
+  static auto suite() -> cppunit::Test *;
+};
+#endiv
+#divert <cpp>
+#import langu.ish.python.binascii.hexlify
+namespace tests::langu::ish::python::binascii::fixture {
+  auto Fixture::test_hexlify() -> void {
+    auto const expected = "012345"s;
+    auto const actual = library::hexlify({"\x01\x23\x45", 3});
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+  }
+}
+#import rigging.suite.io
+namespace tests::langu::ish::python::binascii::fixture {
+  auto Fixture::suite() -> cppunit::Test * {
+    using namespace rigging::suite;
+    auto series = Stream{"binascii"};
+    series << call("hexlify", &Fixture::test_hexlify)
+           << END;
+    return finalize(series);
+  }
+}
+#endiv

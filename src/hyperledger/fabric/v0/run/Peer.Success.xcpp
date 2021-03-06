@@ -1,0 +1,43 @@
+// This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+#divert <fpp>
+#import hyperledger.Success
+#forward hyperledger.fabric.v0.run.Peer
+namespace hyperledger::fabric::v0::run {
+  //
+  // The Hyperledger Fabric peer(1) program
+  // Returning merely a Success indication.
+  // e.g.
+  //   peer channel create
+  //   peer channel join
+  //   peer channel ...etc....
+  //
+  // These sorts of operations *require* contact with an orderer.
+  // They do not use the peer set yet; will not have a peer::Contact
+  //
+  // Usage:
+  //
+  //   auto context = ...somehow...   <--------------------- and that's the hard part now isn't it?
+  //   Peer<Success> prog{context};
+  //   auto w = prog.run();
+  //   auto b = ok(w);
+  //
+  template<> class Peer<Success>;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.fabric.v0.run.peer.Basis
+#import shell.run.Runner
+template<> class hyperledger::fabric::v0::run::Peer<hyperledger::Success> : public peer::Basis<shell::run::Runner> {
+  using Ancestor = peer::Basis<shell::run::Runner>;
+public:
+  inline Peer(std::string subcommand, Context const &);
+};
+#endiv
+#divert <ipp>
+hyperledger::fabric::v0::run::Peer<hyperledger::Success>::Peer(std::string subcommand, Context const &context)
+  : Ancestor{std::move(subcommand), context}
+{ }
+#endiv

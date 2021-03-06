@@ -1,0 +1,52 @@
+// This is C++2a -*- c++ -*- in the S.C.O.L.D. Stylings that are so popular these days
+// Copyright Verizon Media.
+// The license statement is in the LICENSE file at the top of the repository; this code is licensable under the Apache 2.0 license.
+#divert <fpp>
+namespace hyperledger::fabric::ca::exception {
+  //
+  // Blend the aspects together.
+  // Descendants only.
+  //
+  // Concept:
+  //
+  //   Avoid that pesky compiler warning about ancestor Aspect being ambiguous (who cares?)
+  //   Avoid some prodigious copy-pasta.
+  //   This class MUST NOT incorporate an actual exception; only a descendant MUST do that.
+  //
+  // Usage:
+  //
+  //   throw exception::Service{...somehow...};
+  //   throw exception::Request{...somehow...};
+  //
+  namespace [[eponymous]] aspects {
+    struct Hyperledger;
+    struct Fabric;
+    struct Authority;
+    struct Aspects;
+  }
+  using aspects::Aspects;
+}
+#endiv
+#divert <hpp>
+#import hyperledger.exception.Aspect
+#import hyperledger.fabric.exception.Aspect
+#import hyperledger.fabric.ca.exception.Aspect
+#import std.invalid_argument
+namespace hyperledger::fabric::ca::exception {
+  // Avoid that pesky unsupressable warning about ancestor Aspect being ambiguous
+  struct aspects::Hyperledger : public hyperledger::exception::Aspect { };
+  struct aspects::Fabric : public fabric::exception::Aspect { };
+  struct aspects::Authority : public ca::exception::Aspect { };
+  class aspects::Aspects : public Hyperledger,
+                           public Fabric,
+                           public Authority {
+    struct Ancestors {
+      using Hyperledger = hyperledger::exception::Aspect;
+      using Fabric = fabric::exception::Aspect;
+      using Authority = ca::exception::Aspect;
+    };
+  protected:
+    virtual ~Aspects() = default;
+  };
+}
+#endiv

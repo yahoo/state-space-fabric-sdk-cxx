@@ -1,19 +1,23 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
-// Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Copyright Verizon Media.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-namespace tests::unit::fabric { class Fixture; }
+#import hyperledger.fabric
+namespace tests::unit::fabric {
+  namespace fixture {
+    class Fixture;
+    namespace library = ::hyperledger::fabric;
+  }
+  using fixture::Fixture;
+}
 #endiv
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::fabric::Fixture : public cppunit::test::Fixture {
-public:
-  auto test_Boolean() -> void;
+struct tests::unit::fabric::fixture::Fixture : public cppunit::test::Fixture {
   auto test_Context() -> void;
   auto test_Contact() -> void;
-  auto test_Outcome() -> void;
-  auto test_Success() -> void;
   auto test_exception_Aspect() -> void;
   static auto suite() -> cppunit::Test *;
 protected:
@@ -21,65 +25,54 @@ protected:
 };
 #endiv
 #divert <cpp>
-#import hyperledger.fabric.Boolean
-auto tests::unit::fabric::Fixture::test_Boolean() -> void {
-  using namespace ::hyperledger::fabric;
-  auto b = Boolean{true};
-  CPPUNIT_ASSERT(b);
-  b = false;
-  CPPUNIT_ASSERT(!b);
-}
-#import hyperledger.fabric.Context
-auto tests::unit::fabric::Fixture::test_Context() -> void {
-  using namespace ::hyperledger::fabric;
-  struct Subject : public Context {
-    // turns out there are no fields in hyperledger::fabric::Context; nothing at all.
-  } subject;
-  CPPUNIT_ASSERT(0 == sizeof(subject) || 0 != sizeof (subject));
-}
-#import hyperledger.fabric.Contact
-auto tests::unit::fabric::Fixture::test_Contact() -> void {
-  using namespace ::hyperledger::fabric;
-  struct Subject : public Contact {
-  } subject;
-  CPPUNIT_ASSERT(!subject.auth);
-  CPPUNIT_ASSERT(!subject.client);
-}
-#import hyperledger.fabric.Outcome
-auto tests::unit::fabric::Fixture::test_Outcome() -> void {
-  using namespace ::hyperledger::fabric;
-  Outcome<int> subject{3};
-  CPPUNIT_ASSERT(ok(subject));
-  CPPUNIT_ASSERT(3 == value(subject));
-}
-#import hyperledger.fabric.Success
-auto tests::unit::fabric::Fixture::test_Success() -> void {
-  using namespace ::hyperledger::fabric;
-  Success subject{SUCCESS};
-  CPPUNIT_ASSERT(ok(subject));
-}
+#import hyperledger.Boolean
+#import hyperledger.fabric.v0.Context
+#import hyperledger.fabric.v0.Contact
+#import hyperledger.Outcome
+#import hyperledger.Success
 #import tests.unit.fabric.Fixture.Exceptional
-auto tests::unit::fabric::Fixture::test_exception_Aspect() -> void {
-  try {
-    throw Exceptional{"boring"};
-  } catch (::hyperledger::fabric::exception::Aspect const &e) {
-    auto const what = std::string{e.what()};
-    CPPUNIT_ASSERT_EQUAL("boring"s, what);
+namespace tests::unit::fabric::fixture {
+  auto Fixture::test_Context() -> void {
+    using namespace ::hyperledger::fabric;
+    struct Subject : public Context {
+      // turns out there are no fields in hyperledger::fabric::v0::Context; nothing at all.
+    } subject;
+    CPPUNIT_ASSERT(0 == sizeof(subject) || 0 != sizeof (subject));
+  }
+  auto Fixture::test_Contact() -> void {
+    using namespace ::hyperledger::fabric;
+    struct Subject : public Contact {
+    } subject;
+    CPPUNIT_ASSERT(!subject.auth);
+    CPPUNIT_ASSERT(!subject.client);
+  }
+  auto Fixture::test_exception_Aspect() -> void {
+    try {
+      throw Exceptional{"boring"};
+    } catch (::hyperledger::fabric::exception::Aspect const &e) {
+      auto const what = std::string{e.what()};
+      CPPUNIT_ASSERT_EQUAL("boring"s, what);
+    }
   }
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
-auto tests::unit::fabric::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("fabric");
-  series << call("Boolean", &Fixture::test_Boolean)
-         << call("Context", &Fixture::test_Context)
-         << call("Contact", &Fixture::test_Contact)
-         << call("Outcome", &Fixture::test_Outcome)
-         << call("Success", &Fixture::test_Success)
-         << call("exception::Aspect", &Fixture::test_exception_Aspect)
-    ;
-  return series.release();
+#import rigging.suite.io
+auto tests::unit::fabric::fixture::Fixture::suite() -> cppunit::Test * {
+  using namespace rigging::suite;
+  auto series = Stream{"fabric"};
+  series << []() {
+              auto dup = Stream{"duplicates"};
+              dup << call("Context", &Fixture::test_Context)
+                  << call("Contact", &Fixture::test_Contact)
+                  << END;
+              return move(dup);
+            }()
+         << []() {
+              auto exc = Stream{"exception"};
+              exc << call("Aspect", &Fixture::test_exception_Aspect)
+                  << END;
+              return move(exc);
+            }()
+         << END;
+  return finalize(series);
 }
 #endiv
