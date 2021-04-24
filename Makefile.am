@@ -1,4 +1,5 @@
 # This is a GNU -*- Makefile -*- fragment that is included by Automake
+# Copyright 2020, Verizon Media Inc.
 # Copyright 2019, Oath Inc.
 # Licensed under the terms of the Apache-2.0 license.
 # See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
@@ -24,8 +25,10 @@ include @temerarious_flagship_datadir@/am/build.am
 # These match with TF_WITH_MODULE in configure.ac
 # You do not need them unless you are doing co-development of these packages *with* PrivacyChain SDK C++
 DEVELOPMENT_AREAS = \
+  $(module_langu_prefix) \
   $(module_nonstd_prefix) \
   $(module_posix_prefix) \
+  $(module_shell_prefix) \
   $(module_std_prefix) \
   $(module_string_prefix) \
   $(module_sys_prefix) \

@@ -91,12 +91,10 @@ auto tests::unit::run::Loader::test_client() -> void {
   hf::tls::Client contact;
   subject.load(args, contact);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::run::Loader::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("Loader<TYPE>");
+  using namespace rigging::suite;
+  auto series = Stream{"Loader<TYPE>"};
   series << call("fabric", &Loader::test_fabric)
          << call("peer", &Loader::test_peer)
          << call("chaincode", &Loader::test_chaincode)
@@ -104,7 +102,7 @@ auto tests::unit::run::Loader::suite() -> cppunit::Test * {
          << call("orderer", &Loader::test_orderer)
          << call("peers", &Loader::test_peers)
          << call("client", &Loader::test_client)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

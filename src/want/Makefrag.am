@@ -1,5 +1,5 @@
 # This is a GNU -*- Makefile -*- fragment that is included by Automake
-# Copyright 2019, Oath Inc.
+# Copyright, Verizon Media.
 # Licensed under the terms of the Apache-2.0 license.
 # See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 
@@ -12,14 +12,20 @@ lib_libwant_la_SOURCES = \
   obj/src/want/format.dq.cpp \
   obj/src/want/format.dequote.Formatter.cpp \
   obj/src/want/filesystem.dequote.cpp \
-  \
+  $(end)
+# these are formally in module-langu as namespace langu::ish::shell::run and so on (or older in module-shell as namespace ::shell)
+src_want_run_DEPRECATED = \
   obj/src/want/run/namespace.cpp \
   obj/src/want/run/Piped_From.cpp \
   obj/src/want/run/Piped_To.cpp \
   obj/src/want/run/Runner.cpp \
   $(end)
+$(scold_cxxdir)/want/dependencies.mk: $(lib_libwant_la_SOURCES)
+$(lib_libwant_la_SOURCES) : obj/src/%.cpp : src/%.xcpp
+	$(TF_V_DIS) $(call TF_XCPP2CPP, $^)
+	$(TF_V_DONE) test -e $@
 $(scold_cxxdir)/want/dependencies.mk:
-	$(TF_V_DC) $(call TF_DISAGGREGATE, $(lib_libwant_la_SOURCES))
+	$(TF_V_DEP) $(call TF_DEPENDENCIES, $^)
 	$(TF_V_DONE) test -e $@
 include $(scold_cxxdir)/want/dependencies.mk
 clean-dependencies::

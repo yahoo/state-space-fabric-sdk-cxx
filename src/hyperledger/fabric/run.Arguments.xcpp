@@ -2,13 +2,14 @@
 // Copyright 2019, Oath Inc.
 // Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-#import want.run.Runner
-#include <hpp/want.run.Runner> // need the complete type
+#import std.string
+#import std.vector
 namespace hyperledger::fabric::run {
   //
   // Common ancestor of all Loader<CONTEXT> specializations
-  // Descendants only.
+  // Must be compatible with shell::run::Runner
   //
-  using Arguments = want::run::Runner::Arguments;
+  using Argument = std::string;
+  using Arguments = std::vector<Argument>;
 }
 #endiv

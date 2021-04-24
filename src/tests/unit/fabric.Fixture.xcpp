@@ -67,19 +67,17 @@ auto tests::unit::fabric::Fixture::test_exception_Aspect() -> void {
     CPPUNIT_ASSERT_EQUAL("boring"s, what);
   }
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::fabric::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("fabric");
+  using namespace rigging::suite;
+  auto series = Stream{"fabric"};
   series << call("Boolean", &Fixture::test_Boolean)
          << call("Context", &Fixture::test_Context)
          << call("Contact", &Fixture::test_Contact)
          << call("Outcome", &Fixture::test_Outcome)
          << call("Success", &Fixture::test_Success)
          << call("exception::Aspect", &Fixture::test_exception_Aspect)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

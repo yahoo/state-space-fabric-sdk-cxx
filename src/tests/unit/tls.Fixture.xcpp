@@ -254,52 +254,54 @@ auto tests::unit::tls::Fixture::test_from_string_Endpoints_many() -> void {
   std::cerr << '\n';
   CPPUNIT_ASSERT(all);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::tls::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("tls");
-  {
-    Stream end("Endpoint");
-    end << call("1arg", &Fixture::test_Endpoint_1arg)
-        << call("2arg(host,ca)", &Fixture::test_Endpoint_2arg_host_ca)
-        << call("2arg(host,port)", &Fixture::test_Endpoint_2arg_host_port)
-        << call("3arg", &Fixture::test_Endpoint_3arg)
-    ;
-    series << move(end);
-  }
-  series << call("Endpoints", &Fixture::test_Endpoints)
-    ;
-  {
-    Stream get("get_port");
-    get << call("one", &Fixture::test_get_port_one)
-        << call("many", &Fixture::test_get_port_many)
-      ;
-    series << move(get);
-  } {
-    Stream get("get_hostport");
-    get << call("one", &Fixture::test_get_hostport_one)
-        << call("many", &Fixture::test_get_hostport_many)
-      ;
-    series << move(get);
-  } {
-    Stream fro("from_string");
-    {
-      Stream en("Endpoint");
-      en << call("one", &Fixture::test_from_string_Endpoint_one)
-         << call("many", &Fixture::test_from_string_Endpoint_many)
-        ;
-      fro << move(en);
-    } {
-      Stream en("Endpoints");
-      en << call("one", &Fixture::test_from_string_Endpoints_one)
-         << call("many", &Fixture::test_from_string_Endpoints_many)
-        ;
-      fro << move(en);
-    }
-    series << move(fro);
-  }
-  return series.release();
+  using namespace rigging::suite;
+  auto series = Stream("tls");
+  series << []{
+              auto end = Stream{"Endpoint"};
+              end << call("1arg", &Fixture::test_Endpoint_1arg)
+                  << call("2arg(host,ca)", &Fixture::test_Endpoint_2arg_host_ca)
+                  << call("2arg(host,port)", &Fixture::test_Endpoint_2arg_host_port)
+                  << call("3arg", &Fixture::test_Endpoint_3arg)
+                  << END;
+              return move(end);
+            }()
+         << call("Endpoints", &Fixture::test_Endpoints)
+         << []{
+              auto get = Stream{"get_port"};
+              get << call("one", &Fixture::test_get_port_one)
+                  << call("many", &Fixture::test_get_port_many)
+                  << END;
+              return move(get);
+            }()
+         << []{
+              auto get = Stream{"get_hostport"};
+              get << call("one", &Fixture::test_get_hostport_one)
+                  << call("many", &Fixture::test_get_hostport_many)
+                  << END;
+              return move(get);
+            }()
+         << [] {
+              auto fro = Stream{"from_string"};
+              fro << []{
+                       auto en = Stream("Endpoint");
+                       en << call("one", &Fixture::test_from_string_Endpoint_one)
+                          << call("many", &Fixture::test_from_string_Endpoint_many)
+                          << END;
+                       return move(en);
+                     }()
+                  << []{
+                       auto en = Stream{"Endpoints"};
+                       en << call("one", &Fixture::test_from_string_Endpoints_one)
+                          << call("many", &Fixture::test_from_string_Endpoints_many)
+                          << END;
+                       return move(en);
+                     }()
+                  << END;
+                return move(fro);
+            }()
+         << END;
+  return finalize(series);
 }
 #endiv

@@ -21,14 +21,12 @@ auto tests::unit::peer::Fixture::test_Contact() -> void {
   //
   CPPUNIT_ASSERT(true);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::peer::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("peer");
+  using namespace rigging::suite;
+  auto series = Stream{"peer"};
   series << call("Contact", &Fixture::test_Contact)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

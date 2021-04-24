@@ -32,8 +32,8 @@ namespace hyperledger::fabric::run::chaincode {
 #import hyperledger.fabric.run.Loader.Peers
 #import hyperledger.fabric.run.Loader.Client
 #import hyperledger.fabric.peer.chaincode.Call
+#import sys.exits.Code
 #import std.string
-#import want.run.Piped_From
 template<typename RUNNER> class hyperledger::fabric::run::chaincode::Basis
   : public RUNNER,
     private Loader<fabric::Context>,
@@ -43,7 +43,7 @@ template<typename RUNNER> class hyperledger::fabric::run::chaincode::Basis
     private Loader<orderer::Contact>,
     private Loader<tls::Client>,
     private Loader<peer::chaincode::Call> {
-  struct ancestors {
+  struct Ancestors {
     using Runner = RUNNER;
     struct loaders {
       using Fabric = run::Loader<peer::chaincode::Context>;
@@ -60,9 +60,6 @@ public:
 protected:
   ~Basis() = default;
   inline Basis(std::string subcommand, Context const &, std::string constructor_args_blob);
-  auto grow_child(int readfd, int writefd) const noexcept -> sys::exits::Code override;
-  struct tests { struct Access; };
-  friend struct tests::Access;
 };
 #endiv
 #divert <ipp>
@@ -73,9 +70,9 @@ protected:
 #import std.move
 namespace hyperledger::fabric::run::chaincode {
   template<typename _> Basis<_>::Basis(std::string subcommand, Context const &context, std::string constructor_args_blob)
-    : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
-    auto &arguments = ancestors::Runner::args;
-    using ld = typename ancestors::loaders;
+    : Ancestors::Runner{Ancestors::Runner::EXECP, "peer"} {
+    auto &arguments = Ancestors::Runner::args;
+    using ld = typename Ancestors::loaders;
     push_back<2>(arguments) << "chaincode" << std::move(subcommand);
     ld::Fabric::load(arguments, context);
     ld::Peer::load(arguments, context);
@@ -99,36 +96,6 @@ namespace hyperledger::fabric::run::chaincode {
       }
     }
     push_back<2>(arguments) << "--ctor" << std::move(constructor_args_blob);
-  }
-}
-#import std.exception
-#import sys.exits.constants
-#import sys.posix.close
-#import sys.posix.dup2
-namespace hyperledger::fabric::run::chaincode {
-  template<typename _> auto Basis<_>::grow_child(int, int writefd) const noexcept -> sys::exits::Code {
-    // We're in the child now, NOTHING ESCAPES
-    try {
-      // Because .../bin/peer writes its emissions to stderr, not stdout, we have to dup2(..., 1), dup2(..., 2)
-      // The ancestor's grow_child(...) will handle the case of stdout.
-      //
-      // Example: (all this appears on stderr, not stdout)
-      //
-      //   2019-03-30 00:03:22.385 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (microphone) orderer endpoint: nervous.clown:7050
-      //   2019-03-30 00:03:22.403 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"5678" 
-      //
-      auto duped = sys::posix::dup2(writefd, 2);
-      if (!ok(duped)) {
-        ancestors::Runner::dying_utterance(error_code(duped).message());
-      } else {
-        return ancestors::Runner::grow_child(-1, writefd);
-      }
-    } catch (std::exception const &e) {
-      ancestors::Runner::dying_utterance(e.what());
-    } catch (...) {
-      ancestors::Runner::dying_utterance("unknown");
-    }
-    return sys::exits::OSERR;
   }
 }
 #endiv

@@ -28,9 +28,9 @@ namespace hyperledger::fabric::run {
 #endiv
 #divert <hpp>
 #import hyperledger.fabric.run.peer.Basis
-#import want.run.Runner
-template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public peer::Basis<want::run::Runner> {
-  using ancestor = peer::Basis<want::run::Runner>;
+#import shell.run.Runner
+template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public peer::Basis<shell::run::Runner> {
+  using ancestor = peer::Basis<shell::run::Runner>;
 public:
   inline Peer(std::string subcommand, Context const &);
 };

@@ -46,7 +46,7 @@ auto tests::unit::southside::Fixture::test_hack_the_spew_case_01() -> void {
     auto const specimen = "Universal Declaration of the Rights of Man"s;
     std::vector<std::byte> ret;
     std::transform(specimen.begin(), specimen.end(), std::back_inserter(ret), [](char c) { return std::byte(c); });
-    return std::move(ret);
+    return ret;
   }();
   auto const actual = std::move(p);
   CPPUNIT_ASSERT(std::equal(expected.begin(), expected.end(), actual.begin(), actual.end()));
@@ -62,31 +62,30 @@ auto tests::unit::southside::Fixture::test_hack_the_spew_case_03() -> void {
   using namespace ::hyperledger::fabric::southside;
   auto specimen = []() {
                     auto basis = (R"spew("ESC[34m1789-03-06 03:31:22.806 UTC [chaincodeCmd] InitCmdFactory -> INFO 001ESC[0m Retrieved channel (CHANNEL) orderer endpoint: orderer.example.com:7050)spew"
-                                  R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:000 payload:)spew"s);
+                                  R"spew(ESC[34m1789-03-06 03:31:22.815 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002ESC[0m Chaincode invoke successful. result: status:200 payload:)spew"s); // <---- add actual payload here
                     basis +='"';
                     for (auto i{0}, e{10000}; e != i; ++i) { basis += 'A'; }
                     basis +='"';
-                    return std::move(basis);
+                    return basis;
                   }();
   auto [c, p] = hack_the_spew<std::string>(specimen);
   CPPUNIT_ASSERT(ok(c));
   CPPUNIT_ASSERT(contains_only(p, 'A'));
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::southside::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("southside");
+  using namespace rigging::suite;
+  auto series = Stream{"southside"};
   series << call("ok", &Fixture::test_ok)
-    ;
-  {
-    Stream hac("hack_the_spew");
-    hac << call("01", &Fixture::test_hack_the_spew_case_01)
-        << call("02", &Fixture::test_hack_the_spew_case_02)
-        << call("03", &Fixture::test_hack_the_spew_case_03)
-      ;
-  }
-  return series.release();
+         << []{
+              auto hac = Stream{"hack_the_spew"};
+              hac << call("01", &Fixture::test_hack_the_spew_case_01)
+                  << call("02", &Fixture::test_hack_the_spew_case_02)
+                  << call("03", &Fixture::test_hack_the_spew_case_03)
+                  << END;
+              return move(hac);
+            }()
+         << END;
+  return finalize(series);
 }
 #endiv

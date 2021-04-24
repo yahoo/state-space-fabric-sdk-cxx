@@ -48,16 +48,57 @@ namespace hyperledger::fabric::run {
 #divert <hpp>
 #import hyperledger.fabric.run.chaincode.Basis
 #import std.string
-#import want.run.Piped_From
-template<> class hyperledger::fabric::run::Chaincode<std::string> : public chaincode::Basis<want::run::Piped_From> {
-  using ancestor = chaincode::Basis<want::run::Piped_From>;
+#import shell.run.Pipe_From
+#import sys.id.File
+#import sys.exits.Code
+template<> class hyperledger::fabric::run::Chaincode<std::string> : public chaincode::Basis<shell::run::Pipe_From> {
+  using Ancestor = chaincode::Basis<shell::run::Pipe_From>;
 public:
   inline explicit Chaincode(std::string subcommand, Context const &, std::string constructor_args_blob);
+protected:
+  // This is always and only ever run in the child
+  auto grow_child(sys::id::File writefd) const noexcept -> sys::exits::Code override;
 };
 #endiv
 #divert <ipp>
 #import std.move
-hyperledger::fabric::run::Chaincode<std::string>::Chaincode(std::string subcommand, Context const &context, std::string constructor_args_blob)
-  : ancestor{std::move(subcommand), context, std::move(constructor_args_blob)}
-{ }
+namespace hyperledger::fabric::run {
+  Chaincode<std::string>::Chaincode(std::string subcommand, Context const &context, std::string constructor_args_blob)
+    : Ancestor{std::move(subcommand), context, std::move(constructor_args_blob)}
+  { }
+}
+#endiv
+#divert <cpp>
+#import std.exception
+#import sys.exits.constants
+#import sys.posix.close
+#import sys.posix.dup2
+namespace hyperledger::fabric::run {
+  auto Chaincode<std::string>::grow_child(sys::id::File writefd) const noexcept -> sys::exits::Code {
+    // We're in the child now, NO exceptions may escape.
+    using sys::id::File;
+    using sys::call::result::error_code;
+    try {
+      // Because .../bin/peer writes its emissions to stderr, not stdout, we have to dup2(..., 1), dup2(..., 2)
+      // The Ancestor's grow_child(...) will handle the case of stdout.
+      //
+      // Example: (all this appears on stderr, not stdout)
+      //
+      //   2019-03-30 00:03:22.385 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (microphone) orderer endpoint: nervous.clown:7050
+      //   2019-03-30 00:03:22.403 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"5678" 
+      //
+      auto duped = sys::posix::dup2(writefd, sys::id::File{2});
+      if (!ok(duped)) {
+        Ancestor::dying_utterance(error_code(duped).message());
+      } else {
+        return Ancestor::grow_child(writefd);
+      }
+    } catch (std::exception const &e) {
+      Ancestor::dying_utterance(e.what());
+    } catch (...) {
+      Ancestor::dying_utterance("unknown");
+    }
+    return sys::exits::OS;
+  }
+}
 #endiv

@@ -7,8 +7,7 @@ namespace tests::unit::want::filesystem::dequote { class Fixture; }
 #divert <hpp>
 #import cppunit.Test
 #import cppunit.test.Fixture
-class tests::unit::want::filesystem::dequote::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::want::filesystem::dequote::Fixture : public cppunit::test::Fixture {
   auto test_empty() -> void;
   auto test_slash() -> void;
   auto test_length_0() -> void;
@@ -79,12 +78,10 @@ auto tests::unit::want::filesystem::dequote::Fixture::test_spaces() -> void {
   auto const expected = "/build me a castle in the sky"s;
   CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::want::filesystem::dequote::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("dequote");
+  using namespace rigging::suite;
+  auto series = Stream{"dequote"};
   series << call("empty", &Fixture::test_empty)
          << call("slash", &Fixture::test_slash)
          << call("length-0", &Fixture::test_length_0)
@@ -92,7 +89,7 @@ auto tests::unit::want::filesystem::dequote::Fixture::suite() -> cppunit::Test *
          << call("length-2", &Fixture::test_length_2)
          << call("length-3", &Fixture::test_length_3)
          << call("spaces", &Fixture::test_spaces)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

@@ -43,10 +43,12 @@ auto tests::unit::ip::Fixture::test_Host() -> void {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = buf.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   } {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = to_string(subject);
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   }
 }
 #import hyperledger.fabric.ip.Endpoint
@@ -58,10 +60,12 @@ auto tests::unit::ip::Fixture::test_Endpoint() -> void {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = buf.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   } {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = to_string(subject);
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   }
 }
 #import hyperledger.fabric.ip.Endpoints
@@ -76,25 +80,25 @@ auto tests::unit::ip::Fixture::test_Endpoints() -> void {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = buf.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   } {
     std::ostringstream buf;
     buf << format(subject);
     auto const actual = to_string(subject);
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
   }
 }
 #import tests.unit.ip.host.Fixture
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::ip::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("ip");
+  using namespace rigging::suite;
+  auto series = Stream{"ip"};
   series << call("Port", &Fixture::test_Port)
          << call("Host", &Fixture::test_Host)
          << call("Endpoint", &Fixture::test_Endpoint)
          << call("Endpoints", &Fixture::test_Endpoints)
-         << add(host::Fixture::suite());
-    ;
-  return series.release();
+         << add<host::Fixture>()
+         << END;
+  return finalize(series);
 }
 #endiv

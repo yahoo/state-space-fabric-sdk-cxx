@@ -34,6 +34,6 @@ auto want::filesystem::dequote(path const &filepath) -> std::string {
       stringy.erase(stringy.begin()); // expensive
     }
   }
-  return std::move(stringy);
+  return stringy;
 }
 #endiv

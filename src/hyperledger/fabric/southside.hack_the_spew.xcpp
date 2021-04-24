@@ -76,7 +76,14 @@ namespace hyperledger::fabric::southside::packaging::hack_the_spew {
           number += specimen[i];
         }
         if (!number.empty()) {
+#if 9 == __GNUC__ && 3 == __GNUC_MINOR__ && 1 == __GNUC_PATCHLEVEL__
+          // src/hyperledger/fabric/southside.hack_the_spew.xcpp:79:40: internal compiler error: unexpected expression ‘std::__cxx11::stoi’ of kind overload
+          //    79 |           code = Code{std::stoi(number)}; // reminder: this thing throws to signal problems
+          auto iii = std::stoi(number, nullptr, 10);
+          code = Code{iii};
+#else
           code = Code{std::stoi(number)}; // reminder: this thing throws to signal problems
+#endif
           auto const PAYLOAD = "payload:"s;
           auto payload = specimen.find(PAYLOAD, result+RESULT.size()+number.size());
           if (NPOS != payload) {

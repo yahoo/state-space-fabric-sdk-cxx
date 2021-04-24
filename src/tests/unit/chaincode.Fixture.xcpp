@@ -20,14 +20,12 @@ auto tests::unit::chaincode::Fixture::test_Context() -> void {
   }  subject;
   CPPUNIT_ASSERT(!subject.orderer);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::chaincode::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("chaincode");
+  using namespace rigging::suite;
+  auto series = Stream{"chaincode"};
   series << call("Context", &Fixture::test_Context)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

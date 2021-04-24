@@ -28,14 +28,12 @@ auto tests::unit::pki::Fixture::test_Triple() -> void {
   Triple<std::optional<std::filesystem::path>> ofp;
   CPPUNIT_ASSERT(!ovb.ca && !ovc.ca && !os.ca && !ofp.ca); // irrelevant test ... use the use variable
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
+#import rigging.suite.io
 auto tests::unit::pki::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
-  Stream series("pki");
+  using namespace rigging::suite;
+  auto series = Stream{"pki"};
   series << call("Triple", &Fixture::test_Triple)
-    ;
-  return series.release();
+         << END;
+  return finalize(series);
 }
 #endiv

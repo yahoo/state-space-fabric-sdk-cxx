@@ -11,6 +11,10 @@
 #   make [all]
 #   make check
 #
+# debugging...
+#
+#   enable_dependency_tracking=no ./maintenance/nearby
+#
 # Usage:
 #
 #   ./maintenance/nearby     (no options)
@@ -47,16 +51,29 @@ if [[ -d ${PWD%/*}/nearby ]] && [[ -z $with_nearby ]] ; then
     : ${with_tunitas_nearby:=${with_nearby?}}
     : ${with_scold_nearby:=${with_nearby?}}
     : ${with_fabric_nearby:=${with_nearby?}}
+    # and the "standard" areas are not available, each development area myst be specified in turn, individually
+    : ${with_std_scold:=/opt/scold}
+    : ${with_std_tunitas:=/exp/tunitas}
+    : ${with_std_state_space:=/exp/state-space}
 elif [[ -d /build ]] ; then
     : ${with_nearby:=/build} # every major component source is spread out in its own development tree
     : ${with_tunitas_nearby:=${with_nearby?}/tunitas}
     : ${with_scold_nearby:=${with_nearby?}/scold}
     : ${with_fabric_nearby:=${with_nearby?}/others/Hyperledger/Fabric}
+    # and the "standard" areas are not available, each development area myst be specified in turn, individually
+    : ${with_std_scold:=/opt/scold}
+    : ${with_std_tunitas:=/exp/tunitas}
+    : ${with_std_state_space:=/exp/state-space}
 else
     : ${with_nearby:=/opt}
     : ${with_tunitas_nearby:=${with_nearby?}/tunitas}
     : ${with_scold_nearby:=${with_nearby?}/scold}
+    : ${with_state_space_nearby:=${with_nearby?}/state-space}
     : ${with_fabric_nearby:=${with_nearby?}/hyperledger/fabric}
+    # and the "standard" areas
+    : ${with_std_scold:=$with_scold_nearby}
+    : ${with_std_tunitas:=$with_tunitas_nearby}
+    : ${with_std_state_space:=$with_state_space_nearby}
 fi
 # [[FIXTHIS]] these should become named s/std_/opt_/g as the --std- prefix has become misdirecting
 : ${with_std_scold:=$with_scold_nearby}
@@ -64,13 +81,21 @@ fi
 : ${with_std_hyperledger_fabric:=$with_fabric_nearby}
 # These need to match 1-for-1 the enablements in configure.ac
 : ${with_hypogeal_twilight:=${with_scold_nearby?}/hypogeal-twilight}
-: ${with_temerarious_flagship:=${with_tunitas_nearby?}/temerarious-flagship}
+: with_hyperledger_fabric_db -- the database itself
+: with_hyperledger_fabric_ca -- the administrator
+: with_hyperledger_fabric_user -- the user-role database
+: with_hyperledger_fabric -- the client interface
+: with_hyperledger -- the general facilities
 : ${with_module_json:=${with_scold_nearby?}/module-json}
+if [[ -d ${with_scold_nearby?}/module-langu} ]] ; then : ${with_module_langu:=${with_scold_nearby?}/module-langu} ; fi
 : ${with_module_nonstd:=${with_scold_nearby?}/module-nonstd}
+: ${with_module_posix:=${with_scold_nearby?}/module-posix}
 : ${with_module_rigging:=${with_scold_nearby?}/module-rigging}
+if [[ -d ${with_scold_nearby?}/module-shell ]] ; then : ${with_module_shell:=${with_scold_nearby?}/module-shell} ; fi
 : ${with_module_std:=${with_scold_nearby?}/module-std}
 : ${with_module_sys:=${with_scold_nearby?}/module-sys}
 : ${with_module_string:=${with_scold_nearby?}/module-string}
+: ${with_temerarious_flagship:=${with_tunitas_nearby?}/temerarious-flagship}
 : ${with_tunitas_basics:=${with_tunitas_nearby?}/basics}
 eval \
     ${prefix:+prefix=$prefix} \
@@ -86,9 +111,11 @@ eval \
     ${with_hypogeal_twilight:+--with-hypogeal-twilight=$with_hypogeal_twilight} \
     ${with_temerarious_flagship:+--with-temerarious-flagship=$with_temerarious_flagship} \
     ${with_module_json:+--with-module-json=$with_module_json} \
+    ${with_module_langu:+--with-module-langu=$with_module_langu} \
     ${with_module_nonstd:+--with-module-nonstd=$with_module_nonstd} \
     ${with_module_posix:+--with-module-posix=$with_module_posix} \
     ${with_module_rigging:+--with-module-rigging=$with_module_rigging} \
+    ${with_module_shell:+--with-module-shell=$with_module_shell} \
     ${with_module_std:+--with-module-std=$with_module_std} \
     ${with_module_string:+--with-module-string=$with_module_string} \
     ${with_module_sys:+--with-module-sys=$with_module_sys} \
