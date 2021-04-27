@@ -45,7 +45,7 @@ cd ${0%/*}/.. || exit 70
 : ${prefix:=/exp/hyperledger/fabric}
 : ${with_siblings:=${PWD%/*}}
 : ${with_submodules:=no}
-# with_external is deprecated, it was used by hypogeal-twilight in 0.4?? (... uh 0.42?)
+# with_external is deprecated, it was used by hypogeal-twilight in 0.4 (oh point four)? (... uh 0.42?)
 if [[ -d ${PWD%/*}/nearby ]] && [[ -z $with_nearby ]] ; then
     : ${with_nearby:=${PWD%/*}/nearby} # all the development copies are in a single .../nearby area
     : ${with_tunitas_nearby:=${with_nearby?}}
@@ -86,6 +86,7 @@ fi
 : with_hyperledger_fabric_user -- the user-role database
 : with_hyperledger_fabric -- the client interface
 : with_hyperledger -- the general facilities
+: ${with_incendiary_sophist:=${with_scold_nearby?}/incendiary-sophist}
 : ${with_module_json:=${with_scold_nearby?}/module-json}
 if [[ -d ${with_scold_nearby?}/module-langu} ]] ; then : ${with_module_langu:=${with_scold_nearby?}/module-langu} ; fi
 : ${with_module_nonstd:=${with_scold_nearby?}/module-nonstd}
@@ -109,6 +110,7 @@ eval \
     ${with_scold_nearby:+--with-nearby=$with_scold_nearby} ${with_external:+--with-external=$with_external} \
     ${with_submodules:+--with-submodules=$with_submodules} \
     ${with_hypogeal_twilight:+--with-hypogeal-twilight=$with_hypogeal_twilight} \
+    ${with_incendiary_sophist:+--with-incendiary-sophist=$with_incendiary_sophist} \
     ${with_temerarious_flagship:+--with-temerarious-flagship=$with_temerarious_flagship} \
     ${with_module_json:+--with-module-json=$with_module_json} \
     ${with_module_langu:+--with-module-langu=$with_module_langu} \

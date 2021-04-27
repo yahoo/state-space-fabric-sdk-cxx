@@ -32,10 +32,12 @@ AC_CONFIG_FILES([Makefile])
 #
 
 TF_COMPONENT_METADIRECTORY_TIERS
+TF_WITH_USR_LOCAL
 TF_ENABLE_GNU
 TF_ENABLE_GDB
 TF_ENABLE_GCC
 TF_ENABLE_MOCK_BUILD
+TF_ENABLE_LIBTOOL_NO_INSTALL
 
 #
 # To perform production builds, only the WITH_STD mentions must be replicated in
@@ -47,13 +49,14 @@ TF_ENABLE_MOCK_BUILD
 #
 
 dnl Release 01 (Maximum Hammer) DOES NOT use this
-dnl Release o2 (Intensive Toothbrush) MIGHT NOT use this
+dnl Release 02 (Intensive Toothbrush) MIGHT NOT use this
 dnl ambiguous ---> TF_WITH_STD([hyperledger-fabric]) <--- not needed until Hyperledger Fabric delivers (a C++ API (an "SDK")
-TF_WITH_SUBSYSTEM([hyperledger-fabric-db], [], [The Hyperledger Fabric Data Base C++ Client-side SDK])
-TF_WITH_SUBSYSTEM([hyperledger-fabric-ca], [], [The Hyperledger Fabric Certificate Authority C++ Client-side SDK])
-TF_WITH_SUBSYSTEM([hyperledger-fabric], [], [The Hyperledger Fabric C++ Client-side SDK])
-TF_WITH_SUBSYSTEM([hyperledger], [], [The Hyperledger C++ Client-side SDK])
+dnl not yet ---> TF_WITH_SUBSYSTEM([hyperledger-fabric-db], [], [The Hyperledger Fabric Data Base C++ Client-side SDK])
+dnl not yet ---> TF_WITH_SUBSYSTEM([hyperledger-fabric-ca], [], [The Hyperledger Fabric Certificate Authority C++ Client-side SDK])
+dnl not yet ---> TF_WITH_SUBSYSTEM([hyperledger-fabric], [], [The Hyperledger Fabric C++ Client-side SDK])
+dnl not yet ---> TF_WITH_SUBSYSTEM([hyperledger], [], [The Hyperledger C++ Client-side SDK])
 
+TF_WITH_STD([tunitas]) dnl application data types
 TF_WITH_SUBSYSTEM([temerarious-flagship], [], [The Tunitas Build System])
 TF_WITH_SUBSYSTEM([tunitas-basics], [], [The Tunitas Basics])
 
@@ -74,7 +77,6 @@ TF_WITH_MODULE([rigging]) dnl a.k.a. unit-rigging -> rigging-unit
 TF_MSG_VERBOSE([compiler-specific (alphabetical)])
 TF_WITH_NONSTD([cppunit])
 TF_WITH_NONSTD([gcc]) dnl but modern gcc-8.2.0 & beyond is fine
-TF_WITH_USR_LOCAL
 
 AM_PROG_AR
 LT_PREREQ([2.4.2])
@@ -83,9 +85,8 @@ AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_CC_C_O
 TF_PROG_DC
-TF_CHECK_CPPUNIT
-TF_WITH_USR_LOCAL
 
+TF_CHECK_CPPUNIT
 TF_CHECK_STD_FILESYSTEM dnl get @libstd_filesystem@ for Makefile.am
 
 TF_FINALIZE
