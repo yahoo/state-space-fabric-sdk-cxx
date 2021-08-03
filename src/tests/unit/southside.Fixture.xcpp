@@ -5,8 +5,6 @@
 namespace tests::unit::southside { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 class tests::unit::southside::Fixture : public cppunit::test::Fixture {
 public:
   auto test_ok() -> void;
@@ -72,7 +70,6 @@ auto tests::unit::southside::Fixture::test_hack_the_spew_case_03() -> void {
   CPPUNIT_ASSERT(ok(c));
   CPPUNIT_ASSERT(contains_only(p, 'A'));
 }
-#import rigging.suite.io
 auto tests::unit::southside::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"southside"};

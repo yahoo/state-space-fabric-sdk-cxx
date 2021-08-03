@@ -5,10 +5,7 @@
 namespace tests::unit::ip::host { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
-class tests::unit::ip::host::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::ip::host::Fixture : public cppunit::test::Fixture {
   auto test_Uninterpreted() -> void;
   auto test_Name() -> void;
   auto test_Address4() -> void;
@@ -38,7 +35,6 @@ auto tests::unit::ip::host::Fixture::test_Address6() -> void {
   Address6 subject{"::1"};
   CPPUNIT_ASSERT(!subject.empty());
 }
-#import rigging.suite.io
 auto tests::unit::ip::host::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"host"};

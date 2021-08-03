@@ -5,8 +5,6 @@
 namespace tests::unit::run { class Push_Back; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 #import hyperledger.fabric.run.Arguments
 class tests::unit::run::Push_Back : public cppunit::test::Fixture {
 public:
@@ -99,7 +97,6 @@ template<> auto tests::unit::run::Push_Back::test_receive_copy<std::filesystem::
   push_back<3>(lhs) << '{' << specimen << '}';
   CPPUNIT_ASSERT(3 == lhs.size());
 }
-#import rigging.suite.io
 auto tests::unit::run::Push_Back::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"push_back"};

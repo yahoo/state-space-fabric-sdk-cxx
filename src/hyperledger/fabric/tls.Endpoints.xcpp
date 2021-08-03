@@ -26,10 +26,10 @@ namespace hyperledger::fabric::tls {
 #import hyperledger.fabric.tls.endpoints.Series
 #import hyperledger.fabric.Boolean
 class hyperledger::fabric::tls::Endpoints : public tls::endpoints::Series {
-  using ancestor = tls::endpoints::Series;
+  using Ancestor = tls::endpoints::Series;
   friend auto swap(Endpoints &a, Endpoints &b) noexcept -> void;
 public:
-  using Series = ancestor;
+  using Series = Ancestor;
   Endpoints() = default;
   inline Endpoints(Series::Initializer);
   inline explicit Endpoints(Series);
@@ -39,19 +39,19 @@ public:
 #endiv
 #divert <ipp>
 auto hyperledger::fabric::tls::swap(Endpoints &a, Endpoints &b) noexcept -> void {
-  using Ancestor = Endpoints::ancestor;
+  using Ancestor = Endpoints::Ancestor;
   swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
   swap(a.dotls, b.dotls);
 }
 #import std.move
 hyperledger::fabric::tls::Endpoints::Endpoints(Series series)
-  : ancestor{std::move(series)}
+  : Ancestor{std::move(series)}
 { }
 hyperledger::fabric::tls::Endpoints::Endpoints(Series::Initializer init)
-  : ancestor{std::move(init)}
+  : Ancestor{std::move(init)}
 { }
 hyperledger::fabric::tls::Endpoints::Endpoints(bool dotls, Series series)
-  : ancestor{std::move(series)}
+  : Ancestor{std::move(series)}
   , dotls{dotls}
 { }
 #endiv

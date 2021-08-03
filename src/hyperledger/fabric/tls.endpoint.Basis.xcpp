@@ -31,7 +31,7 @@ namespace hyperledger::fabric::tls::endpoint {
 #import hyperledger.fabric.ip.Endpoint
 #import std.filesystem.path
 class hyperledger::fabric::tls::endpoint::Basis : public ip::Endpoint {
-  using ancestor = ip::Endpoint;
+  using Ancestor = ip::Endpoint;
 protected:
   ~Basis() = default;
   friend auto swap(Basis &a, Basis &b) noexcept -> void;
@@ -50,24 +50,24 @@ public:
 #import std.move
 namespace hyperledger::fabric::tls {
   auto endpoint::swap(Basis &a, Basis &b) noexcept -> void {
-    using Ancestor = Basis::ancestor;
+    using Ancestor = Basis::Ancestor;
     swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
     swap(a.ca, b.ca);
   }
 }
 namespace hyperledger::fabric::tls::endpoint {
   Basis::Basis(Host host)
-    : ancestor{std::move(host)}
+    : Ancestor{std::move(host)}
   { }
   Basis::Basis(Host host, Port port)
-    : ancestor{std::move(host),std::move(port)}
+    : Ancestor{std::move(host),std::move(port)}
   { }
   Basis::Basis(Host host, Filepath file)
-    : ancestor{std::move(host)}
+    : Ancestor{std::move(host)}
     , ca{std::move(file)}
   { }
   Basis::Basis(Host host, Port port, Filepath file)
-    : ancestor{std::move(host),std::move(port)}
+    : Ancestor{std::move(host),std::move(port)}
     , ca{std::move(file)}
   { }
 }

@@ -7,14 +7,14 @@
 #divert <hpp>
 #import want.run.Piped_To
 class tests::unit::want::run::Fixture::Piped_To : public ::want::run::Piped_To {
-  using ancestor = ::want::run::Piped_To;
+  using Ancestor = ::want::run::Piped_To;
 public:
   Piped_To();
 };
 #endiv
 #divert <cpp>
 tests::unit::want::run::Fixture::Piped_To::Piped_To()
-  : ancestor{EXECP, "tr"} {
+  : Ancestor{EXECP, "tr"} {
   args.push_back("a-z");
   args.push_back("A-Z");
 }

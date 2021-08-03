@@ -7,14 +7,14 @@
 #divert <hpp>
 #import want.run.Runner
 class tests::unit::want::run::Fixture::Runner : public ::want::run::Runner {
-  using ancestor = ::want::run::Runner;
+  using Ancestor = ::want::run::Runner;
 public:
   Runner();
 };
 #endiv
 #divert <cpp>
 tests::unit::want::run::Fixture::Runner::Runner()
-  : ancestor{EXECP, "date"} {
+  : Ancestor{EXECP, "date"} {
   args.push_back("+%s");
 }
 #endiv

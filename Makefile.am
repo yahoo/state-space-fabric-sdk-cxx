@@ -45,13 +45,6 @@ INSTALLATION_AREAS = \
   $(std_tunitas_prefix) \
   $(end)
 
-default: all
-
-.PHONY: clean-local mostlyclean-local distclean-local
-clean-local mostlyclean-local distclean-local::
-clean-dependencies::
-clean-local:: clean-dependencies
-
 include src/hyperledger/fabric/Makefrag.am
 include src/tests/unit/Makefrag.am
 include src/want/Makefrag.am
@@ -90,15 +83,15 @@ LOADPATH   = $(LOADPATHPATH_SCOLD_MODULES)
 # -std=c++20 ... and more is required
 # -ggdb      ... and recall that -ggdb and -O2 don't play well together
 
-Makefile_COMPILER_CPPFLAGS_SET =
-Makefile_COMPILER_CFLAGS_SET   = -Wall @CFLAGS_gcc@   @CFLAGS_gdb@
-Makefile_COMPILER_CXXFLAGS_SET = -Wall @CXXFLAGS_gcc@ @CXXFLAGS_gdb@
-Makefile_COMPILER_LDFLAGS_SET  = -Wall @LDFLAGS_gcc@  @LDFLAGS_gdb@ @libstd_filesystem@
+Makefile_COMPILER_CPPFLAGS_SET = @CPPFLAGS_gcc@ @CPPFLAGS_gdb@
+Makefile_COMPILER_CFLAGS_SET   =   @CFLAGS_gcc@   @CFLAGS_gdb@
+Makefile_COMPILER_CXXFLAGS_SET = @CXXFLAGS_gcc@ @CXXFLAGS_gdb@
+Makefile_COMPILER_LDFLAGS_SET  =  @LDFLAGS_gcc@  @LDFLAGS_gdb@ @libstd_filesystem@
 
 Makefile_nonstd_PACKAGE_CPPFLAGS_SET = @usr_local_CPPFLAGS@
-Makefile_nonstd_PACKAGE_CFLAGS_SET   = @usr_local_CFLAGS@
+Makefile_nonstd_PACKAGE_CFLAGS_SET   =   @usr_local_CFLAGS@
 Makefile_nonstd_PACKAGE_CXXFLAGS_SET = @usr_local_CXXFLAGS@
-Makefile_nonstd_PACKAGE_LDFLAGS_SET  = @usr_local_LDFLAGS@
+Makefile_nonstd_PACKAGE_LDFLAGS_SET  =  @usr_local_LDFLAGS@
 
 # n.b. there is no JSON at the Hyperledger Fabric API level.
 Makefile_PACKAGE_CPPFLAGS_SET = 
@@ -122,3 +115,11 @@ AM_CFLAGS   = $(PACKAGE_CFLAGS_SET)
 AM_CXXFLAGS = $(PACKAGE_CXXFLAGS_SET)
 AM_LDFLAGS  = $(V_LDFLAGS_avoid.VERBOSE_Veq$(V))
 AM_LIBTOOLFLAGS = $(V_LIBTOOLFLAGS_VERBOSE_Veq$(V))
+
+default: all
+
+.PHONY: clean-local mostlyclean-local distclean-local
+clean-local mostlyclean-local distclean-local::
+clean-dependencies::
+clean-local:: clean-dependencies
+

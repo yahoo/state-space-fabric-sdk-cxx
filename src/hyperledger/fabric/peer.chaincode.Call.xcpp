@@ -16,7 +16,7 @@ namespace hyperledger::fabric::peer::chaincode {
 #import hyperledger.fabric.peers.Contact
 #import std.string
 class hyperledger::fabric::peer::chaincode::Call : public chaincode::Context {
-  using ancestor = chaincode::Context;
+  using Ancestor = chaincode::Context;
 public:
   peers::Contact peers;
   std::optional<std::string> profile; // a.k.a. --connectionProfile ... something about how to find peers from a local (yaml) file.

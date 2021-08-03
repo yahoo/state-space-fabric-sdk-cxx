@@ -13,7 +13,7 @@ namespace hyperledger::fabric::peer::chaincode {
 #divert <hpp>
 #import hyperledger.fabric.peer.Context
 class hyperledger::fabric::peer::chaincode::Context : public peer::Context {
-  using ancestor = fabric::Context;
+  using Ancestor = fabric::Context;
 protected:
   ~Context() = default;
 public:

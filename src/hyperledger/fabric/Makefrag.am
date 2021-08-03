@@ -21,7 +21,7 @@
 #       <= 0     if any interfaces were changed
 #       <= AGE   if no interface change, but any other (source code) change
 #
-lib_libhyperledger_fabric_la_CURRENT = 2
+lib_libhyperledger_fabric_la_CURRENT = 3
 lib_libhyperledger_fabric_la_REVISION = 0
 lib_libhyperledger_fabric_la_AGE = 0
 lib_libhyperledger_fabric_la_CRA = $(lib_libhyperledger_fabric_la_CURRENT):$(lib_libhyperledger_fabric_la_REVISION):$(lib_libhyperledger_fabric_la_AGE)

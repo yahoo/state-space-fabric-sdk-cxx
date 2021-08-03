@@ -15,7 +15,7 @@ namespace hyperledger::fabric::tls::endpoints {
   //
   // Usage:
   //
-  //   like tls::endpoint::Basis & which is an ancestor.
+  //   like tls::endpoint::Basis & which is an Ancestor.
   //   like tls::Endpoint which is unrelated but rhymes.
   //
   class Endpoint;
@@ -24,9 +24,9 @@ namespace hyperledger::fabric::tls::endpoints {
 #divert <hpp>
 #import hyperledger.fabric.tls.endpoint.Basis
 class hyperledger::fabric::tls::endpoints::Endpoint : public endpoint::Basis {
-  using ancestor = endpoint::Basis;
+  using Ancestor = endpoint::Basis;
 public:
   Endpoint() = default;
-  using ancestor::Basis;
+  using Ancestor::Basis;
 };
 #endiv

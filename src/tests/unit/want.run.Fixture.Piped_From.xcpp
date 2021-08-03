@@ -7,14 +7,14 @@
 #divert <hpp>
 #import want.run.Piped_From
 class tests::unit::want::run::Fixture::Piped_From : public ::want::run::Piped_From {
-  using ancestor = ::want::run::Piped_From;
+  using Ancestor = ::want::run::Piped_From;
 public:
   Piped_From();
 };
 #endiv
 #divert <cpp>
 tests::unit::want::run::Fixture::Piped_From::Piped_From()
-  : ancestor{EXECP, "echo"} {
+  : Ancestor{EXECP, "echo"} {
   args.push_back("Hey");
   args.push_back("there");
   args.push_back("mello");

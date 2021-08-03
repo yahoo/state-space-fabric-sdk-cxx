@@ -30,7 +30,7 @@ namespace hyperledger::fabric::run {
 #import hyperledger.fabric.run.peer.Basis
 #import shell.run.Runner
 template<> class hyperledger::fabric::run::Peer<hyperledger::fabric::Success> : public peer::Basis<shell::run::Runner> {
-  using ancestor = peer::Basis<shell::run::Runner>;
+  using Ancestor = peer::Basis<shell::run::Runner>;
 public:
   inline Peer(std::string subcommand, Context const &);
 };
@@ -38,6 +38,6 @@ public:
 #divert <ipp>
 #import std.move
 hyperledger::fabric::run::Peer<hyperledger::fabric::Success>::Peer(std::string subcommand, Context const &context)
-  : ancestor{std::move(subcommand), context}
+  : Ancestor{std::move(subcommand), context}
 { }
 #endiv

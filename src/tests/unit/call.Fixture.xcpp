@@ -5,10 +5,7 @@
 namespace tests::unit::call { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
-class tests::unit::call::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::call::Fixture : public cppunit::test::Fixture {
   auto test_Function() -> void;
   static auto suite() -> cppunit::Test *;
 };
@@ -22,7 +19,6 @@ auto tests::unit::call::Fixture::test_Function() -> void {
   auto light = Function::LIGHT;
   CPPUNIT_ASSERT(Function::QUERY == light);
 }
-#import rigging.suite.io
 auto tests::unit::call::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   using rigging::suite::call;

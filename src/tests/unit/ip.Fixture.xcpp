@@ -5,10 +5,7 @@
 namespace tests::unit::ip { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
-class tests::unit::ip::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::ip::Fixture : public cppunit::test::Fixture {
   auto test_Port() -> void;
   auto test_Host() -> void;
   auto test_Endpoint() -> void;
@@ -89,7 +86,6 @@ auto tests::unit::ip::Fixture::test_Endpoints() -> void {
   }
 }
 #import tests.unit.ip.host.Fixture
-#import rigging.suite.io
 auto tests::unit::ip::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"ip"};

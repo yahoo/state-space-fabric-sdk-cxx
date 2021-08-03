@@ -5,8 +5,6 @@
 namespace tests::unit::run { class Loader; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 #import hyperledger.fabric.run.Arguments
 class tests::unit::run::Loader : public cppunit::test::Fixture {
 public:
@@ -91,7 +89,6 @@ auto tests::unit::run::Loader::test_client() -> void {
   hf::tls::Client contact;
   subject.load(args, contact);
 }
-#import rigging.suite.io
 auto tests::unit::run::Loader::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"Loader<TYPE>"};

@@ -5,10 +5,7 @@
 namespace tests::unit::fabric { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
-class tests::unit::fabric::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::fabric::Fixture : public cppunit::test::Fixture {
   auto test_Boolean() -> void;
   auto test_Context() -> void;
   auto test_Contact() -> void;
@@ -67,7 +64,6 @@ auto tests::unit::fabric::Fixture::test_exception_Aspect() -> void {
     CPPUNIT_ASSERT_EQUAL("boring"s, what);
   }
 }
-#import rigging.suite.io
 auto tests::unit::fabric::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"fabric"};

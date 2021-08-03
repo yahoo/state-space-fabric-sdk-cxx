@@ -30,23 +30,23 @@ namespace hyperledger::fabric::detail {
 #import std.list
 #import std.initializer_list
 template<typename ENDPOINT> class hyperledger::fabric::detail::Endpoints : protected std::list<ENDPOINT> {
-  using ancestor = std::list<ENDPOINT>;
+  using Ancestor = std::list<ENDPOINT>;
 public:
   using Value = ENDPOINT; //     New School
   using Initializer = std::initializer_list<Value>;
-  using ancestor::value_type; // old_school
+  using Ancestor::value_type; // old_school
   Endpoints() = default;
-  using ancestor::list; // the rest of the constructors
-  using ancestor::empty;
-  using ancestor::size;
-  using ancestor::begin;
-  using ancestor::end;
-  using ancestor::push_back;
-  using ancestor::push_front;
+  using Ancestor::list; // the rest of the constructors
+  using Ancestor::empty;
+  using Ancestor::size;
+  using Ancestor::begin;
+  using Ancestor::end;
+  using Ancestor::push_back;
+  using Ancestor::push_front;
   // omitted, all the erasure and searching
 protected:
   friend auto swap(Endpoints &a, Endpoints &b) noexcept -> void {
-    swap(static_cast<ancestor &>(a), static_cast<ancestor &>(b));
+    swap(static_cast<Ancestor &>(a), static_cast<Ancestor &>(b));
   }
 };
 #endiv

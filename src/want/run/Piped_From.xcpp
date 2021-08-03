@@ -34,12 +34,12 @@ namespace want::run {
 #import sys.exits.Code
 #import sys.posix.read
 class want::run::Piped_From : public Runner {
-  using ancestor = Runner;
+  using Ancestor = Runner;
 public:
   inline explicit Piped_From(std::filesystem::path);
   inline Piped_From(Exec, std::filesystem::path);
-  using ancestor::run;
-  struct results : public ancestor::results {
+  using Ancestor::run;
+  struct results : public Ancestor::results {
     using Read = decltype(sys::posix::read(0, nullptr, 0lu));
   };
   auto start() -> results::Start override;
@@ -59,12 +59,12 @@ protected:
 #endiv
 #divert <ipp>
 want::run::Piped_From::Piped_From(std::filesystem::path path)
-  : ancestor{path}
+  : Ancestor{path}
   , streamobj{}
   , streambuf{}
 { }
 want::run::Piped_From::Piped_From(Exec exec, std::filesystem::path path)
-  : ancestor{exec, path}
+  : Ancestor{exec, path}
   , streamobj{}
   , streambuf{}
 { }
@@ -162,7 +162,7 @@ auto want::run::Piped_From::run() -> results::Run {
   }
   streamobj.rdbuf(nullptr);
   delete streambuf.release();
-  return ancestor::run();
+  return Ancestor::run();
 }
 #import std.exception
 #import sys.exits.constants

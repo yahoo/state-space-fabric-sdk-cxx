@@ -28,7 +28,7 @@ namespace hyperledger::fabric::tls {
 #import hyperledger.fabric.tls.endpoint.Basis
 #import hyperledger.fabric.Boolean
 class hyperledger::fabric::tls::Endpoint : public tls::endpoint::Basis {
-  using ancestor = tls::endpoint::Basis;
+  using Ancestor = tls::endpoint::Basis;
 public:
   Endpoint() = default;
   inline explicit Endpoint(Host);
@@ -41,17 +41,17 @@ public:
 #divert <ipp>
 #import std.move
 hyperledger::fabric::tls::Endpoint::Endpoint(Host host)
-  : ancestor{std::move(host)}
+  : Ancestor{std::move(host)}
 { }
 hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Port port)
-  : ancestor{std::move(host),std::move(port)}
+  : Ancestor{std::move(host),std::move(port)}
 { }
 hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Filepath file)
-  : ancestor{std::move(host), std::move(file)}
+  : Ancestor{std::move(host), std::move(file)}
   , dotls{true}
 { }
 hyperledger::fabric::tls::Endpoint::Endpoint(Host host, Port port, Filepath file)
-  : ancestor{std::move(host), std::move(port), std::move(file)}
+  : Ancestor{std::move(host), std::move(port), std::move(file)}
   , dotls{true}
 { }
 #endiv

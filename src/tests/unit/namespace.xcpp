@@ -1,12 +1,29 @@
 // This is -*- c++ -*- nearly C++2a with Modules TS but in the S.C.O.L.D. stylings that are so popular these days.
+// Copyright Verizon Media.
 // Copyright 2019, Oath Inc.
-// Licensed under the terms of the Apache-2.0 license. See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
+// Licensed under the terms of the Apache-2.0 license.
+// See LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 #divert <fpp>
-#import std.string_literals
-#import std.string_view_literals
+#import tunitas.string
 namespace tests::unit {
-  // everyone wants these
-  using namespace std::string_literals;
-  using namespace std::string_view_literals;
+  namespace string = ::tunitas::string;
 }
+#import tunitas.string.Storage
+#import tunitas.string.View
+#endiv
+#divert <hpp>
+// Because every test fixture will require these
+#import cppunit.Test
+#import cppunit.test.Fixture
+#endiv
+#divert <ipp>
+#import tunitas.string.literals
+namespace tests::unit {
+  using namespace string::literals;
+}
+// Ibidem.
+#import std.cout
+#import std.cerr
+#import std.clog
+#import rigging.suite.io
 #endiv

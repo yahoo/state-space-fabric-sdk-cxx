@@ -34,7 +34,7 @@ template<typename RUNNER> class hyperledger::fabric::run::peer::Basis
     private Loader<fabric::peer::Context>,
     private Loader<orderer::Contact>,
     private Loader<tls::Client> {
-  struct ancestors {
+  struct Ancestors {
     using Runner = RUNNER;
     struct loaders {
       using Fabric = run::Loader<fabric::Context>;
@@ -57,9 +57,9 @@ protected:
 #import std.error_code
 #import std.move
 template<typename _> hyperledger::fabric::run::peer::Basis<_>::Basis(std::string subcommand, Context const &context)
-  : ancestors::Runner{ancestors::Runner::EXECP, "peer"} {
-  auto &arguments = ancestors::Runner::args;
-  using ld = typename ancestors::loaders;
+  : Ancestors::Runner{Ancestors::Runner::EXECP, "peer"} {
+  auto &arguments = Ancestors::Runner::args;
+  using ld = typename Ancestors::loaders;
   push_back<1>(arguments) << std::move(subcommand);
   ld::Fabric::load(arguments,context);
   ld::Peer::load(arguments, context);

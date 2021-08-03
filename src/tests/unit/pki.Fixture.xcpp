@@ -5,8 +5,6 @@
 namespace tests::unit::pki { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 class tests::unit::pki::Fixture : public cppunit::test::Fixture {
 public:
   auto test_Triple() -> void;
@@ -28,7 +26,6 @@ auto tests::unit::pki::Fixture::test_Triple() -> void {
   Triple<std::optional<std::filesystem::path>> ofp;
   CPPUNIT_ASSERT(!ovb.ca && !ovc.ca && !os.ca && !ofp.ca); // irrelevant test ... use the use variable
 }
-#import rigging.suite.io
 auto tests::unit::pki::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"pki"};

@@ -10,7 +10,7 @@ namespace hyperledger::fabric::exception {
   //
   // Usage:
   //
-  //   class my::Problem : public hyperledger::fabric::Aspect, public std::runtime_error {
+  //   class my::Problem : public virtual hyperledger::fabric::Aspect, public std::runtime_error {
   //     explicit Problem(std;:string reason);
   //     auto what() const -> char const * final { return std::runtime_error::what(); }
   //   };

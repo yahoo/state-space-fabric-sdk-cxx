@@ -5,10 +5,7 @@
 namespace tests::unit::chaincode { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
-class tests::unit::chaincode::Fixture : public cppunit::test::Fixture {
-public:
+struct tests::unit::chaincode::Fixture : public cppunit::test::Fixture {
   auto test_Context() -> void;
   static auto suite() -> cppunit::Test *;
 };
@@ -20,7 +17,6 @@ auto tests::unit::chaincode::Fixture::test_Context() -> void {
   }  subject;
   CPPUNIT_ASSERT(!subject.orderer);
 }
-#import rigging.suite.io
 auto tests::unit::chaincode::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"chaincode"};

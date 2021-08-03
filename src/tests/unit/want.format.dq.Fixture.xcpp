@@ -5,8 +5,6 @@
 namespace tests::unit::want::format::dq { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 class tests::unit::want::format::dq::Fixture : public cppunit::test::Fixture {
 public:
   auto test_empty() -> void;
@@ -86,11 +84,8 @@ auto tests::unit::want::format::dq::Fixture::test_spaces() -> void {
   auto const expected = "/build me a castle in the sky"s;
   CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
-#import unit.rigging.suite.Stream
-#import unit.rigging.suite.call
-#import unit.rigging.suite.add
 auto tests::unit::want::format::dq::Fixture::suite() -> cppunit::Test * {
-  using namespace ::unit::rigging::suite;
+  using namespace rigging::suite;
   auto series = Stream{"dq"};
   series << call("empty", &Fixture::test_empty)
          << call("slash", &Fixture::test_slash)

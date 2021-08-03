@@ -5,8 +5,6 @@
 namespace tests::unit::want::filesystem { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 struct tests::unit::want::filesystem::Fixture : public cppunit::test::Fixture {
   auto test_usage_dequote() -> void;
   static auto suite() -> cppunit::Test *;
@@ -24,7 +22,6 @@ auto tests::unit::want::filesystem::Fixture::test_usage_dequote() -> void {
   CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 #import tests.unit.want.filesystem.dequote.Fixture
-#import rigging.suite.io
 auto tests::unit::want::filesystem::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"filesystem"};

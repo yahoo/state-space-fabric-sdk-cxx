@@ -6,7 +6,7 @@
 #import std.vector
 namespace hyperledger::fabric::run {
   //
-  // Common ancestor of all Loader<CONTEXT> specializations
+  // Common Ancestor of all Loader<CONTEXT> specializations
   // Must be compatible with shell::run::Runner
   //
   using Argument = std::string;

@@ -11,7 +11,7 @@ dnl make check &&
 dnl make install &&
 dnl echo OK DONE
 dnl
-AC_INIT([fabric-sdk-c++], [0.1.0], [state-space@verizonmedia.com])
+AC_INIT([fabric-sdk-c++], [0.2.0], [state-space@verizonmedia.com])
 TF_INIT(AC_PACKAGE_NAME, AC_PACKAGE_VERSION, AC_PACKAGE_BUGREPORT)
 
 dnl These options are also in the Makefile.am in AUTOMAKE_OPTIONS
@@ -65,18 +65,19 @@ TF_WITH_STD([scold]) dnl the core modules system
 dnl NO ---> TF_WITH_MODULE([json]) <--- NO ----> NO DEPENDENCY ON module-json (there is no JSON in fabric ... yet)
 TF_WITH_MODULE([langu]) dnl else module-shell
 TF_WITH_MODULE([nonstd])
+TF_WITH_MODULE([sys])
+TF_WITH_MODULE([rigging]) dnl a.k.a. unit-rigging -> rigging-unit -> rigging (only) and mentioned in TESTING_AREAS
+
+dnl [[deprecating]] these will be subsumed into the 2.0-series work of one or more of langu, nonstd, options, sys
 TF_WITH_MODULE([posix])
 TF_WITH_MODULE([shell]) dnl but prefer module-langu for langu::ish::shell
 TF_WITH_MODULE([std])
 TF_WITH_MODULE([string]) dnl a.k.a. c-string
-TF_WITH_MODULE([sys])
-# And mention these in $(TESTING_AREAS) in Makefile.am
-TF_WITH_MODULE([cppunit])
-TF_WITH_MODULE([rigging]) dnl a.k.a. unit-rigging -> rigging-unit
+TF_WITH_MODULE([cppunit]) dnl And mention these in $(TESTING_AREAS) in Makefile.am
 
 TF_MSG_VERBOSE([compiler-specific (alphabetical)])
 TF_WITH_NONSTD([cppunit])
-TF_WITH_NONSTD([gcc]) dnl but modern gcc-8.2.0 & beyond is fine
+TF_WITH_NONSTD([gcc]) dnl but modern gcc-11.2.0 & beyond is fine
 
 AM_PROG_AR
 LT_PREREQ([2.4.2])

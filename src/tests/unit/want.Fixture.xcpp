@@ -5,8 +5,6 @@
 namespace tests::unit::want { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 class tests::unit::want::Fixture : public cppunit::test::Fixture {
 public:
   auto test_Boolean() -> void;
@@ -29,7 +27,6 @@ auto tests::unit::want::Fixture::test_Boolean() -> void {
 }
 #import tests.unit.want.filesystem.Fixture
 #import tests.unit.want.format.Fixture
-#import rigging.suite.io
 auto tests::unit::want::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"want"};

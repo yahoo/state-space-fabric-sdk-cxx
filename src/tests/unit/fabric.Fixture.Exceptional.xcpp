@@ -8,8 +8,8 @@
 #import hyperledger.fabric.exception.Aspect
 #import std.runtime_error
 #import std.string
-class tests::unit::fabric::Fixture::Exceptional : public ::hyperledger::fabric::exception::Aspect, public std::runtime_error {
-  struct ancestors {
+class tests::unit::fabric::Fixture::Exceptional : public virtual ::hyperledger::fabric::exception::Aspect, public std::runtime_error {
+  struct Ancestors {
     using Aspect = ::hyperledger::fabric::exception::Aspect;
     using Exception = std::runtime_error;
   };
@@ -21,14 +21,14 @@ public:
 #divert <ipp>
 namespace tests::unit::fabric {
   inline Fixture::Exceptional::Exceptional(std::string const &reason)
-    : ancestors::Exception{reason}
+    : Ancestors::Exception{reason}
   { }
 }
 #endiv
 #divert <cpp>
 namespace tests::unit::fabric {
   auto Fixture::Exceptional::what() const noexcept -> char const * {
-    return ancestors::Exception::what();
+    return Ancestors::Exception::what();
   }
 }
 #endiv

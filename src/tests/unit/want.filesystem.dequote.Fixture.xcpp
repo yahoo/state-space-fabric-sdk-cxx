@@ -5,8 +5,6 @@
 namespace tests::unit::want::filesystem::dequote { class Fixture; }
 #endiv
 #divert <hpp>
-#import cppunit.Test
-#import cppunit.test.Fixture
 struct tests::unit::want::filesystem::dequote::Fixture : public cppunit::test::Fixture {
   auto test_empty() -> void;
   auto test_slash() -> void;
@@ -78,7 +76,6 @@ auto tests::unit::want::filesystem::dequote::Fixture::test_spaces() -> void {
   auto const expected = "/build me a castle in the sky"s;
   CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
-#import rigging.suite.io
 auto tests::unit::want::filesystem::dequote::Fixture::suite() -> cppunit::Test * {
   using namespace rigging::suite;
   auto series = Stream{"dequote"};
