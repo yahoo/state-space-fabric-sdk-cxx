@@ -1,6 +1,5 @@
 # This is a GNU -*- Makefile -*- fragment that is included by Automake
-# Copyright, Verizon Media.
-# Licensed under the terms of the Apache-2.0 license.
+# Copyright Yahoo Inc. 2021.
 # See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 
 lib_libwant_la = lib/libwant.la

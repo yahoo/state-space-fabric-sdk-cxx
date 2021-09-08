@@ -1,6 +1,5 @@
 dnl This is a GNU -*- autoconf -*- specification that is processed by Autoconf.
-dnl Copyright 2020, Verizon Media Inc.
-dnl Copyright 2019, Oath Inc.
+dnl Copyright Yahoo Inc. 2021.
 dnl Licensed under the terms of the Apache-2.0 license.
 dnl See the LICENSE file in https://github.com/yahoo/hyperledger-fabric-sdk-c++/blob/master/LICENSE for terms.
 dnl
@@ -11,7 +10,7 @@ dnl make check &&
 dnl make install &&
 dnl echo OK DONE
 dnl
-AC_INIT([fabric-sdk-c++], [0.2.0], [state-space@verizonmedia.com])
+AC_INIT([fabric-sdk-c++], [0.2.0], [state-space@yahooinc.com])
 TF_INIT(AC_PACKAGE_NAME, AC_PACKAGE_VERSION, AC_PACKAGE_BUGREPORT)
 
 dnl These options are also in the Makefile.am in AUTOMAKE_OPTIONS
