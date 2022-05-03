@@ -112,8 +112,9 @@ Please refer to the overall [Security Notice](https://github.com/yahoo/state-spa
 
 ## Contribute
 
-Please refer to [the contributing.md file](Contributing.md) for information about how to get involved. We welcome issues, questions, and pull requests. Pull Requests are welcome.
+Please refer to [contribution instructions](Contributing.md) for information about how to get involved. We welcome issues, questions, and pull requests. Pull Requests are welcome.
 
+Current work with modern-generation tooling, <em>e.g.</em> circa Fedora 36+ and GCC 12+, is occurring around the <em>v0.2-themed</em> feature branches.
 ## Maintainers
 - Wendell Baker <wbaker@yahooinc.com>
 - The State Space Team at Yahoo <state-space@yahooinc.com>
